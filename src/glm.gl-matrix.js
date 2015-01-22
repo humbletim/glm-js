@@ -83,7 +83,7 @@ glm.$intern(
       }
    });
 
-glm.$template.binary_ops(
+glm.$template.operations(
    {
       'mul': {
          op: '*',
@@ -132,7 +132,7 @@ glm.$template.binary_ops(
       }
    });
 
-glm.$template.unary_ops(
+glm.$template.functions(
    {
       normalize: {
          'vec<N>': function(q) { 

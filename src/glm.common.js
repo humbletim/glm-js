@@ -13,13 +13,14 @@ $glm_extern = function(func, local) {
    try { console.debug("extern "+func, local); } catch(e){}
    local = local || func;
    return function() { 
-      glm[local] = glm.$unary_ops[func] || glm.$DLL[func]; 
+      glm[local] = glm.$functions[func] || glm.$DLL[func]; 
       if (!glm[local]) throw new Error($glm_error_prefix + '$glm_extern: unresolved external symbol: '+func);
       return glm[local].apply(this, arguments);
    };
 };
 
 $glm_intern = function(k,v) {
+   //console.warn("$glm_intern", k,v);
    if (v === undefined && typeof k === 'object') {
       for(var p in k) $glm_intern(p, k[p]);
       return;
@@ -51,8 +52,8 @@ glm = {
    inverse: $glm_extern('inverse'),
    length: $glm_extern('length'),
 
-   $binary_ops: {},
-   $unary_ops: {},
+   $operations: {},
+   $functions: {},
 
    make_vec2: function(ptr) { return new glm.vec2([].slice.call(ptr,0,2)); },
    make_vec3: function(ptr) { return new glm.vec3([].slice.call(ptr,0,3)); },
@@ -160,36 +161,47 @@ var glm_template = glm.$template = {
       return func;
    },
 
-   binary_ops: function(TS) { return this.typedef("<T,V>",TS,glm.$binary_ops); },
+   operations: function(TS) { 
+      //console.warn("operations", TS);
+      return this._typedef("<T,V>",TS,glm.$operations); 
+   },
 
-   unary_ops: function(TS) { return this.typedef("<T>",TS,glm.$unary_ops); },
+   functions: function(TS) { 
+      //console.warn("FUNCTION_SOURCES", TS);
+      return this._typedef("<T>",TS,glm.$functions);
+   },
 
-   typedef: function(TV, TS, ret) {
+   _typedef: function(TV, TS, ret) {
       for(var p in TS) {
-         //glm.$DLL.console.debug(TV, p, TS[p].op);
-         for(var TN in TS[p]) {
-            //glm.$DLL.console.warn(TN);
-            if (/vec<N>/.test(TN)) {
-               var tpl = TS[p][TN];;
-               delete TS[p][TN];
-               [2,3,4].forEach(
-                  function(N){
-                     var kn = TN.replace(/<N>/,N);
-                     if (!( kn in TS[p] )) {
-                        //glm.$DLL.console.warn(p,"implicit "+kn);
-                        TS[p][kn] = eval(("1,"+tpl).replace(/N/g,N));
-                     }
-                  }
-               );
-            }
-         }
-         ret[p] = glm_template[TV](TS[p], p);
-         if (TS[p].op)
-            ret[TS[p].op] = ret[p];
+         //console.warn("_typedef", p);
+         this.typedef(TV, p, TS[p], ret);
       }
       return ret;
    },
 
+   typedef: function(TV, p, TSP, ret) {
+      glm.$DLL.console.debug('typedef', TV, p, TSP.op);
+      for(var TN in TSP) {
+         //glm.$DLL.console.warn(TN);
+         if (/vec<N>/.test(TN)) {
+            var tpl = TSP[TN];;
+            delete TSP[TN];
+            [2,3,4].forEach(
+               function(N){
+                  var kn = TN.replace(/<N>/,N);
+                  if (!( kn in TSP )) {
+                     //glm.$DLL.console.warn(p,"implicit "+kn);
+                     TSP[kn] = eval(("1,"+tpl).replace(/N/g,N));
+                  }
+               }
+            );
+         }
+      }
+      ret[p] = glm_template[TV](TSP, p);
+      if (TSP.op)
+         ret[TSP.op] = ret[p];
+      return ret;
+   },
    glmType: function ($type, $) {
       var $len = $.identity.length;
       var $class = function(n) { 
@@ -604,15 +616,15 @@ glm.init = function(hint, prefix) {
    };
    try { DBG("glm-js: ENV: "+_ENV._VERSION); } catch(e) {}
    DBG("GLM-JS: initializing: "+JSON.stringify(hint,0,2));
-   DBG(JSON.stringify({'unary_ops':Object.keys(glm.$unary_ops), 'binary_ops':Object.keys(glm.$binary_ops)}));
+   DBG(JSON.stringify({'functions':Object.keys(glm.$functions), 'operations':Object.keys(glm.$operations)}));
    // augment metadata onto glm types
    (function() {
        for(var p in glm)
           if (typeof glm[p] === 'function' && "$" in glm[p]) {
              var type = glm[p].prototype.$type;
-             for(var op in glm.$binary_ops) {
+             for(var op in glm.$operations) {
                 //glm.$DLL.console.debug("mapping binary operator<"+type+"> "+op);
-                glm[p].prototype[op] = glm.$binary_ops[op];
+                glm[p].prototype[op] = glm.$operations[op];
              }
           }
     })();
