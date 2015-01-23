@@ -11,6 +11,8 @@ try {
    GLMAT = exports;
 }
 
+var glm = GLM;
+
 var DLL = {
    _version: '0.0.0',
    _name: 'glm.gl-matrix.js',
@@ -26,12 +28,6 @@ if (!glm.$template)
 
 glm.$intern(
    {
-      degrees: function(n) { 
-         if('number'!==typeof n)
-            throw new Error('unsupported arguments to gl-matrix degrees' + n);
-         return n/GLMAT.glMatrix.toRadian(1.0);
-      },
-      radians: GLMAT.glMatrix.toRadian,
       mat4_perspective: function(fov, aspect, near, far) {
          return new glm.mat4(
             GLMAT.mat4.perspective(new Float32Array(16), fov, aspect, near, far)
@@ -52,7 +48,6 @@ glm.$intern(
          return m;
       },
       // mat4_scale: function(v) {
-      //   return glm.make_mat4($tmp.mat4.makeScale(v.x,v.y,v.z).elements);
       // },
       vec3_eulerAngles: function(q) {
          // adapted from three.js

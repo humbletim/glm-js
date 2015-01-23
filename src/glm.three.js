@@ -11,6 +11,8 @@ try {
    THREE = THREEMATHS;
 }
 
+var glm = GLM;
+//throw new glm.GLMJSError(glm.degrees(5));
 var DLL = glm.$DLL['three.js'] = {
    vendor_name: "three.js",
    vendor_version: THREE.REVISION,
@@ -31,8 +33,8 @@ var DLL = glm.$DLL['three.js'] = {
 DLL.$functions = (
    function($tmp) {
       return {
-         degrees: function(n) { return THREE.Math.radToDeg(n); },
-         radians: function(n) { return THREE.Math.degToRad(n); },
+//          degrees: function(n) { return THREE.Math.radToDeg(n); },
+//          radians: function(n) { return THREE.Math.degToRad(n); },
          mat4_perspective: function(fov, aspect, near, far) {
             fov = glm.degrees(fov);
             return glm.make_mat4(
@@ -146,9 +148,9 @@ $tmp = DLL.$tmp;
 for(x in DLL.$operations) {
    //console.warn("OPERATION", x, DLL.$operations[x]);
    if (DLL.$operations[x].op) {
-      glm.$template.typedef("<T,V>", x, DLL.$operations[x], glm.$operations);
+      glm.$template.override("<T,V>", x, DLL.$operations[x], glm.$operations);
    } else {
-      glm.$template.typedef("<T>", x, DLL.$operations[x], glm.$functions);
+      glm.$template.override("<T>", x, DLL.$operations[x], glm.$functions);
    }
 }
 
