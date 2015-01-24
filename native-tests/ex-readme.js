@@ -1,7 +1,8 @@
 try {
-   glm = require("../tests/_glm");
+   glm = require("../native-tests/_glm");
 } catch(e) {
-   load("tests/_glm.js");
+   try { console.warn(e); } catch(e){}
+   load("native-tests/_glm.js");
 }
 
 (function(log) {
@@ -11,6 +12,7 @@ try {
     var m2 = glm.mat4(2.0);
     
     var m3 = m1['*'](m2); // operator sugars
+    log("m3", m3);
     
     m3['*='](glm.toMat4(this.mrot)); // three.js-style inplace mutation still possible
 

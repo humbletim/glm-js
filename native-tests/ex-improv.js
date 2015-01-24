@@ -1,7 +1,7 @@
 try {
-   glm = require("../tests/_glm");
+   glm = require("../native-tests/_glm");
 } catch(e) {
-   load("tests/_glm.js");
+   load("native-tests/_glm.js");
 }
 
 (function(log) {
@@ -41,7 +41,11 @@ try {
     log("q normalized", glm.eulerAngles(q));
     log("q * v3: ", q ['*'] (v3));
 
+    log("glm.length(q * v3): ", glm.length(q ['*'] (v3)));
 
+    log("glm.inverse(q)", glm.inverse(q));
+    log("glm.quat(glm.inverse(glm.toMat4(m)))", glm.quat(glm.inverse(glm.toMat4(q))));
+    
  })(glm.$log);
 
 

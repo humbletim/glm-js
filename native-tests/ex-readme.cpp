@@ -11,6 +11,7 @@ int main() {
     auto m2 = glm::mat4(2.0f);
 
     auto m3 = m1 * m2;
+    log("m3", m3);
 
     m3 *= glm::toMat4(mrot);
 
