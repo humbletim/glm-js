@@ -8,21 +8,19 @@
 
 GLMJS_PREFIX = 'glm-js: ';
 function GLMJSError(msg) { 
-   function bomb(){
-      tryasdf();
+   function generror(){
+      generror_();
    }
    this.e=(function() {try {
-                          bomb();
+                          generror();
                        } catch(e) {
-                          //console.error('ERERERER'+typeof e);
                           return e.stack.split(/\n/)[4];//{e:e+''};
                        }})();
    this.toString = function(){return "[GLMJSError "+GLMJS_PREFIX + msg + "]"+this.e; }
-   wtf.prototype.message = msg;
+   generatedError.prototype.message = msg;
 };
-function wtf() {}; wtf.prototype = new Error();
-GLMJSError.prototype = new wtf();
-//msg+"]"; };
+function generatedError() {}; generatedError.prototype = new Error();
+GLMJSError.prototype = new generatedError();
 
 $GLM_extern = function(func, local) {
    try { console.debug("extern "+func, local); } catch(e){}
@@ -93,6 +91,7 @@ GLM = {
    normalize: $GLM_extern('normalize'),
    inverse: $GLM_extern('inverse'),
    length: $GLM_extern('length'),
+   transpose: $GLM_extern('transpose'),
 
    rotate: function(mat, theta, axis) { 
       return mat.mul(GLM.$DLL.mat4_angleAxis(theta, axis));
@@ -690,24 +689,10 @@ GLM.init = function(hint, prefix) {
              }
           }
     })();
-   DBG("GLM-JS: "+GLM.version+" emulating GLM_VERSION="+GLM.GLM_VERSION);
-};
-
-var thiz = this;
-GLM.nuke = function() {
-   for(var p in GLM.$template.binary_ops)
-      delete GLM.$template.binary_ops[p];
-   for(var p in GLM_template)
-      delete GLM_template[p];
-   GLM_template = null;
-   GLM.$to_array =5;
-   for(var p in GLM)
-      delete GLM[p];
-   for(var p in thiz)
-      if (/^GLM/i.test(p)) delete thiz[p];
-   for(var p in global)
-      if (/^GLM/i.test(p)) delete global[p];
-   GLM = null;
+   DBG("GLM-JS: "+GLM.version+" emulating "+
+       "GLM_VERSION="+GLM.GLM_VERSION+" "+
+       "vendor_name="+hint.vendor_name+" "+
+       "vendor_version="+hint.vendor_version);
 };
 
 try { module.exports = GLM; } catch(e) {}

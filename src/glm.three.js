@@ -135,6 +135,9 @@ DLL.$operations = (
             },
             mat4: function(m) { return new glm.mat4($tmp.mat4.getInverse(m)); },
          },
+         transpose: {
+            mat4: function(m) { return $tmp.mat4.transpose.call(m.clone()); },
+         },
          clamp: {
             '': function() { assert(false) },
          }
@@ -154,7 +157,7 @@ for(x in DLL.$operations) {
    }
 }
 
-glm.init({vendor_name:DLL.vendor_name}, 'glm-js[three]: ');
+glm.init({vendor_name:DLL.vendor_name, vendor_version: DLL.vendor_version}, 'glm-js[three]: ');
 
 try { module.exports = glm; } catch(e) {}
 

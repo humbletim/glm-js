@@ -8,7 +8,12 @@
 try {
    GLMAT.exists;
 } catch(e) {
-   GLMAT = exports;
+   try {
+      GLMAT = exports;
+   } catch(e) {
+      GLMAT = this;
+      GLMAT.mat4.exists;
+   }
 }
 
 var glm = GLM;
@@ -17,8 +22,8 @@ var DLL = {
    _version: '0.0.0',
    _name: 'glm.gl-matrix.js',
    _glm_version: glm.version,
-   _vendor_version: GLMAT.VERSION,
-   _vendor_name: "glMatrix"
+   vendor_version: GLMAT.VERSION,
+   vendor_name: "glMatrix"
 };
    
 console.warn("... glm-js: DLL: ", JSON.stringify(DLL));
@@ -155,6 +160,13 @@ glm.$template.functions(
          mat4: function(m) { 
             return new glm.mat4(
                GLMAT.mat4.invert(new Float32Array(16), m.elements)
+            );
+         }
+      },
+      transpose: {
+         mat4: function(m) { 
+            return new glm.mat4(
+               GLMAT.mat4.transpose(new Float32Array(16), m.elements)
             );
          }
       }

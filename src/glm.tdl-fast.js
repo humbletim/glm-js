@@ -110,10 +110,12 @@ DLL.$operations = (
             quat: function(q) { return tdl.quaternions.length(q.elements); },
          },
          inverse: {
-            quat: function(q) { 
-               return new glm.quat($tmp.quat.copy(q).inverse());
-            },
-            mat4: function(m) { return new glm.mat4($tmp.mat4.getInverse(m)); },
+//             quat: function(q) { 
+//             },
+            mat4: function(m) { return new glm.mat4(tdl.fast.inverse4(new Float32Array(16), m.elements)); }
+         },
+         transpose: {
+            mat4: function(m) { return new glm.mat4(tdl.fast.transpose4(new Float32Array(16), m.elements)); }
          },
 //          clamp: {
 //             '': function() { assert(false) },

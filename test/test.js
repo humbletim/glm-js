@@ -60,6 +60,10 @@ describe('glm', function(){
 
                               glm.mat4().mul(glm.mat4()).should.be.instanceOf(glm.mat4);
                            });
+                        it('should invert tranpose', function() {
+                              glm.to_string(glm.transpose(glm.inverse(glm.mat4(qq)))).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
+                           });
+                       
                      });
 
 
