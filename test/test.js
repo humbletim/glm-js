@@ -209,5 +209,9 @@ describe('glm', function(){
                      });
 
 
+            describe(GLMJS_PREFIX+' info', function(){
+                        it('...OK', function(){});
+                     });
+
 
          });

@@ -1,7 +1,7 @@
 try {
-   glm = require("../tests/_glm");
+   glm = require("../native-tests/_glm");
 } catch(e) {
-   load("tests/_glm.js");
+   load("native-tests/_glm.js");
 }
 
 (function(log) {

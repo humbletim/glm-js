@@ -1,29 +1,43 @@
-# quick build system; still need to decide on better packaging / JS Unit
-
 all:
 	echo TODO
 
-CXX := g++ -I/tmp/latest-glm -std=c++0x
 MINIFIER := java -jar /tmp/closure-compiler-read-only/build/compiler.jar --language_in ECMASCRIPT5 --js -
 
-tmp/test-%: tests/%.cpp
-	$(CXX) $< -o $@
-
-build/glm.js: lib/three.js src/glm.three.js
+build/glm-three.js: lib/three.js src/glm.common.js src/glm.three.js
 	cat $^ > $@
 
-build/glm.min.js: build/glm.js
+build/glm-gl-matrix.js: lib/gl-matrix.js src/glm.common.js src/glm.gl-matrix.js
+	cat $^ > $@
+
+build/glm-tdl-fast.js: lib/tdl-fast.js src/glm.common.js src/glm.tdl-fast.js
+	cat $^ > $@
+
+build/%.min.js: build/%.js
 	cat $< | $(MINIFIER) > $@
 
-# this is sorta dumb tho allows for some initial visual testing
-test-g-truc: tmp/test-ex-g-truc
-	./tmp/_compare.sh g-truc
+build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.js
+	echo OK
 
-test-improv: tmp/test-ex-improv
-	./tmp/_compare.sh improv
+test-three:
+	GLM=three ../node_modules/.bin/mocha
 
-test-readme: tmp/test-ex-readme
-	./tmp/_compare.sh readme
+test-gl-matrix:
+	GLM=gl-matrix ../node_modules/.bin/mocha
 
-test: test-g-truc test-improv test-readme
-	echo done
+test-tdl-fast:
+	GLM=tdl-fast ../node_modules/.bin/mocha
+
+test: test-three test-gl-matrix test-tdl-fast
+	@echo OK
+
+watch:
+	../node_modules/.bin/mocha --watch test/test.js
+
+.PHONY: test
+
+j.js: lib/three.js src/glm.common.js src/glm.three.js src/glm-js.js
+	( cat xjs._ENV.js ; echo 'console=_ENV.console; ' ; cat $^ | sed -E 's/\bTHREE\b/THREEMATHS/g' ; echo '_ENV.console.warn(glm);' ) > $@
+
+engine-test: j.js
+	for x in node node-0.6.6 smjs v8 d8 ; do which $$x && $$x j.js ; done
+
