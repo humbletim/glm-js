@@ -45,6 +45,12 @@ int main() {
 
     log("glm.inverse(q)", glm::inverse(q));
     log("glm.quat(glm.inverse(glm.toMat4(m)))", glm::quat(glm::inverse(glm::toMat4(q))));
+    {
+        using namespace glm;
+        auto qa = angleAxis(radians(45.0f), vec3(0,1,0));
+        auto qb = angleAxis(radians(-35.0f), vec3(0,1,0));
+        log("glm.mix(qa,qb,.5)", mix(qa,qb,.1f));
+    }
 
     return 0;
 }

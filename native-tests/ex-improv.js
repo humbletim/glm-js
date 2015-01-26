@@ -45,6 +45,14 @@ try {
 
     log("glm.inverse(q)", glm.inverse(q));
     log("glm.quat(glm.inverse(glm.toMat4(m)))", glm.quat(glm.inverse(glm.toMat4(q))));
+    {
+       glm.using_namespace(
+          function() {
+             var qa = angleAxis(radians(45.0), vec3(0,1,0));
+             var qb = angleAxis(radians(-35.0), vec3(0,1,0));
+             log("glm.mix(qa,qb,.5)", mix(qa,qb,.1));
+          });
+    }
     
  })(glm.$log);
 

@@ -25,6 +25,27 @@ describe('glm', function(){
                               glm.$to_array(qq).should.eql([ 0, 0.3826834261417389, 0, 0.9238795042037964 ]);
                               glm.degrees(glm.eulerAngles(qq)[1]).should.be.approximately(45.0, glm.degrees(glm.epsilon()));
                            });
+                        it('.mix<float>', function() {
+                              glm.mix(0,.5,.25).should.equal(.125);
+                           });
+                        it('.mix<vec2>', function() {
+                              glm.to_glsl(glm.mix(glm.vec2(1,2), glm.vec2(2,1), .5)).should.equal('vec2(1.5)');
+                           });
+                        it('.mix<quat>', function() {
+                              var qa = glm.angleAxis(glm.radians(45), glm.vec3(0,1,0));
+                              var qb = glm.angleAxis(glm.radians(-35), glm.vec3(0,1,0));
+                              glm.degrees(glm.eulerAngles(glm.mix(qa, qb, .5)))[1].should.be.approximately(5,glm.degrees(glm.epsilon()));
+                              //if (!/tdl/.test(glm.vendor.vendor_name ))
+                              glm.degrees(glm.eulerAngles(glm.mix(qa, qb, .1)))[1].should.be.approximately(37,glm.degrees(glm.epsilon()));
+                           });
+
+                        it('.using_namespace<func>', function() {
+                              glm.using_namespace(
+                                 function(){
+                                    vec3().should.be.instanceOf(vec3);
+                                    length(vec4(1)).should.equal(2);
+                                 });
+                           });
                      });
 
             describe('meta', function() {
@@ -89,6 +110,19 @@ describe('glm', function(){
                               glm.to_string(glm.toMat4(qq).mul(glm.vec4(1,2,3,1)))
                                  .should.equal('fvec4(2.828427, 2.000000, 1.414214, 1.000000)');
                            });
+                        it('should length2ify', function(){ 
+                              glm.length2(glm.angleAxis(Math.PI/3,glm.vec3(0,1,0))).should.be.approximately(1,.001);
+                           });
+                        it('should inversify', function(){ 
+                              var Q = glm.angleAxis(Math.PI/3,glm.vec3(0,1,0));
+                              glm.degrees(glm.eulerAngles(Q)[1]).should.be.approximately(60,glm.degrees(glm.epsilon()));
+                              glm.inverse(Q);
+                              glm.degrees(glm.eulerAngles(Q)[1]).should.be.approximately(60,glm.degrees(glm.epsilon()));
+                              Q=glm.inverse(Q);
+                              glm.degrees(glm.eulerAngles(Q)[1]).should.be.approximately(-60,glm.degrees(glm.epsilon()));
+                              glm.degrees(glm.eulerAngles(Q)[1]).should.be.approximately(-60,glm.degrees(glm.epsilon()));
+                              Q.should.be.instanceOf(glm.quat);
+                           });
                      });
 
             describe('vec2', function(){
@@ -105,10 +139,16 @@ describe('glm', function(){
                            });
                         it('should inplace multiply by a scalar', function(){ 
                               var v2 = glm.vec2(Math.PI);
+                              glm.$to_array(v2['*'](1/Math.PI)).should.eql([1,1]);
+                              glm.$to_array(v2).should.not.eql([1,1]);
                               glm.$to_array(v2['*='](1/Math.PI)).should.eql([1,1]);
+                              glm.$to_array(v2).should.eql([1,1]);
                            });
                         it('should lengthify', function(){ 
                               glm.length(glm.vec2(Math.PI)).should.be.approximately(4.44,.1);
+                           });
+                        it('should length2ify', function(){ 
+                              glm.length2(glm.vec2(Math.PI)).should.be.approximately(19.7392,.1);
                            });
                      });
 
@@ -128,7 +168,10 @@ describe('glm', function(){
                            });
                         it('should inplace multiply by a scalar', function(){ 
                               var v3 = glm.vec3(Math.PI);
+                              glm.$to_array(v3['*'](1/Math.PI)).should.eql([1,1,1]);
+                              glm.$to_array(v3).should.not.eql([1,1,1]);
                               glm.$to_array(v3['*='](1/Math.PI)).should.eql([1,1,1]);
+                              glm.$to_array(v3).should.eql([1,1,1]);
                            });
                         it('should lengthify', function(){ 
                               glm.length(glm.vec3(Math.PI)).should.be.approximately(5.44,.1);
@@ -139,6 +182,9 @@ describe('glm', function(){
                            });
                         it('should spin about a quat', function() {
                               glm.$to_array(glm.vec3(100).mul(qspin)).should.eql([-100,100,-100]);
+                           });
+                        it('should mixify', function(){ 
+                              glm.to_glsl(glm.mix(glm.vec3(1),glm.vec3(2),1/Math.PI)).should.equal('vec3(1.3183099031448364)');
                            });
                      });
 
@@ -158,7 +204,10 @@ describe('glm', function(){
                            });
                         it('should inplace multiply by a scalar', function(){ 
                               var v4 = glm.vec4(Math.PI);
+                              glm.$to_array(v4['*'](1/Math.PI)).should.eql([1,1,1,1]);
+                              glm.$to_array(v4).should.not.eql([1,1,1,1]);
                               glm.$to_array(v4['*='](1/Math.PI)).should.eql([1,1,1,1]);
+                              glm.$to_array(v4).should.eql([1,1,1,1]);
                            });
                         it('should lengthify', function(){ 
                               glm.length(glm.vec4(Math.PI)).should.be.approximately(6.28,.1);
@@ -177,6 +226,12 @@ describe('glm', function(){
                         it('should matrixify', function() {
                               glm.$to_array(M['*'](glm.vec4(1,2,3,1))).should.eql([-1,2,-3,1]);
                               glm.$to_array(M['*'](glm.vec4(-1,-1,2,2))).should.eql([1,-1,-2,2]);
+                           });
+                        it('should length2ify', function(){ 
+                              glm.length2(glm.vec4(Math.PI)).should.be.approximately(39.4784,.1);
+                           });
+                        it('should mixify', function(){ 
+                              glm.to_glsl(glm.mix(glm.vec4(Math.PI),glm.vec4(),.5)).should.equal('vec4(1.5707963705062866)' );
                            });
                      });
             
@@ -208,6 +263,35 @@ describe('glm', function(){
                            });
                      });
 
+            describe('to_glsl', function() {
+                        it('should serialize', function() {
+                              glm.to_glsl(glm.vec4()).should.equal("vec4(0)");
+                              glm.to_glsl(glm.vec4(1)).should.equal("vec4(1)");
+                              glm.to_glsl(glm.vec4(2)).should.equal("vec4(2)");
+                              glm.to_glsl(glm.vec4(3)).should.equal("vec4(3)");
+                              glm.to_glsl(glm.vec2(3)).should.equal("vec2(3)");
+                              glm.to_glsl(glm.vec3(1,2,3)).should.equal("vec3(1,2,3)");
+                              glm.to_glsl(glm.vec4(1,2,3)).should.equal("vec4(1,2,3)");
+                              glm.to_glsl(glm.quat()).should.equal("quat(1)");
+                              glm.to_glsl(glm.quat(1)).should.equal("quat(1)");
+                              glm.to_glsl(glm.mat4(2)).should.equal("mat4(2)");
+                              glm.to_glsl(glm.mat4(0)).should.equal("mat4(0)");
+                              glm.to_glsl(glm.mat4(-1)).should.equal("mat4(-1)");
+                              glm.to_glsl(glm.mat3(-1)).should.equal("mat3(-1)");
+                              //glm.uvec4(-1).toString().should.equal("mat3(-1)");
+                           });
+                     });
+
+            describe('uvec4', function(){
+                        it('should work', function(){
+                              glm.uvec4().should.be.instanceOf(glm.uvec4);
+                              glm.$to_array(glm.uvec4(-2)).should.eql([0,0,0,0]);
+                              glm.$to_array(glm.uvec4(.5)).should.eql([0,0,0,0]);
+                              glm.$to_array(glm.uvec4(1)).should.eql([1,1,1,1]);
+                              glm.$to_array(glm.uvec4(-.5)).should.eql([0,0,0,0]);
+                              glm.$to_array(glm.uvec4(glm.vec3(-1),1)).should.eql([0,0,0,1]);
+                           });
+                     });
 
             describe(GLMJS_PREFIX+' info', function(){
                         it('...OK', function(){});

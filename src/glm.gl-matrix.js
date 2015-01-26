@@ -16,7 +16,7 @@ try {
    }
 }
 
-var glm = GLM;
+glm = GLM;
 
 var DLL = {
    _version: '0.0.0',
@@ -52,8 +52,11 @@ glm.$intern(
          GLMAT.mat4.translate(m.elements, m.elements, v.elements);
          return m;
       },
-      // mat4_scale: function(v) {
-      // },
+      mat4_scale: function(v) {
+         var m = new glm.mat4();
+         GLMAT.mat4.scale(m.elements, m.elements, v.elements);
+         return m;
+      },
       vec3_eulerAngles: function(q) {
          // adapted from three.js
          var te = new Float32Array(16);
@@ -118,6 +121,11 @@ glm.$template.operations(
                GLMAT.mat4.mul(new Float32Array(16), 
                               a.elements, b.elements)
             );
+         },
+         'quat,quat': function(a,b) {
+            return new glm.quat(GLMAT.quat.multiply(
+                                   new Float32Array(4),
+                                   a.elements, b.elements));
          }
       },
       'mul_eq': {
@@ -134,6 +142,15 @@ glm.$template.operations(
 
 glm.$template.functions(
    {
+      mix: {
+         "quat,quat": function(a,b,rt) {
+            return new glm.quat(GLMAT.quat.slerp(new Float32Array(4), a.elements,b.elements,rt));
+         }
+      }
+   });
+
+glm.$template.calculators(
+   {
       normalize: {
          'vec<N>': function(q) { 
             return new glm.vecN(
@@ -148,9 +165,14 @@ glm.$template.functions(
       },
       length: {
          quat: function(q) {  return GLMAT.quat.length(q.elements); },
-         vec3: function(v) { return GLMAT.vec3.length(v.elements); },
+         //vec3: function(v) { return GLMAT.vec3.length(v.elements); },
          'vec<N>': function(v) { return GLMAT.vecN.length(v.elements); }
       },
+      length2: {
+         quat: function(q) {  return GLMAT.quat.squaredLength(q.elements); },
+         'vec<N>': function(v) { return GLMAT.vecN.squaredLength(v.elements); }
+      },
+
       inverse: {
          quat: function(q) { 
             return new glm.quat(

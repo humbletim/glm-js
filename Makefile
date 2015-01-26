@@ -19,13 +19,13 @@ build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.
 	echo OK
 
 test-three:
-	GLM=three ../node_modules/.bin/mocha
+	GLM=three ../node_modules/.bin/mocha -b
 
 test-gl-matrix:
-	GLM=gl-matrix ../node_modules/.bin/mocha
+	GLM=gl-matrix ../node_modules/.bin/mocha -b
 
 test-tdl-fast:
-	GLM=tdl-fast ../node_modules/.bin/mocha
+	GLM=tdl-fast ../node_modules/.bin/mocha -b
 
 test: test-three test-gl-matrix test-tdl-fast
 	@echo OK

@@ -11,7 +11,7 @@ try {
    THREE = THREEMATHS;
 }
 
-var glm = GLM;
+glm = GLM;
 //throw new glm.GLMJSError(glm.degrees(5));
 var DLL = glm.$DLL['three.js'] = {
    vendor_name: "three.js",
@@ -73,89 +73,99 @@ DLL.$functions = (
       };
    })(DLL.$tmp);
 
-DLL.$operations = (
-   function($tmp) {
-      return {
-         'mul': {
-            op: '*',
-            'quat,vec3': function(a,b) {
-               // need $tmp.quat.copy(a) to entertain THREE.Quaternion
-               return $tmp.vec3.applyQuaternion.call(b.clone(), $tmp.quat.copy(a));
+(  function($tmp) {
+      glm.$template.operations(
+         {
+            'mul': {
+               op: '*',
+               'quat,vec3': function(a,b) {
+                  // need $tmp.quat.copy(a) to entertain THREE.Quaternion
+                  return $tmp.vec3.applyQuaternion.call(b.clone(), $tmp.quat.copy(a));
+               },
+               'vec4,quat': function(a,b) {
+                  // need $tmp.quat.copy(a) to entertain THREE.Quaternion
+                  return $tmp.vec4.applyMatrix4.call(a.clone(), glm.toMat4(b));
+               },
+               'vec3,quat': function(a,b) { return this['quat,vec3'](b,a); },
+               'vec<N>,float': function(a,b) {
+                  return $tmp.vecN.multiplyScalar.call(a.clone(), b);
+               },
+               //          'vec3,float': function(a,b) {
+               //             return $tmp.vec3.multiplyScalar.call(a.clone(), b);
+               //          },
+               //          'vec2,float': function(a,b) {
+               //             return $tmp.vec2.multiplyScalar.call(a.clone(), b);
+               //          },
+               'mat4,vec4': function(a,b) {
+                  return $tmp.vec4.applyMatrix4.call(b.clone(), a);
+               },
+               'mat4,mat4': function(a,b) {
+                  a = a.clone();
+                  return $tmp.mat4.multiplyMatrices.call(a, a, b);
+               }
             },
-            'vec4,quat': function(a,b) {
-               // need $tmp.quat.copy(a) to entertain THREE.Quaternion
-               return $tmp.vec4.applyMatrix4.call(a.clone(), glm.toMat4(b));
-            },
-            'vec3,quat': function(a,b) { return this['quat,vec3'](b,a); },
-            'vec<N>,float': function(a,b) {
-               return $tmp.vecN.multiplyScalar.call(a.clone(), b);
-            },
-            //          'vec3,float': function(a,b) {
-            //             return $tmp.vec3.multiplyScalar.call(a.clone(), b);
-            //          },
-            //          'vec2,float': function(a,b) {
-            //             return $tmp.vec2.multiplyScalar.call(a.clone(), b);
-            //          },
-            'mat4,vec4': function(a,b) {
-               return $tmp.vec4.applyMatrix4.call(b.clone(), a);
-            },
-            'mat4,mat4': function(a,b) {
-               a = a.clone();
-               return $tmp.mat4.multiplyMatrices.call(a, a, b);
+            'mul_eq': {
+               op: '*=',
+               'vec<N>,float': function(a,b) {
+                  return $tmp.vecN.multiplyScalar.call(a, b);
+               },
+               'mat4,mat4': function(a,b) {
+                  //a = a.clone();
+                  return $tmp.mat4.multiplyMatrices.call(a, a, b);
+               },
             }
-         },
-         'mul_eq': {
-            op: '*=',
-            'vec<N>,float': function(a,b) {
-               return $tmp.vecN.multiplyScalar.call(a, b);
-            },
-            'mat4,mat4': function(a,b) {
-               //a = a.clone();
-               return $tmp.mat4.multiplyMatrices.call(a, a, b);
-            },
-         },
-         normalize: {
-            'vec<N>': function(q) { 
-               return new glm.vecN($tmp.vecN.copy(q).normalize());
-            },
-            quat: function(q) { 
-               return new glm.quat($tmp.quat.copy(q).normalize());
-            },
-         },
-         length: {
-            "vec<N>": function(v) { return $tmp.vecN.length.call(v); },
+         });
 
-            quat: function(q) { return $tmp.quat.copy(q).length(); },
-            vec3: function(v) { return $tmp.vec3.length.call(v); },
-            vec4: function(v) { return $tmp.vec4.length.call(v); },
-         },
-         inverse: {
-            quat: function(q) { 
-               return new glm.quat($tmp.quat.copy(q).inverse());
+      glm.$template.functions(
+         {
+            mix: {
+               $tmp2: $tmp.quat.clone(),
+               "quat,quat": function(a,b,rt) {
+                  return new glm.quat($tmp.quat.copy(a).slerp(this.$tmp2.copy(b),rt));//new glm.quat(GLMAT.quat.slerp(new Float32Array(4), a.elements,b.elements,rt));
+               }
+            }
+         });
+
+      glm.$template.calculators(
+         {
+            normalize: {
+               'vec<N>': function(q) { 
+                  return new glm.vecN($tmp.vecN.copy(q).normalize());
+               },
+               quat: function(q) { 
+                  return new glm.quat($tmp.quat.copy(q).normalize());
+               },
             },
-            mat4: function(m) { return new glm.mat4($tmp.mat4.getInverse(m)); },
-         },
-         transpose: {
-            mat4: function(m) { return $tmp.mat4.transpose.call(m.clone()); },
-         },
-         clamp: {
-            '': function() { assert(false) },
-         }
-      };
+            length2: {
+               "vec<N>": function(v) { return $tmp.vecN.lengthSq.call(v); },
+               quat: function(q) { return $tmp.quat.copy(q).lengthSq(); },
+            },
+            length: {
+               "vec<N>": function(v) { return $tmp.vecN.length.call(v); },
+
+               quat: function(q) { return $tmp.quat.copy(q).length(); },
+               //             vec3: function(v) { return $tmp.vec3.length.call(v); },
+               //             vec4: function(v) { return $tmp.vec4.length.call(v); },
+            },
+            inverse: {
+               quat: function(q) { 
+                  return new glm.quat($tmp.quat.set(q.x,q.y,q.z,q.w).inverse());
+               },
+               mat4: function(m) { return new glm.mat4($tmp.mat4.getInverse(m)); },
+            },
+            transpose: {
+               mat4: function(m) { return $tmp.mat4.transpose.call(m.clone()); },
+            },
+            clamp: {
+               '': function() { assert(false) },
+            }
+         });
    })(DLL.$tmp);
 
 glm.$intern(DLL.$functions);
 
+// TODO: fixme... cache internal to $template funcs
 $tmp = DLL.$tmp;
-
-for(x in DLL.$operations) {
-   //console.warn("OPERATION", x, DLL.$operations[x]);
-   if (DLL.$operations[x].op) {
-      glm.$template.override("<T,V>", x, DLL.$operations[x], glm.$operations);
-   } else {
-      glm.$template.override("<T>", x, DLL.$operations[x], glm.$functions);
-   }
-}
 
 glm.init({vendor_name:DLL.vendor_name, vendor_version: DLL.vendor_version}, 'glm-js[three]: ');
 
