@@ -1,10 +1,12 @@
-try {
-   glm = require("../native-tests/_glm");
+try{ require.exists;}catch(e){require=function(x){load("./src/"+x+'.js');};}
+try{
+   glm.exists;
 } catch(e) {
-   load("native-tests/_glm.js");
+   try { glm = require("../src/glm-js") || glm; }
+   catch(e) { require("../src/glm-js"); }
 }
 
-(function(log) {
+function main(log) {
     var t = new glm.vec4(1,2,3,4);
     log(t);
     log("t * 2.0", (t) ['*'] (2.0));
@@ -17,6 +19,7 @@ try {
 
     var v3 = glm.vec3(3,3,3);
     log("v3:", v3);
+    log("glm.quat(v3):", glm.quat(v3));
     log("q * v3: ", q['*'](v3));
 
     q = glm.quat();
@@ -54,6 +57,28 @@ try {
           });
     }
     
- })(glm.$log);
+}
+
+try {
+   describe.exists;
+   var _main = main;
+   main = function(log) {
+      try {
+         document.location.exists;
+         log = function() {
+            var t = document.createElement("div");
+            t.textContent = [].slice.call(arguments).join(" ");//sprintf.apply(this, arguments);
+            document.getElementById('glmlog').appendChild(t);
+         }
+      } catch(e) {}
+      describe('ex-improv', function() {
+                  it('should run without errors',function() {
+                        _main(log);
+                     });
+               });
+   };
+} catch(e) {}
+
+main(glm.$log);
 
 

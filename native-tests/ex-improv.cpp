@@ -17,6 +17,7 @@ int main() {
 
     auto v3 = glm::vec3(3.0f,3,3);
     log("v3:",v3);
+    log("glm.quat(v3):", glm::quat(v3));
     log("q * v3: ", q * (v3));
 
     q = glm::quat();

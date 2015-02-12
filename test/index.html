@@ -1,0 +1,60 @@
+  <html> 
+    <head> 
+      <meta charset="utf-8" /> 
+      <title>Mocha Tests</title> 
+      <link rel="stylesheet" href="../node_modules/mocha/mocha.css" /> 
+      
+      <script src="../node_modules/chai/chai.js"></script> 
+      <script src="../node_modules/mocha/mocha.js"></script> 
+
+      <script src="../src/glm.common.js" type="text/javascript"></script>
+
+      <script src="../lib/three.js" type="text/javascript"></script>
+      <script src="../src/glm.three.js" type="text/javascript"></script>
+
+      <!--script src="../lib/gl-matrix.js" type="text/javascript"></script>
+      <script src="../src/glm.gl-matrix.js" type="text/javascript"></script-->
+      <!--script src="../lib/tdl-fast.js" type="text/javascript"></script>
+      <script src="../src/glm.tdl-fast.js" type="text/javascript"></script-->
+ 
+      <script>;
+require = function(x) { 
+   if (x === 'mocha')
+      x = 'Mocha';
+   if (/\b_BOM$/.test(x)) return window;
+
+   var ret = x in window && window[x];
+   if (require.quiet === true)
+      require.quiet = !confirm(['require',x,ret]);
+   return ret;
+};
+require.quiet=0;
+
+          </script>
+   
+      <script> 
+        //expect = chai.expect; 
+        mocha.ui('bdd');
+        if (window.PHANTOMJS) { 
+          blanket.options("reporter", "node_modules/grunt-blanket-mocha/support/grunt-reporter.js" 
+        ); 
+        } 
+      </script> 
+
+    <script src="../test/test.js"></script> 
+    <script src="../test/ex-improv.js"></script> 
+    <script src="../test/ex-readme.js"></script> 
+    <script src="../test/ex-g-truc.js"></script> 
+
+      <script type="text/javascript" src="../node_modules/blanket/dist/qunit/blanket.js" 
+        data-cover-flags="branchTracking" 
+        data-cover-only="src/"></script> 
+      
+    </head> 
+    <body> 
+      <div id="mocha"></div> 
+      <script type="text/javascript" src="../node_modules/grunt-blanket-mocha/support/mocha-blanket.js"></script>
+      <div id="glmlog" style='font-size:10px;font-family:monospace;'></div>
+    </body> 
+</html> 
+  

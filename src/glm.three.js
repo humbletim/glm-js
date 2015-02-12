@@ -4,7 +4,6 @@
 // https://github.com/humbletim/glm-js
 // MIT LICENSE
 // ----------------------------------------------------------------------------
-
 try {
    THREE.exists;
 } catch(e) {
@@ -12,8 +11,9 @@ try {
 }
 
 glm = GLM;
+
 //throw new glm.GLMJSError(glm.degrees(5));
-var DLL = glm.$DLL['three.js'] = {
+var DLL = glm.outer['three.js'] = {
    vendor_name: "three.js",
    vendor_version: THREE.REVISION,
    
@@ -73,14 +73,21 @@ DLL.$functions = (
       };
    })(DLL.$tmp);
 
-(  function($tmp) {
+(function($tmp) {
       glm.$template.operations(
          {
             'mul': {
                op: '*',
+               $tmp2: $tmp.quat.clone(),
+               'quat,quat': function(a,b) {
+                  a = $tmp.quat.fromArray(a.elements);
+                  b = this.$tmp2.fromArray(b.elements);
+                  return new glm.quat(a.multiply(b));
+               },
                'quat,vec3': function(a,b) {
-                  // need $tmp.quat.copy(a) to entertain THREE.Quaternion
-                  return $tmp.vec3.applyQuaternion.call(b.clone(), $tmp.quat.copy(a));
+                  return $tmp.vec3.applyQuaternion.call(
+                     b.clone(), 
+                     $tmp.quat.fromArray(a.elements));
                },
                'vec4,quat': function(a,b) {
                   // need $tmp.quat.copy(a) to entertain THREE.Quaternion
@@ -113,6 +120,14 @@ DLL.$functions = (
                   //a = a.clone();
                   return $tmp.mat4.multiplyMatrices.call(a, a, b);
                },
+               $tmp2: $tmp.quat.clone(),
+               'quat,quat': function(a,b) {
+                  var A = $tmp.quat.fromArray(a.elements);
+                  b = this.$tmp2.fromArray(b.elements);
+                  A.multiply(b);
+                  a.elements.set(A.toArray());
+                  return a;
+               },
             }
          });
 
@@ -121,7 +136,10 @@ DLL.$functions = (
             mix: {
                $tmp2: $tmp.quat.clone(),
                "quat,quat": function(a,b,rt) {
-                  return new glm.quat($tmp.quat.copy(a).slerp(this.$tmp2.copy(b),rt));//new glm.quat(GLMAT.quat.slerp(new Float32Array(4), a.elements,b.elements,rt));
+                  return new glm.quat(
+                     $tmp.quat.fromArray(a.elements)
+                        .slerp(this.$tmp2.fromArray(b.elements),rt)
+                  );//new glm.quat(GLMAT.quat.slerp(new Float32Array(4), a.elements,b.elements,rt));
                }
             }
          });
@@ -133,43 +151,38 @@ DLL.$functions = (
                   return new glm.vecN($tmp.vecN.copy(q).normalize());
                },
                quat: function(q) { 
-                  return new glm.quat($tmp.quat.copy(q).normalize());
+                  return new glm.quat($tmp.quat.fromArray(q.elements).normalize());
                },
             },
             length2: {
                "vec<N>": function(v) { return $tmp.vecN.lengthSq.call(v); },
-               quat: function(q) { return $tmp.quat.copy(q).lengthSq(); },
+               quat: function(q) { return $tmp.quat.fromArray(q.elements).lengthSq(); },
             },
             length: {
                "vec<N>": function(v) { return $tmp.vecN.length.call(v); },
 
-               quat: function(q) { return $tmp.quat.copy(q).length(); },
+               quat: function(q) { return $tmp.quat.fromArray(q.elements).length(); },
                //             vec3: function(v) { return $tmp.vec3.length.call(v); },
                //             vec4: function(v) { return $tmp.vec4.length.call(v); },
             },
             inverse: {
                quat: function(q) { 
-                  return new glm.quat($tmp.quat.set(q.x,q.y,q.z,q.w).inverse());
+                  //return new glm.quat($tmp.quat.set(q.x,q.y,q.z,q.w).inverse());
+                  return new glm.quat($tmp.quat.fromArray(q.elements).inverse());
                },
                mat4: function(m) { return new glm.mat4($tmp.mat4.getInverse(m)); },
             },
             transpose: {
                mat4: function(m) { return $tmp.mat4.transpose.call(m.clone()); },
-            },
-            clamp: {
-               '': function() { assert(false) },
             }
          });
    })(DLL.$tmp);
 
 glm.$intern(DLL.$functions);
 
-// TODO: fixme... cache internal to $template funcs
+// TODO: fixme... cache internal to $template funcs instead of global
 $tmp = DLL.$tmp;
 
 glm.init({vendor_name:DLL.vendor_name, vendor_version: DLL.vendor_version}, 'glm-js[three]: ');
 
 try { module.exports = glm; } catch(e) {}
-
-
-

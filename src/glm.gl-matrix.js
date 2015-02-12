@@ -5,16 +5,7 @@
 // MIT LICENSE
 // ----------------------------------------------------------------------------
 
-try {
-   GLMAT.exists;
-} catch(e) {
-   try {
-      GLMAT = exports;
-   } catch(e) {
-      GLMAT = this;
-      GLMAT.mat4.exists;
-   }
-}
+GLMAT.mat4.exists;
 
 glm = GLM;
 
@@ -26,12 +17,7 @@ var DLL = {
    vendor_name: "glMatrix"
 };
    
-console.warn("... glm-js: DLL: ", JSON.stringify(DLL));
-
-if (!glm.$template)
-   throw new Error('glm-js: bring glm.$template in first (from glm.common.js)');
-
-glm.$intern(
+DLL.$functions =
    {
       mat4_perspective: function(fov, aspect, near, far) {
          return new glm.mat4(
@@ -84,7 +70,7 @@ glm.$intern(
          var m3 = GLMAT.mat3.fromMat4(new Float32Array(9), o.elements);
          return GLMAT.quat.fromMat3(new Float32Array(4), m3);
       }
-   });
+   };
 
 glm.$template.operations(
    {
@@ -136,6 +122,12 @@ glm.$template.operations(
          },
          'vec<N>,float': function(a,b) {
             return GLMAT.vecN.scale(a,a,b);
+         },
+         'quat,quat': function(a,b) {
+            GLMAT.quat.multiply(
+               a.elements,
+               a.elements, b.elements);
+            return a;
          }
       }
    });
@@ -193,6 +185,8 @@ glm.$template.calculators(
          }
       }
    });
+
+glm.$intern(DLL.$functions);
 
 glm.init(DLL, 'glm-js[glMatrix]: ');
 

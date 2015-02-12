@@ -1,9 +1,10 @@
-try {
-   glm = require("../native-tests/_glm");
+try{ require.exists;}catch(e){require=function(x){load("./src/"+x+'.js');};}
+try{
+   glm.exists;
 } catch(e) {
-   load("native-tests/_glm.js");
+   try { glm = require("../src/glm-js") || glm; }
+   catch(e) { try { load("src/glm-js.js"); } catch(e) { throw new Error('!load')} }
 }
-
 function transform( 
     Orientation, 
     Translate, 
@@ -18,8 +19,8 @@ function transform(
    return Projection ['*'] (View) ['*'] (Model); 
 } 
 
-function main() {
-   glm.$log(
+function main(log) {
+   log(
       glm.to_string(
          transform(
             glm.vec2(0.5, 0.5),
@@ -30,6 +31,26 @@ function main() {
    );
 }
 
-main();
+try {
+   describe.exists;
+   var _main = main;
+   main = function(log) {
+      try {
+         document.location.exists;
+         log = function() {
+            var t = document.createElement("div");
+            t.textContent = [].slice.call(arguments).join(" ");//sprintf.apply(this, arguments);
+            document.getElementById('glmlog').appendChild(t);
+         }
+      } catch(e) {}
+      describe('ex-g-truc', function() {
+                  it('should run without errors',function() {
+                        _main(log);
+                     });
+               });
+   };
+} catch(e) {}
+
+main(glm.$log);
 
 // outputs: fvec4(2.788964, 4.828427, -2.363051, -2.158529)

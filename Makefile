@@ -30,6 +30,18 @@ test-tdl-fast:
 test: test-three test-gl-matrix test-tdl-fast
 	@echo OK
 
+coverage-three:
+	GLM=three npm test
+
+coverage-gl-matrix:
+	GLM=gl-matrix npm test
+
+coverage-tdl-fast:
+	GLM=tdl-fast npm test
+
+coverage: coverage-three coverage-gl-matrix coverage-tdl-fast
+	@echo OK
+
 watch:
 	../node_modules/.bin/mocha --watch test/test.js
 
