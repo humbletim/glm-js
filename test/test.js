@@ -157,6 +157,7 @@ describe('glm', function(){
                               var v = glm.vec3([1,2,3].map(glm.degrees));
                               expect(v).not.to.glm_eq([1,2,3]);
                               expect(glm.radians(v)).to.glm_eq([1,2,3]);
+                              expect(glm.radians(0)).to.equal(0);
                            });
                         it('.rotate', function() {
                               expect(glm.rotate(glm.mat4(), glm.radians(45), glm.vec3(0,1,0)))
@@ -174,6 +175,7 @@ describe('glm', function(){
                            });
                         it('.mix<float>', function() {
                               expect(glm.mix(0,.5,.25)).to.equal(.125);
+                              expect(glm.mix(0,0,0)).to.equal(0);
                            });
                         it('.clamp<float>', function() {
                               expect(glm.clamp(0,.25,.5)).to.equal(.25);

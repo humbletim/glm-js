@@ -205,9 +205,9 @@ GLM = {
 var GLM_template = GLM.$template = {
    _genArgError: function(F, dbg, TV, args) {
       return new GLMJSError(
-         'unsupported argtype to '+dbg+': ('+F.sig+'): ['+TV+"] :: "+
-            args.map(GLM_template.jstypes.get)+
-            " // "+Object.keys(F).join("||"));
+         'unsupported argtype to '+dbg+''+F.$sig+': [typ='+TV+"] :: "+
+            'got arg types: '+args.map(GLM_template.jstypes.get)+
+            " // supported types: "+Object.keys(F).join("||"));
    },
    jstypes: {
       get: function(x) { 
@@ -218,6 +218,7 @@ var GLM_template = GLM.$template = {
              GLM_template.jstypes[x+''] || 
              "<unknown "+[typeof x, x]+">" ); 
       },
+      0: "float",
       "number": "float",
       "[object Float32Array]": "Float32Array"
    },
@@ -226,7 +227,7 @@ var GLM_template = GLM.$template = {
       F.$sig = "<T>";
       func.$template = F;
       function func(o) {
-         var T = o&&[o.$type || types[typeof o] || "null"];
+         var T = [(o&&o.$type) || types[typeof o] || "null"];
          if (!F[T])
             throw GLM_template._genArgError(F, dbg, T, [o]);//new GLMJSError('unsupported argtype to GLM.'+dbg+F.$sig+' '+[T || typeof o]);
          //console.warn("template", o.$type, o+'',dbg, typeof F[o.$type]);
@@ -240,8 +241,8 @@ var GLM_template = GLM.$template = {
       func.$template = F;
       function func(o,p,v) {
          if (this.$type) { v=p, p=o, o=this; }
-         var TV = p&&[o.$type || types[typeof p], 
-                   p.$type || types[typeof p] || types[p+''] || "<unknown "+p+">"];
+         var TV = [(o&&o.$type) || types[typeof p], 
+                   (p&&p.$type) || types[typeof p] || types[p+''] || "<unknown "+p+">"];
          if (!F[TV])
             throw GLM_template._genArgError(F, dbg, TV, [].slice.call(arguments));
          if (typeof v !== 'number') 
@@ -252,12 +253,12 @@ var GLM_template = GLM.$template = {
    },
    "<T,V>": function(F, dbg) {
       var types = GLM_template.jstypes;
-      F.sig = '<T,V>';
+      F.$sig = '<T,V>';
       func.$template = F;
       function func(o,p,a,b,c) {
          if (this.$type) { c=b, b=a, a=p, p=o, o=this; }
-         var TV = p&&[o.$type || types[typeof p], 
-                   p.$type || types[typeof p] || types[p+''] || "<unknown "+p+">"];
+         var TV = [(o&&o.$type) || types[typeof p], 
+                   (p&&p.$type) || types[typeof p] || types[p+''] || "<unknown "+p+">"];
          if (!F[TV])
             throw GLM_template._genArgError(F, dbg, TV, [].slice.call(arguments));//new GLMJSError('unsupported argtype to '+dbg+'<T,V>: ['+TV+"] :: "+[].slice.call(arguments).map(GLM_template.jstypes.get));
          return F[TV](o,p,a,b,c);
