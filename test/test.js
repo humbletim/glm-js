@@ -13,7 +13,7 @@ console.warn('glm: '+glm);
 console.warn('chai: '+chai);
 console.warn('should: '+should);
 
-// allow direct invocation via node
+// workaround to enable direct invocation via node cli
 var atexit;
 try {
    describe.exists;
@@ -21,8 +21,9 @@ try {
    var Mocha = require('mocha');
    var mocha = new Mocha();
    mocha.ui('bdd');
-   mocha.suite.emit('pre-require', wtf={});
-   for(var p in wtf)eval(p+"=wtf[p]");
+   var api={};
+   mocha.suite.emit('pre-require', api);
+   for(var p in api)eval(p+"=api[p]");
    atexit = function() {
       mocha.run(function(failures) { console.warn(failures); });
    };
@@ -31,82 +32,101 @@ try {
 //console.warn('mocha: ',mocha);
 //console.warn('describe: ',describe);
 
-chai.use(function(_chai, utils) {
-            _chai.Assertion.addMethod(
-               'approximately', 
-               function (value, delta) {
-                  return this.closeTo(value, delta);
-                  return expect(this._obj, 'to be approximately ' + value + " ±" + delta)
-                     .within(value-delta, value+delta);
-               });
-            _chai.Assertion.addProperty("approximate", function(){
-                                           utils.flag(this, 'glm_epsilon', true);
-                                        });
-            _chai.Assertion.addProperty("flatten", function(){
-                                           utils.flag(this, 'glm_flatten', true);
-                                        });
-            
-            _chai.Assertion.addMethod(
-               'into', 
-               function (s) { expect(glm.$to_array(this._obj).join("")).to.equal(s); });
+var cane = {
+   properties: {
+      approximate: function() {
+         cane.flag(this, 'glm_epsilon', true);
+      },
+      flatten: function(){
+         cane.flag(this, 'glm_flatten', true);
+      },
+      euler: function() { cane.flag(this, "glm_eulers", true); }
+   },
+   methods: {
+      euler: function(g) { return new chai.Assertion(glm.degrees(glm.eulerAngles(cane.flag(this, 'object')))[g]); },
+      approximately: function (value, delta) {
+         return this.closeTo(value, delta);
+         //return expect(this._obj, 'to be approximately ' + value + " ±" + delta)
+         //.within(value-delta, value+delta);
+      },
+      degrees: function(d) { 
+         return this.to.be.approximately(d, glm.degrees(glm.epsilon()));
+      },
+      
+      into: function (s) { 
+         expect(glm.$to_array(this._obj).join("")).to.equal(s);
+      },
+      glm_eq: function (arr) {
+         var obj = cane.flag(this,'object');
+         expect(obj).to.have.property("$type");
+         if (cane.flag(this, "glm_eulers")) {
+            obj = glm.degrees(glm.eulerAngles(obj));
+            var ss = JSON.stringify(glm.$to_array(obj));
+            expect(obj[0],ss+"[0]").to.be.degrees(arr[0]);
+            expect(obj[1],ss+"[1]").to.be.degrees(arr[1]);
+            expect(obj[2],ss+"[2]").to.be.degrees(arr[2]);
+            return;
+         }
+         
+         if (cane.flag(this,'negate'))
+            return expect(glm.$to_array(obj)).to.not.eql(arr);
+         return expect(glm.$to_array(obj)).to.eql(arr);
+      },
 
-            i=0;
-            _chai.Assertion.addMethod(
-               'glm_eq', 
-               function (arr) {
-                  var obj = utils.flag(this,'object');
-                  expect(obj).to.have.property("$type");
-                  if (utils.flag(this, "glm_eulers")) {
-                     obj = glm.degrees(glm.eulerAngles(obj));
-                     var ss = JSON.stringify(glm.$to_array(obj));
-                     expect(obj[0],ss+"[0]").to.be.degrees(arr[0]);
-                     expect(obj[1],ss+"[1]").to.be.degrees(arr[1]);
-                     expect(obj[2],ss+"[2]").to.be.degrees(arr[2]);
-                     return;
-                  }
-                  
-                  //if (i++ == 2)throw new Error("d"+JSON.stringify(this.__flags));
-                  if (utils.flag(this,'negate'))
-                     return expect(glm.$to_array(obj)).to.not.eql(arr);
-                  return expect(glm.$to_array(obj)).to.eql(arr);
-               });
+      roughly: function(d) { 
+         return this.to.be.approximately(d, glm.epsilon());
+      },
+      glsl: function(g) { 
+         return expect(glm.to_glsl(this._obj)).to.equal(g);
+      }
+   },
+   sugar: function(_chai, utils) {
+      var self = cane;
+      self.flag = utils.flag;
+      for(var p in self.properties)
+         _chai.Assertion.addProperty(p, self.properties[p]);
+      for(var p in self.methods) {
+         console.warn("addMethod", p);
+         if (p in self.properties) // chainableMethod
+            _chai.Assertion.addChainableMethod(p, self.methods[p], self.properties[p]);
+         else
+            _chai.Assertion.addMethod(p, self.methods[p]);
+      }
+      return _chai;
+   }
+};
 
-            _chai.Assertion.addMethod('degrees',
-                                      function(d) { return this.to.be.approximately(d, glm.degrees(glm.epsilon())); });
-
-            _chai.Assertion.addMethod('roughly',
-                                      function(d) { return this.to.be.approximately(d, glm.epsilon()); });
-
-            _chai.Assertion.addMethod('glsl', function(g) { return expect(glm.to_glsl(this._obj)).to.equal(g); });
-
-            _chai.Assertion.addChainableMethod('euler', 
-                                               function(g) { return new _chai.Assertion(glm.degrees(glm.eulerAngles(this._obj))[g]); },
-                                               function() { utils.flag(this, "glm_eulers", true); });
-            
-         });
+chai.use(cane.sugar);
 
 describe('glm', function(){
             describe('common', function(){
                         it('should have a version', function(){
                               expect(glm.version).to.be.a('string');
-                              glm.version.should.match(/\d\.\d\.\d/);
+                              expect(glm.version).to.match(/\d\.\d\.\d/);
                            });
                         it('.outer stuff', function() {
-                              glm.outer.console.debug('');
-                              glm.outer.console.info('');
-                              glm.outer.console.warn('');
-                              glm.outer.console.error('');
-                              glm.outer.console.write('');
+                              // shameless invocations for test coverage
+                              glm.outer.console.debug('D');
+                              glm.outer.console.info('I');
+                              glm.outer.console.warn('W');
+                              glm.outer.console.error('E');
+                              glm.outer.console.write('W');
                            });
-                        it('$toString', function() {
+                        it('$toString exception', function() {
                               expect(function() {
                                         glm.$toString("prefix","what","props");
                                      }).to.throw(/props.*?no/);
                            });
                         it('$sizeof', function() {
-                              expect(
-                                        glm.$sizeof(glm.vec4)
-                                     ).to.equal(16);
+                              expect("vec2,vec3,vec4,quat,mat3,mat4".split(',')
+                                     .map(function(p){return glm[p]})
+                                     .map(glm.$sizeof)
+                                    ).to.eql( [ 8, 12, 16, 16, 36, 64 ]);
+                           });
+                        it('.BYTES_PER_ELEMENT', function() {
+                              expect("vec2,vec3,vec4,quat,mat3,mat4".split(',')
+                                     .map(function(p){return glm[p].BYTES_PER_ELEMENT})
+                                    ).to.eql( [ 8, 12, 16, 16, 36, 64 ]);
                            });
                         describe("glsl", function() {
                                     it('to_glsl', function() {
@@ -190,7 +210,10 @@ describe('glm', function(){
                               expect(glm.max(0,.5)).to.equal(.5);
                            });
                         it('.sign', function() {
-                              expect(glm.sign(-glm.epsilon())).to.equal(-1);
+                              var e = glm.epsilon();
+                              expect([ -e, e, 0,-0, NaN, glm.vec2(1,-2)]
+                                     .map(glm.sign)).to.eql(
+                                     [ -1, 1, 0, 0, 0,   0 ]);
                            });
                         it('.mix<vec2>', function() {
                               expect(glm.mix(glm.vec2(1,2), glm.vec2(2,1), .5)).to.be.glsl('vec2(1.5)');
@@ -249,9 +272,10 @@ describe('glm', function(){
                               expect(a).to.flatten.into('200020002');
                               expect(b).to.flatten.into('200020002');
                               expect(function() { glm.mat3({}); }).to.throw(/unrecognized object passed to .*?\bmat3/);
-                              expect(glm.mat3([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])).to.glm_eq([ 0, 1, 2, 
-                                                                                                    4, 5, 6, 
-                                                                                                    8, 9, 10 ]);
+                              expect(glm.mat3([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]))
+                                 .to.glm_eq([ 0, 1, 2, 
+                                              4, 5, 6, 
+                                              8, 9, 10 ]);
                               expect(glm.to_string(glm.mat3(4))).to.equal('mat3x3((4.000000, 0.000000, 0.000000), (0.000000, 4.000000, 0.000000), (0.000000, 0.000000, 4.000000))');
                            });
                         it('should clone', function() {
@@ -373,7 +397,8 @@ describe('glm', function(){
 
                            });
                         it('should copy/assign', function() {
-                              expect(glm.quat(1)['='](glm.angleAxis(glm.radians(45), glm.vec3(0,0,1)))).euler.to.glm_eq([0,0,45]);
+                              expect(glm.quat(1)['='](glm.angleAxis(glm.radians(45), glm.vec3(0,0,1))))
+                                 .euler.to.glm_eq([0,0,45]);
                            });
                      });
 
@@ -651,42 +676,33 @@ describe('glm', function(){
                                      }).to.throw(/unsupported n type/);
 
                            });
-                        //it('exceptions 2', function() {
-                              [2,3,4].forEach(
-                                 function(_) {
-                                    var typ = 'vec'+_;
-                                    
-                                    //describe(typ, function() {
-                                                it(typ, function() {
 
-                                                      expect(function() {
-                                                                glm[typ]({x:1,y:2,z:3,w:4});
-                                                                glm[typ](glm.vec4({x:1,y:2,z:3,w:4}));
-                                                             }, typ).not.to.throw();
-                                                      
-                                                      expect(function() {
-                                                                glm[typ]('hi');
-                                                             }, typ).to.throw(/no template found for vec....string1/);
-                                                      expect(function() {
-                                                                glm[typ]({});
-                                                             }, typ).to.throw(/unrecognized object/);
-                                                      expect(function() {
-                                                                glm[typ]({y: 5});
-                                                             },typ).to.throw(/unrecognized object/);
-                                                      expect(function() {
-                                                                glm[typ]({x: 'x', y: 5, z:'z', w:5});
-                                                             },typ).to.throw(/unrecognized .x-ish object/);
-                                                   });
-                                 //});
+                        [2,3,4].forEach(
+                           function(_) {
+                              var typ = 'vec'+_;
+                              it(typ, function() {
+                                    expect(function() {
+                                              glm[typ]({x:1,y:2,z:3,w:4});
+                                              glm[typ](glm.vec4({x:1,y:2,z:3,w:4}));
+                                           }, typ).not.to.throw();
+                                    expect(function() {
+                                              glm[typ]('hi');
+                                           }, typ).to.throw(/no template found for vec....string1/);
+                                    expect(function() {
+                                              glm[typ]({});
+                                           }, typ).to.throw(/unrecognized object/);
+                                    expect(function() {
+                                              glm[typ]({y: 5});
+                                           },typ).to.throw(/unrecognized object/);
+                                    expect(function() {
+                                              glm[typ]({x: 'x', y: 5, z:'z', w:5});
+                                           },typ).to.throw(/unrecognized .x-ish object/);
                                  });
-                     //});
+                           });
                      });
             describe(GLMJS_PREFIX+' info', function(){
                         it('...OK', function(){});
                      });
-
-
          });
 
-
-   atexit && atexit();
+atexit && atexit();
