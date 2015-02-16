@@ -5,6 +5,7 @@ try{
    try { glm = require("../src/glm-js") || glm; }
    catch(e) { load("src/glm-js.js"); }
 }
+(function(){
 function main(log) {
     this.mrot = this.mrot || glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
     //...
@@ -25,14 +26,7 @@ try {
    describe.exists;
    var _main = main;
    main = function(log) {
-      try {
-         document.location.exists;
-         log = function() {
-            var t = document.createElement("div");
-            t.textContent = [].slice.call(arguments).join(" ");//sprintf.apply(this, arguments);
-            document.getElementById('glmlog').appendChild(t);
-         }
-      } catch(e) {}
+      log('ex-readme');
       describe('ex-readme', function() {
                   it('should run without errors',function() {
                         _main(log);
@@ -43,4 +37,4 @@ try {
 
 main(glm.$log);
 
-
+})();

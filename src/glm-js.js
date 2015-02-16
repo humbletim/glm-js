@@ -9,7 +9,8 @@ if (typeof glm !== 'object') {
          glm = require('./glm.gl-matrix') || glm;
       },
       'three': function() {
-         THREE = require('../lib/three') || THREEMATHS;
+         THREEMATHS = require('../lib/three') || THREEMATHS;
+         THREE = THREEMATHS;
          glm = require('./glm.three') || glm;
       },
       'tdl-fast': function() {
@@ -31,6 +32,5 @@ glm.toString = function() { return "glm-js["+this.version+"]["+this._+"]"; };
 with("module,{exports:exports},window,global,self,this".split(','))
    do{try{eval("new Function('ECMAScript3'),"+(glm._=shift())).exports=glm;splice(0,Infinity);}catch(e){}}while(length);
 
-glm.$log = function(x,y,z) { console.log.apply(console,[].slice.call(arguments).map(function(x){return glm.to_string(x); })); };
-glm.outer.console.warn(glm+'');
-glm.outer.console.warn(_ENV._VERSION+' / glm.vec4(1) = '+glm.vec4(1)+'');
+glm.$log(glm+'');
+//glm.$log(_ENV._VERSION+' / glm.vec4(1) = '+glm.vec4(1)+'');

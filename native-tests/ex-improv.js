@@ -5,7 +5,7 @@ try{
    try { glm = require("../src/glm-js") || glm; }
    catch(e) { require("../src/glm-js"); }
 }
-
+(function(){
 function main(log) {
     var t = new glm.vec4(1,2,3,4);
     log(t);
@@ -63,14 +63,7 @@ try {
    describe.exists;
    var _main = main;
    main = function(log) {
-      try {
-         document.location.exists;
-         log = function() {
-            var t = document.createElement("div");
-            t.textContent = [].slice.call(arguments).join(" ");//sprintf.apply(this, arguments);
-            document.getElementById('glmlog').appendChild(t);
-         }
-      } catch(e) {}
+      log('ex-improv');
       describe('ex-improv', function() {
                   it('should run without errors',function() {
                         _main(log);
@@ -81,4 +74,4 @@ try {
 
 main(glm.$log);
 
-
+})();

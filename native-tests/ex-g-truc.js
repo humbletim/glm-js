@@ -3,8 +3,9 @@ try{
    glm.exists;
 } catch(e) {
    try { glm = require("../src/glm-js") || glm; }
-   catch(e) { try { load("src/glm-js.js"); } catch(e) { throw new Error('!load')} }
+   catch(e) { try { load("src/glm-js.js"); } catch(E) { console.error('!load',e+'',E+''); throw e;} }
 }
+(function() {
 function transform( 
     Orientation, 
     Translate, 
@@ -35,16 +36,11 @@ try {
    describe.exists;
    var _main = main;
    main = function(log) {
-      try {
-         document.location.exists;
-         log = function() {
-            var t = document.createElement("div");
-            t.textContent = [].slice.call(arguments).join(" ");//sprintf.apply(this, arguments);
-            document.getElementById('glmlog').appendChild(t);
-         }
-      } catch(e) {}
+      if (log !== $GLM_log) alert([log+'', $GLM_log+''])
+      $GLM_log('testing');
+      log('ex-g-truc');
       describe('ex-g-truc', function() {
-                  it('should run without errors',function() {
+                  it('main:ex-g-truc should run without errors',function() {
                         _main(log);
                      });
                });
@@ -52,5 +48,5 @@ try {
 } catch(e) {}
 
 main(glm.$log);
-
+})();
 // outputs: fvec4(2.788964, 4.828427, -2.363051, -2.158529)
