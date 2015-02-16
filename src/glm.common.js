@@ -64,7 +64,7 @@ if ('undefined' === typeof $GLM_log)
 // ditto for consolidated console writes
 if ('undefined' === typeof $GLM_console_log) {
    $GLM_console_log = function(prefix, args) {
-      console[prefix].apply(
+      (console[prefix]||function(){}).apply(
          console,
          [].slice.call(arguments,1)
       );
