@@ -218,7 +218,12 @@ GLM = {
       return [].slice.call(o.elements);
    },
    $to_json: function(v,p,q) {
+      if ("$type" in this) { q=p, p=v, v=this; }
       return JSON.stringify(GLM.$to_object(v),p,q);
+   },
+   $inspect: function(v) {
+      if ("$type" in this) v = this;
+      return GLM.$to_json(v,null,2);
    },
 
    $sizeof: function(o) { return o.BYTES_PER_ELEMENT; },
@@ -1165,7 +1170,7 @@ GLM.using_namespace = function(tpl) {
                 }
                 eval(x+"=GLM."+x);
              });
-   tpl();
+   var ret = tpl();
    restore.map(function(f){f()});
    var after = names.filter(function(x) { return eval("1, 'undefined' !== typeof "+x); });
 //    if ((before.length+after.length) !== 0) {
@@ -1174,7 +1179,7 @@ GLM.using_namespace = function(tpl) {
    if (before.length !== after.length) {
       throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
    }
-   return;
+   return ret;
 //    new Function(names+'',"("+tpl+")();")
 //       .apply(this, names.map(function(x){ return GLM[x]; }));
 };
