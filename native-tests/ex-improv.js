@@ -42,7 +42,8 @@ function main(log) {
     log("q length", glm.length(q));
     q = glm.normalize(q);
     log("q normalized", glm.eulerAngles(q));
-    log("q * v3: ", q ['*'] (v3));
+   log("q(e(q))", glm.quat(glm.eulerAngles(q)));
+   log("q * v3: ", q ['*'] (v3));
 
     log("glm.length(q * v3): ", glm.length(q ['*'] (v3)));
 

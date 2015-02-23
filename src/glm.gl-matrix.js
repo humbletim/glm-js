@@ -184,6 +184,6 @@ DLL.calculators = {
    }
 }; //calculators
 
-glm.$outer.import(DLL);
+glm.$outer.$import(DLL);
 
 try { module.exports = glm; } catch(e) {}
