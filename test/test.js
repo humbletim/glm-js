@@ -373,7 +373,7 @@ describe('glm', function(){
                               var e = glm.epsilon();
                               expect([ -e, e, 0,-0, NaN, glm.vec2(1,-2)]
                                      .map(glm.sign)).to.eql(
-                                     [ -1, 1, 0, 0, 0,   0 ]);
+                                     [ -1, 1, 0, 0, NaN, NaN ]);
                            });
                         it('.mix<vec2>', function() {
                               expect(glm.mix(glm.vec2(1,2), glm.vec2(2,1), .5)).to.be.glsl('vec2(1.5)');

@@ -232,7 +232,7 @@ GLM = {
    max: function(a,b) { return Math.max(a,b); },
    min: function(a,b) { return Math.min(a,b); },
    sign: Math.sign || function(x) {
-      return x > 0 ? 1 : x < 0 ? -1 : 0;
+      return x > 0 ? 1 : x < 0 ? -1 : isNaN(x) ? NaN : 0;
    },
    epsilon: function() { return 1e-6; },
    FIXEDPRECISION: 6,
