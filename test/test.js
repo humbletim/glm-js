@@ -369,12 +369,28 @@ describe('glm', function(){
                         it('.max', function() {
                               expect(glm.max(0,.5)).to.equal(.5);
                            });
+                        it('._sign', function() {
+                              var e = glm.epsilon();
+                              // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sign
+                              expect([ 3, -3, '-3', 0, -0, NaN, 'foo', undefined ]
+                                     .map(glm._sign)).to.eql(
+                                        [ 1, -1, -1, 0, -0, NaN, NaN, NaN ]);
+                           });
+                        if ("sign" in Math) {
+                           it('Math.sign sanity check', function() {
+                                 var e = glm.epsilon();
+                                 expect([ 3, -3, '-3', 0, -0, NaN, 'foo', undefined ]
+                                        .map(Math.sign)).to.eql(
+                                           [ 1, -1, -1, 0, -0, NaN, NaN, NaN ]);
+                              });
+                        }
                         it('.sign', function() {
                               var e = glm.epsilon();
-                              expect([ -e, e, 0,-0, NaN, glm.vec2(1,-2)]
+                              expect([ 3, -3, '-3', 0, -0, NaN, 'foo', undefined ]
                                      .map(glm.sign)).to.eql(
-                                     [ -1, 1, 0, 0, NaN, NaN ]);
+                                        [ 1, -1, -1, 0, -0, NaN, NaN, NaN ]);
                            });
+                        
                         it('.mix<vec2>', function() {
                               expect(glm.mix(glm.vec2(1,2), glm.vec2(2,1), .5)).to.be.glsl('vec2(1.5)');
                            });

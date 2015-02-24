@@ -231,8 +231,8 @@ GLM = {
    _clamp: function (a,b,c) { return a<b?b:(a>c?c:a); },
    max: function(a,b) { return Math.max(a,b); },
    min: function(a,b) { return Math.min(a,b); },
-   sign: Math.sign || function(x) {
-      return x > 0 ? 1 : x < 0 ? -1 : isNaN(x) ? NaN : 0;
+   _sign: function(x) {
+      return x > 0 ? 1 : x < 0 ? -1 : +x;
    },
    epsilon: function() { return 1e-6; },
    FIXEDPRECISION: 6,
@@ -254,6 +254,8 @@ GLM = {
               .join(", "), ")" ].join("");
    }
 };
+
+GLM.sign = Math.sign || GLM._sign;
 
 // ----------------------------------------------------------------------------
 

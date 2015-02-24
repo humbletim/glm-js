@@ -1,20 +1,22 @@
 if (typeof glm !== 'object') {
-   _ENV = require('../xjs._ENV') || _ENV;
+   try { _ENV = require('../xjs._ENV') || _ENV; /* for cscript / old engine testing */ } catch(e) { }
    try { console.exists } catch(e) { console = _ENV.console; }
-   _glm = require('./glm.common');
    IMPLEMENTATIONS = {
       'gl-matrix': function() {
          try { GLMAT.exists; } catch(e) { GLMAT = null; }
          GLMAT = require('../lib/gl-matrix') || GLMAT;
+         _glm = require('./glm.common');
          glm = require('./glm.gl-matrix') || glm;
       },
       'three': function() {
          THREEMATHS = require('../lib/three') || THREEMATHS;
          THREE = THREEMATHS;
+         _glm = require('./glm.common');
          glm = require('./glm.three') || glm;
       },
       'tdl-fast': function() {
          tdl = require('../lib/tdl-fast') || tdl;
+         _glm = require('./glm.common');
          glm = require('./glm.tdl-fast') || glm;
       }
    };
