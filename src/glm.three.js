@@ -79,7 +79,7 @@ DLL.statics = {
 DLL.operations = 
    {
       'mul': {
-         op: '*',
+         $op: '*',
          '$vec<N>': 'new THREE.VectorN()',
          $mat4: new THREE.Matrix4(),
          $quat: DLL.$tmp.quat,
@@ -121,7 +121,7 @@ DLL.operations =
          }
       },
       'mul_eq': {
-         op: '*=',
+         $op: '*=',
          '$vec<N>_multiplyScalar': 'THREE.VectorN.prototype.multiplyScalar',
          'vec<N>,float': function(a,b) {
             return this.$vecN_multiplyScalar.call(a, b);
@@ -153,7 +153,7 @@ DLL.functions = {
          return new glm.quat(
             this.$quat.fromArray(a.elements)
                .slerp(this.$quat2.fromArray(b.elements),rt)
-         );//new glm.quat(GLMAT.quat.slerp(new Float32Array(4), a.elements,b.elements,rt));
+         );
       }
    }
 }; // functions

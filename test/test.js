@@ -139,7 +139,7 @@ var cane = {
          return this.to.be.approximately(d, glm.epsilon());
       },
       glsl: function(g) { 
-         return expect(glm.to_glsl(this._obj)).to.equal(g);
+         return expect(glm.$to_glsl(this._obj)).to.equal(g);
       }
    },
    sugar: function(_chai, utils) {
@@ -148,7 +148,7 @@ var cane = {
       for(var p in self.properties)
          _chai.Assertion.addProperty(p, self.properties[p]);
       for(var p in self.methods) {
-         console.warn("addMethod", p);
+         //console.debug("addMethod", p);
          if (p in self.properties) // chainableMethod
             _chai.Assertion.addChainableMethod(p, self.methods[p], self.properties[p]);
          else
@@ -249,7 +249,7 @@ describe('glm', function(){
                                      .join(",")
                                     ).to.equal( "vec2,vec3,vec4,quat,mat3,mat4" );
                            });
-                        describe("JSON", function() {
+                        describe("Objectification", function() {
                                     it('$to_object', function() {
                                           expect(glm.$to_object(glm.vec2())).to.eql({"x":0,"y":0});
                                           expect(glm.$to_object(glm.uvec4(1,2,3,4))).to.eql({"x":1,"y":2,"z":3,"w":4});
@@ -262,31 +262,58 @@ describe('glm', function(){
                                           expect(glm.$to_json(glm.vec4(1,2,3,4))).to.equal('{"x":1,"y":2,"z":3,"w":4}');
                                           expect(glm.$to_json(glm.mat4(2))).to.equal('{"0":{"x":2,"y":0,"z":0,"w":0},"1":{"x":0,"y":2,"z":0,"w":0},"2":{"x":0,"y":0,"z":2,"w":0},"3":{"x":0,"y":0,"z":0,"w":2}}');
                                        });
+                                    it('.$inspect', function() {
+                                          expect(glm.$inspect(glm.vec2())).to.equal('{\n  "x": 0,\n  "y": 0\n}');
+                                          expect(glm.$inspect(glm.mat4())).to.equal('{\n  "0": {\n    "x": 1,\n    "y": 0,\n    "z": 0,\n    "w": 0\n  },\n  "1": {\n    "x": 0,\n    "y": 1,\n    "z": 0,\n    "w": 0\n  },\n  "2": {\n    "x": 0,\n    "y": 0,\n    "z": 1,\n    "w": 0\n  },\n  "3": {\n    "x": 0,\n    "y": 0,\n    "z": 0,\n    "w": 1\n  }\n}');
+                                       });
+
                                  });
 
                         describe("glsl", function() {
-                                    it('to_glsl', function() {
-                                          expect(glm.to_glsl(glm.vec3(1))).to.equal('vec3(1)');
-                                          expect(glm.to_glsl(glm.vec3(1,2,3))).to.equal('vec3(1,2,3)');
-                                          expect(glm.to_glsl(glm.mat4(0))).to.equal('mat4(0)');
-                                          expect(glm.to_glsl(glm.mat3(1))).to.equal('mat3(1)');
-                                          expect(glm.to_glsl(glm.mat3(2))).to.equal('mat3(2)');
-                                          expect(glm.to_glsl(glm.mat3(-2))).to.equal('mat3(-2)');
-                                          expect(glm.to_glsl(glm.uvec4(0))).to.equal('uvec4(0)');
+                                    it('$to_glsl', function() {
+                                          expect(glm.$to_glsl(glm.vec3(1))).to.equal('vec3(1)');
+                                          expect(glm.$to_glsl(glm.vec3(1,2,3))).to.equal('vec3(1,2,3)');
+                                          expect(glm.$to_glsl(glm.mat4(0))).to.equal('mat4(0)');
+                                          expect(glm.$to_glsl(glm.mat3(1))).to.equal('mat3(1)');
+                                          expect(glm.$to_glsl(glm.mat3(2))).to.equal('mat3(2)');
+                                          expect(glm.$to_glsl(glm.mat3(-2))).to.equal('mat3(-2)');
+                                          expect(glm.$to_glsl(glm.uvec4(0))).to.equal('uvec4(0)');
                                        });
                                     
-                                    it('from_glsl', function() {
-                                          expect(glm.from_glsl('vec3(1)')).to.glm_eq([1,1,1]);
-                                          expect(glm.from_glsl('mat4(1)')).to.glm_eq(glm.$to_array(glm.mat4(1)));
-                                          expect(glm.from_glsl('vec2(0,3)')).to.glm_eq(glm.$to_array(glm.vec2(0,3)));
-                                          expect(glm.from_glsl('vec4(0,3,2)')).to.glm_eq(glm.$to_array(glm.vec4(0,3,2,2)));
-                                          expect(glm.from_glsl("mat3(1,2,3,4,5,6,7,8,9)"))
+                                    it('$from_glsl', function() {
+                                          expect(glm.$from_glsl('vec3(1)')).to.glm_eq([1,1,1]);
+                                          expect(glm.$from_glsl('mat4(1)')).to.glm_eq(glm.$to_array(glm.mat4(1)));
+                                          expect(glm.$from_glsl('vec2(0,3)')).to.glm_eq(glm.$to_array(glm.vec2(0,3)));
+                                          expect(glm.$from_glsl('vec4(0,3,2)')).to.glm_eq(glm.$to_array(glm.vec4(0,3,2,2)));
+                                          expect(glm.$from_glsl("mat3(1,2,3,4,5,6,7,8,9)"))
                                              .to.glm_eq("123456789".split('').map(Number));
-                                          expect(glm.from_glsl("mat4(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6)"))
+                                          expect(glm.$from_glsl("mat4(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6)"))
                                              .to.glm_eq("1234567890123456".split('').map(Number));
 
                                        });
+                                    
+                                    it('additional glsl serialization tests', function() {
+                                          glm.$to_glsl(glm.vec4()).should.equal("vec4(0)");
+                                          glm.$to_glsl(glm.vec4(1)).should.equal("vec4(1)");
+                                          glm.$to_glsl(glm.vec4(2)).should.equal("vec4(2)");
+                                          glm.$to_glsl(glm.vec4(3)).should.equal("vec4(3)");
+                                          glm.$to_glsl(glm.vec2(3)).should.equal("vec2(3)");
+                                          glm.$to_glsl(glm.vec3(1,2,3)).should.equal("vec3(1,2,3)");
+                                          glm.$to_glsl(glm.vec4(1,2,3)).should.equal("vec4(1,2,3)");
+                                          glm.$to_glsl(glm.quat()).should.equal("quat(1)");
+                                          glm.$to_glsl(glm.quat(1)).should.equal("quat(1)");
+                                          glm.$to_glsl(glm.mat4(2)).should.equal("mat4(2)");
+                                          glm.$to_glsl(glm.mat4(0)).should.equal("mat4(0)");
+                                          glm.$to_glsl(glm.mat4(-1)).should.equal("mat4(-1)");
+                                          glm.$to_glsl(glm.mat3(-1)).should.equal("mat3(-1)");
+                                          expect(glm.$to_glsl(glm.mat3("123456789".split('').map(Number))))
+                                             .to.equal("mat3(1,2,3,4,5,6,7,8,9)");
+                                          expect(glm.$to_glsl(glm.mat4("1234567890123456".split('').map(Number))))
+                                             .to.equal("mat4(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6)");
+                                          //glm.uvec4(-1).toString().should.equal("mat3(-1)");
+                                       });
                                  });
+
                         it('to_string', function() {
                               expect(
                                  glm.to_string({$type:'asdf'})
@@ -680,7 +707,7 @@ describe('glm', function(){
                               glm.$to_array(qspin.mul(glm.vec3(100))).should.eql([-100,100,-100]);
                            });
                         it('mixify', function(){ 
-                              glm.to_glsl(glm.mix(glm.vec3(1),glm.vec3(2),1/Math.PI)).should.equal('vec3(1.3183099031448364)');
+                              glm.$to_glsl(glm.mix(glm.vec3(1),glm.vec3(2),1/Math.PI)).should.equal('vec3(1.3183099031448364)');
                            });
                      });
 
@@ -737,7 +764,7 @@ describe('glm', function(){
                               glm.length2(glm.vec4(Math.PI)).should.be.approximately(39.4784,.1);
                            });
                         it('mixify', function(){ 
-                              glm.to_glsl(glm.mix(glm.vec4(Math.PI),glm.vec4(),.5)).should.equal('vec4(1.5707963705062866)' );
+                              glm.$to_glsl(glm.mix(glm.vec4(Math.PI),glm.vec4(),.5)).should.equal('vec4(1.5707963705062866)' );
                            });
                      });
             
@@ -831,30 +858,6 @@ describe('glm', function(){
                               expect(new glm.mat4(vv.elements)).to.flatten.into('0000111122223333');
                            });
                      });
-
-            describe('to_glsl', function() {
-                        it('serialization tests', function() {
-                              glm.to_glsl(glm.vec4()).should.equal("vec4(0)");
-                              glm.to_glsl(glm.vec4(1)).should.equal("vec4(1)");
-                              glm.to_glsl(glm.vec4(2)).should.equal("vec4(2)");
-                              glm.to_glsl(glm.vec4(3)).should.equal("vec4(3)");
-                              glm.to_glsl(glm.vec2(3)).should.equal("vec2(3)");
-                              glm.to_glsl(glm.vec3(1,2,3)).should.equal("vec3(1,2,3)");
-                              glm.to_glsl(glm.vec4(1,2,3)).should.equal("vec4(1,2,3)");
-                              glm.to_glsl(glm.quat()).should.equal("quat(1)");
-                              glm.to_glsl(glm.quat(1)).should.equal("quat(1)");
-                              glm.to_glsl(glm.mat4(2)).should.equal("mat4(2)");
-                              glm.to_glsl(glm.mat4(0)).should.equal("mat4(0)");
-                              glm.to_glsl(glm.mat4(-1)).should.equal("mat4(-1)");
-                              glm.to_glsl(glm.mat3(-1)).should.equal("mat3(-1)");
-                              expect(glm.to_glsl(glm.mat3("123456789".split('').map(Number))))
-                                 .to.equal("mat3(1,2,3,4,5,6,7,8,9)");
-                              expect(glm.to_glsl(glm.mat4("1234567890123456".split('').map(Number))))
-                                 .to.equal("mat4(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6)");
-                              //glm.uvec4(-1).toString().should.equal("mat3(-1)");
-                           });
-                     });
-
             describe('uvec4', function(){
                         it('core operations', function(){
                               glm.uvec4().should.be.instanceOf(glm.uvec4);

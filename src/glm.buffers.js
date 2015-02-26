@@ -1,16 +1,16 @@
 // ----------------------------------------------------------------------------
-// glm.buffers.js - GLM ArrayBuffer / data views
+// glm.buffers.js - glm-js ArrayBuffer / data views
 // https://github.com/humbletim/glm-js
 // copyright(c) 2015 humbletim
 // MIT LICENSE
 // ----------------------------------------------------------------------------
 
-function GLMVector(typ, sz, type32array) {
+function $GLMVector(typ, sz, type32array) {
    type32array = type32array || Float32Array;
    this.type32array = type32array;
-   if (!(this instanceof GLMVector)) throw new GLM.GLMJSError('use new');
+   if (!(this instanceof $GLMVector)) throw new GLM.GLMJSError('use new');
    if (!('function' === typeof typ) || !GLM.$isGLMConstructor(typ)) 
-      throw new GLM.GLMJSError('GLMVector.GLMJSError(<class>,...) clazz='+
+      throw new GLM.GLMJSError('$GLMVector.GLMJSError(<class>,...) clazz='+
                                [typeof typ, (typ?typ.$type:typ)]+" // "+
                                GLM.$isGLMConstructor(typ));
    this.glmtype = typ;
@@ -20,20 +20,20 @@ function GLMVector(typ, sz, type32array) {
 }
 
 
-GLM.$vector = GLMVector;
+GLM.$vector = $GLMVector;
 GLM.$vector.version = '0.0.0';
 GLM.$vector.$ = {
    to_string: function(what) { return "$vector<.glmtype="+glm.$isGLMConstructor(what.glmtype)+", .length="+what.length+">"; }
 };
 
-GLMVector.prototype = {
+$GLMVector.prototype = {
    $type: '$vector',
    toString: function() {
-      return "[GLMVector .elements=#"+(this.elements&&this.elements.length)+" .elements[0]="+(this.elements&&this.elements[0])+" ->[0]"+(this['->']&&this['->'][0])+"]";
+      return "[$GLMVector .elements=#"+(this.elements&&this.elements.length)+" .elements[0]="+(this.elements&&this.elements[0])+" ->[0]"+(this['->']&&this['->'][0])+"]";
    },
    set: function(elements) { return this.setFromFloats(elements); },
    setFromFloats: function(elements) {
-      console.warn("GLMVector.prototype.set..." + [this.elements&&this.elements.constructor.name,
+      console.warn("$GLMVector.prototype.set..." + [this.elements&&this.elements.constructor.name,
                                                    this.elements&&this.elements.length], 
                    [elements.constructor.name,
                     elements.length]);
@@ -77,9 +77,8 @@ GLMVector.prototype = {
       container = kv.container || [],
       bSetters = kv.setters || false;
       
-//       var ele = this.elements;
-      console.warn("ele",typeof ele,ele, this.glmtype.componentLength);
-      if (!ele) throw new GLMVector("GLMVector._setup - neither kv.elements nor this.elements...");
+      //console.warn("ele",typeof ele,ele, this.glmtype.componentLength);
+      if (!ele) throw new $GLMVector("$GLMVector._setup - neither kv.elements nor this.elements...");
       // cleanup
       var arr;
       if (1) {
@@ -185,7 +184,7 @@ GLMVector.prototype = {
       return off;
    },
    setFromPointer: function(ptr) {
-      if(!(ptr instanceof ArrayBuffer)) throw new glm.GLMJSError("unsupported argtype "+[typeof ptr]+" - GLMVector.setFromPointer");
+      if(!(ptr instanceof ArrayBuffer)) throw new glm.GLMJSError("unsupported argtype "+[typeof ptr]+" - $GLMVector.setFromPointer");
       return this.setFromFloats(new Float32Array(ptr));
    }
 

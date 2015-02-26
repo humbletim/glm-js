@@ -27,7 +27,7 @@ if (typeof glm !== 'object') {
    IMPLEMENTATIONS[G]();
 }
 
-glm.toString = function() { return "glm-js["+this.version+"]["+this._+"]"; };
+glm.toString = function() { return "glm-js["+this.version+"]["+this._+"]["+this.vendor.vendor_name+"]"; };
 
 // Module systems magic dance
 'use chuck norris;'

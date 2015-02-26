@@ -59,7 +59,7 @@ DLL.statics = {
       
 DLL.operations = {
    mul: {
-      op: '*',
+      $op: '*',
       _mulQuatQuat: tdl.quaternions.mulQuaternionQuaternion,
       'quat,quat': function(a,b) {
          return new glm.quat(this._mulQuatQuat(a.elements, b.elements));
@@ -97,7 +97,7 @@ DLL.operations = {
       }
    },
    mul_eq: {
-      op: '*=',
+      $op: '*=',
       'vec<N>,float': function(a,b) {
          tdl.fast.mulVectorScalar(a.elements, a.elements, b);
          return a;

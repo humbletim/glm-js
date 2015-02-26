@@ -46,8 +46,8 @@
            libs.append('../lib/gl-matrix.js', '../src/glm.gl-matrix.js');
         else if (/tdl-fast/i.test(l))
            libs.append('../lib/tdl-fast.js', '../src/glm.tdl-fast.js');
-        else if (/three/i.test(l))
-           libs.append('../lib/three.js', '../src/glm.three.js');
+        else if (/three/i.test(l)) // load three first, to double-check its Math.sign polyfill 
+           libs = ['../lib/three.js', libs[0], '../src/glm.three.js'];
         else //if(/minified/i.test(l))
            libs = ["../build/glm-three.min.js"];
 

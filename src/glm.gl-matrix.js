@@ -75,7 +75,7 @@ DLL.statics = {
 
 DLL.operations = {
    'mul': {
-      op: '*',
+      $op: '*',
       'quat,vec3': function(a,b) {
          return new glm.vec3(
             GLMAT.vec3.transformQuat(new Float32Array(3), 
@@ -115,7 +115,7 @@ DLL.operations = {
       }
    },
    'mul_eq': {
-      op: '*=',
+      $op: '*=',
       'mat4,mat4': function(a,b) {
          GLMAT.mat4.multiply(a.elements,a.elements,b.elements);
          return a;
