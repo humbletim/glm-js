@@ -596,6 +596,11 @@ describe('glm', function(){
                               glm.to_string(glm.toMat4(qq).mul(glm.vec4(1,2,3,1)))
                                  .should.equal('fvec4(2.828427, 2.000000, 1.414214, 1.000000)');
                            });
+                        it('from mat4', function() {
+                              var m = glm.mat4();
+                              expect(glm.quat(m)).to.glm_eq([0,0,0,1]);
+                           });
+
                         it('length2ify', function(){ 
                               glm.length2(glm.angleAxis(Math.PI/3,glm.vec3(0,1,0))).should.be.approximately(1,.001);
                            });
