@@ -53,7 +53,11 @@ DLL.statics = {
       return tdl.quaternions.quaternionToRotation(q.elements);
    },
    quat_array_from_mat4: function(o) {
-      return tdl.quaternions.rotationToQuaternion(o.elements);
+      var arr = tdl.quaternions.rotationToQuaternion(o.elements);
+      // FIXME: tdl doesn't handle the case of mat4(1) properly
+      if (isNaN(arr[0]))
+        return glm.quat.$.identity;
+      return arr;
    }
 }; //statics
       
