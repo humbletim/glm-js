@@ -6,7 +6,7 @@ try{
    catch(e) { require("../src/glm-js"); }
 }
 (function(){
-function main(log) {
+ function main(log) {
     var t = new glm.vec4(1,2,3,4);
     log(t);
     log("t * 2.0", (t) ['*'] (2.0));
@@ -30,6 +30,9 @@ function main(log) {
 
     log("mat3(2): ", glm.mat3(2));
     log("mat4(2): ", glm.mat4(2));
+    var m4 = glm.mat4(1.0,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4);
+    m4['='](glm.mat4(glm.mat3(2.0,2,2,2,2,2,2,2,2)));
+    log("m4[1,2,3,4](mat3(2...2)): ", m4);
 
     log("vec2(200,300)", glm.vec2(200,300));
     log("vec3(200,300,400)", glm.vec3(200,300,400));
@@ -42,9 +45,9 @@ function main(log) {
     log("q length", glm.length(q));
     q = glm.normalize(q);
     log("q normalized", glm.eulerAngles(q));
-   log("q(e(q))", glm.quat(glm.eulerAngles(q)));
-   log("q * v3: ", q ['*'] (v3));
-
+    log("q(e(q))", glm.quat(glm.eulerAngles(q)));
+    log("q * v3: ", q ['*'] (v3));
+    
     log("glm.length(q * v3): ", glm.length(q ['*'] (v3)));
 
     log("glm.inverse(q)", glm.inverse(q));

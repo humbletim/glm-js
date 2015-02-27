@@ -249,6 +249,13 @@ describe('glm', function(){
                                      .join(",")
                                     ).to.equal( "vec2,vec3,vec4,quat,mat3,mat4" );
                            });
+                        it(".$getGLMType", function() {
+                              var constructors = "vec2,vec3,vec4,uvec4,quat,mat3,mat4".split(',')
+                                 .map(function(p){return glm[p]});
+                              expect(constructors.map(function(p) { return glm.$getGLMType(p()); }))
+                                 .to.eql(constructors);
+                              expect(glm.$getGLMType({})).to.equal(false);
+                           });
                         describe("Objectification", function() {
                                     it('$to_object', function() {
                                           expect(glm.$to_object(glm.vec2())).to.eql({"x":0,"y":0});
@@ -467,6 +474,34 @@ describe('glm', function(){
                               expect(glm.$to_array(glm.vec3(1)['+'](glm.vec3(2)))).to.eql([3,3,3]);
                               expect(glm.$to_array(glm.vec4(2.5,-.5,Math.PI,0).add(glm.vec4(-2.5,.5,-Math.PI,-0)))).to.eql([0,0,0,0]);
                            });
+                        it("= [array assignment]", function() {
+                              var v3 = glm.vec3();
+                              v3.xyz = [1,2,3];
+                              expect(v3).to.glm_eq([1,2,3]);
+                              var m4 = glm.mat4();
+                              m4[3] = [1,2,3,4];
+                              expect(m4).to.flatten.into("1000010000101234");
+                              m4['=']([
+                                         [1,1,1,1],
+                                         [2,2,2,2],
+                                         [3,3,3,3],
+                                         [4,4,4,4]
+                                      ]);
+                              expect(m4).to.flatten.into("1111222233334444");
+                              m4['='](glm.$to_array(glm.mat3(glm.vec3(5),
+                                                             glm.vec3(6),
+                                                             glm.vec3(7))));
+                              expect(m4).to.flatten.into("5550"+
+                                                         "6660"+
+                                                         "7770"+
+                                                         "0001");
+                              
+                           });
+                        it("swizzles", function() {
+                              var v4 = glm.vec4();
+                              v4.xyz = glm.vec3(1,2,3);
+                              expect(v4).to.glm_eq([1,2,3,0]);
+                           });
                      });
             
             describe('mat3', function() {
@@ -528,8 +563,17 @@ describe('glm', function(){
                                              4,5,6,7,
                                              8,9,10,11,
                                              12,13,14,15]);
-                              
                            });
+                        it('mat3-partial assignment', function() {
+                              var m4 = glm.mat4("1111222233334444".split(""));
+                              m4['='](glm.mat4(glm.mat3(glm.vec3(5),
+                                                        glm.vec3(6),
+                                                        glm.vec3(7))));
+                              expect(m4).to.flatten.into("5550"+
+                                                         "6660"+
+                                                         "7770"+
+                                                         "0001");
+                          });
                         it('invert tranpose', function() {
                               glm.to_string(glm.transpose(glm.inverse(glm.mat4(qq)))).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
                            });

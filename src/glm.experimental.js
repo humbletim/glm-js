@@ -38,7 +38,7 @@ GLM.$vint32 = function(sz) {
    sz = sz || 0;
    this.$type = '$vint32';
    this.componentLength = 1;
-   this.$typeName = 'vector<int32>';
+   this.$type_name = 'vector<int32>';
    this.elements = sz && new Int32Array( sz * this.componentLength );
 };
 GLM.$vint32.prototype = new GLM.$vector(GLM.$int32, 0, Int32Array);
@@ -54,7 +54,7 @@ GLM.$vint32.prototype = new GLM.$vector(GLM.$int32, 0, Int32Array);
                 sz = sz || 0;
                 this.$type = 'vvecN';
                 this.componentLength = N;
-                this.$typeName = 'vector<vecN>';
+                this.$type_name = 'vector<vecN>';
                 this.elements = sz && new Float32Array( sz * this.componentLength );
              };
              GLM.$vvecN.prototype = new GLM.$vector(GLM.vecN, 0);
