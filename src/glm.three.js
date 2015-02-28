@@ -20,17 +20,7 @@ var DLL = {
    _name: 'glm.three.js',
    _version: '0.0.1',
 
-   prefix: 'glm-js[three]: ',
-
-   $tmp: {
-      euler: new THREE.Euler(),
-      mat4: new THREE.Matrix4(),
-      quat: new THREE.Quaternion(),
-      quat2: new THREE.Quaternion(),
-      vec4: new THREE.Vector4(),
-      vec3: new THREE.Vector3(),
-      vec2: new THREE.Vector2()
-   }
+   prefix: 'glm-js[three]: '
 };
    
 DLL.statics = {
@@ -70,7 +60,7 @@ DLL.statics = {
    mat4_array_from_quat: function(q) {
       return this.$mat4.makeRotationFromQuaternion(q).elements;
    },
-   $quat: DLL.$tmp.quat,
+   $quat: new THREE.Quaternion(),
    quat_array_from_mat4: function(o) {
       return this.$quat.setFromRotationMatrix(o).toArray();
    }
@@ -82,7 +72,7 @@ DLL.operations =
          $op: '*',
          '$vec<N>': 'new THREE.VectorN()',
          $mat4: new THREE.Matrix4(),
-         $quat: DLL.$tmp.quat,
+         $quat: new THREE.Quaternion(),
          $quat2: new THREE.Quaternion(),
          'quat,quat': function(a,b) {
             a = this.$quat.fromArray(a.elements);
@@ -133,8 +123,8 @@ DLL.operations =
             return this.$mat4.multiplyMatrices.call(a, a, b);
          },
 
-         $quat: DLL.$tmp.quat,
-         $quat2: DLL.$tmp.quat2,
+         $quat: new THREE.Quaternion(),
+         $quat2: new THREE.Quaternion(),
          'quat,quat': function(a,b) {
             var A = this.$quat.fromArray(a.elements);
             b = this.$quat2.fromArray(b.elements);
@@ -147,8 +137,8 @@ DLL.operations =
 
 DLL.functions = {
    mix: {
-      $quat: DLL.$tmp.quat,
-      $quat2: DLL.$tmp.quat2,
+      $quat: new THREE.Quaternion(),
+      $quat2: new THREE.Quaternion(),
       "quat,quat": function(a,b,rt) {
          return new glm.quat(
             this.$quat.fromArray(a.elements)
@@ -164,7 +154,7 @@ DLL.calculators = {
       'vec<N>': function(q) { 
          return new glm.vecN(this.$vecN.copy(q).normalize());
       },
-      $quat: DLL.$tmp.quat,
+      $quat: new THREE.Quaternion(),
       quat: function(q) { 
          return new glm.quat(this.$quat.fromArray(q.elements).normalize());
       },
@@ -172,19 +162,19 @@ DLL.calculators = {
    length2: {
       '$vec<N>': 'new THREE.VectorN()',
       "vec<N>": function(v) { return this.$vecN.lengthSq.call(v); },
-      $quat: DLL.$tmp.quat,
+      $quat: new THREE.Quaternion(),
       quat: function(q) { return this.$quat.fromArray(q.elements).lengthSq(); },
    },
    length: {
       '$vec<N>': 'new THREE.VectorN()',
       "vec<N>": function(v) { return this.$vecN.length.call(v); },
-      $quat: DLL.$tmp.quat,
+      $quat: new THREE.Quaternion(),
       quat: function(q) { return this.$quat.fromArray(q.elements).length(); },
       //             vec3: function(v) { return this.$vec3.length.call(v); },
       //             vec4: function(v) { return this.$vec4.length.call(v); },
    },
    inverse: {
-      $quat: DLL.$tmp.quat,
+      $quat: new THREE.Quaternion(),
       $mat4: new THREE.Matrix4(),
       quat: function(q) { 
          //return new glm.quat(this.$quat.set(q.x,q.y,q.z,q.w).inverse());
