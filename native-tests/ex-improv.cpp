@@ -11,6 +11,22 @@ int main() {
     log("t *= 2.0", t *= (2.0f));
     log("t.xy", t.xy());
 
+    {
+        auto r = glm::rotate(glm::radians(30.0f), glm::vec3(0.0f,1,0));
+        log("r:",glm::quat(r));
+        r = glm::rotate(glm::mat4(), glm::radians(30.0f), glm::vec3(0.0f,1.0f,0.0f) );
+        log("r:",glm::quat(r));
+    }
+
+    {
+        auto s = glm::scale(glm::vec3(3.0,1,0));
+//         log("s:",s);
+//         s = glm::scale(3.0f,1.0f,0.0f);
+        log("s:",s);
+        s = glm::scale(glm::mat4(), glm::vec3(3.0,1.0,0.1) );
+        log("s:",s);
+    }
+
     auto q = glm::quat(glm::rotate(glm::mat4(), glm::radians(30.0f), glm::vec3(0.0f,1,0)));
     log("q:",glm::vec4(q.w,q.x,q.y,q.z));
     log("30 degrees:", glm::degrees(glm::eulerAngles(q)));
@@ -25,6 +41,10 @@ int main() {
     v3 = glm::vec3(1.0f,2,3);
     log("v3:", v3);
     log("q * v3: ", q * (v3));
+
+    q = glm::angleAxis(glm::radians(45.0f), glm::vec3(0.0f,1,0));
+    log("angle(q)", glm::degrees(glm::angle(q)));
+    log("axis(q)", glm::axis(q));
 
     log("mat3(2): ", glm::mat3(2));
     log("mat4(2): ", glm::mat4(2));

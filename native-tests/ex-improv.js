@@ -13,6 +13,22 @@ try{
     log("t *= 2.0", (t) ['*='] (2.0));
     log("t.xy", t.xy);
     
+    {
+        var r = glm.rotate(glm.radians(30.0), glm.vec3(0.0,1,0));
+        log("r:",glm.quat(r));
+        r = glm.rotate(glm.mat4(), glm.radians(30.0), glm.vec3(0.0,1.0,0.0) );
+        log("r:",glm.quat(r));
+    }
+
+    {
+        var s = glm.scale(glm.vec3(3.0,1,0));
+//         log("s:",s);
+//         s = glm.scale(3.0,1,0);
+        log("s:",s);
+        s = glm.scale(glm.mat4(), glm.vec3(3.0,1.0,.1) );
+        log("s:",s);
+    }
+
     var q = glm.quat(glm.rotate(glm.mat4(), glm.radians(30.0), glm.vec3(0,1,0)));
     log("q:",glm.vec4(q.w,q.x,q.y,q.z));
     log("30 degrees:", glm.degrees(glm.eulerAngles(q)));
@@ -27,6 +43,10 @@ try{
     v3 = glm.vec3(1.0,2,3);
     log("v3:", v3);
     log("q * v3: ", q ['*'] (v3));
+
+    q = glm.angleAxis(glm.radians(45.0), glm.vec3(0.0,1,0));
+    log("angle(q)", glm.degrees(glm.angle(q)));
+    log("axis(q)", glm.axis(q));
 
     log("mat3(2): ", glm.mat3(2));
     log("mat4(2): ", glm.mat4(2));
