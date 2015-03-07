@@ -10,7 +10,7 @@ function $GLMVector(typ, sz, type32array) {
    this.type32array = type32array;
    if (!(this instanceof $GLMVector)) throw new GLM.GLMJSError('use new');
    if (!('function' === typeof typ) || !GLM.$isGLMConstructor(typ)) 
-      throw new GLM.GLMJSError('$GLMVector.GLMJSError(<class>,...) clazz='+
+      throw new GLM.GLMJSError('expecting typ to be GLM.$isGLMConstructor: '+
                                [typeof typ, (typ?typ.$type:typ)]+" // "+
                                GLM.$isGLMConstructor(typ));
    this.glmtype = typ;
