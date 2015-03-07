@@ -4,7 +4,9 @@
 
 
 
+
 int main() {
+    printf("GLM C++: %d.%d.%d\n", GLM_VERSION_MAJOR, GLM_VERSION_MINOR, GLM_VERSION_PATCH);
     static auto mrot = glm::angleAxis(glm::radians(45.0f), glm::vec3(0,1,0));
 
     auto m1 = glm::mat4(1.0f); 

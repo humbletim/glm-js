@@ -4,7 +4,9 @@
 
 
 
+
 int main() {
+    printf("GLM C++: %d.%d.%d\n", GLM_VERSION_MAJOR, GLM_VERSION_MINOR, GLM_VERSION_PATCH);
     auto t = glm::vec4(1,2,3,4);
     log("", t);
     log("t * 2.0", (t) * (2.0f));

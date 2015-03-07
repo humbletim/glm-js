@@ -288,7 +288,7 @@ GLM.$GLMBaseType = (
 
          this.repr = function() { return "function $GLMBaseType<"+$type+">(){ [ GLMType@"+(GLM.$template.$_module_stamp)+" ] }"; };
 
-         GLM.$outer.console.info("CREATED $class: "+this.repr());
+         GLM.$outer.console.debug("CREATED $class: "+this.repr());
 
          GLM.$types.push($type);
       }

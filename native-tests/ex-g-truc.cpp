@@ -19,6 +19,7 @@ glm::mat4 transform(
 } 
 
 int main() {
+    printf("GLM C++: %d.%d.%d\n", GLM_VERSION_MAJOR, GLM_VERSION_MINOR, GLM_VERSION_PATCH);
     printf("%s\n",
       glm::to_string(
           transform(
