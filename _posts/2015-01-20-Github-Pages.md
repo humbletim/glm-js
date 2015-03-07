@@ -20,9 +20,9 @@ And instead of re-inventing the wheels of math, the lowest-level aspects are del
 
 Using an advanced "dynamic linking" approach, glm-js is able to efficiently adapt several "backend" math vendors simultaneously, including selection of a math backend at runtime. 
 
-* [three.js](https://github.com/mrdoob/three.js/) - JavaScript 3D library. *(tested [&#x2611;](code/test/index.html#three))*
-* [glMatrix](https://github.com/toji/gl-matrix) - Javascript Matrix and Vector library for High Performance WebGL apps *(tested [&#x2611;](code/test/index.html#gl-matrix))*
-* [tdl-fast](https://github.com/greggman/tdl) - A low-level WebGL library *(tested [&#x2611;](code/test/index.html#tdl-fast))*
+* [three.js](https://github.com/mrdoob/three.js/) - JavaScript 3D library. *([&#x2611;](code/test/index.html#three))*
+* [glMatrix](https://github.com/toji/gl-matrix) - Javascript Matrix and Vector library for High Performance WebGL apps *([&#x2611;](code/test/index.html#gl-matrix))*
+* [tdl-fast](https://github.com/greggman/tdl) - A low-level WebGL library *([&#x2611;](code/test/index.html#tdl-fast))*
 
 #### Performance
 
@@ -56,7 +56,7 @@ Coding along these lines, math code can be crafted more portably across space, t
 <a id=examples></a>
 #### Examples
 
-Here is one way to tinker with the latest glm-js builds on the console with **node**:
+To explore the latest glm-js at the shell prompt / using **node**:
 
 ```sh
 $ git clone https://github.com/humbletim/glm-js.git
@@ -77,7 +77,12 @@ $ env GLM=three node  # or GLM=tdl-fast / GLM=gl-matrix
 
 </div>
 
-And a few relevant things to try typing:
+You can also open a browser debug console while on this web page -- glm-js <span data-bind='text: glm.version'></span> has been loaded for you, and can be accessed via browser global `glm` [&equest;](javascript:alert(glm.$symbols.join("\\n")); "inline test").
+
+Depending on browser you might need to append an .inspect() or .toString() for pretty-printed results -- eg: `glm.vec2(window.innerWidth,window.innerHeight).inspect()` [&equest;](javascript:alert(glm.vec2(innerWidth,innerHeight).inspect()); "inline test").
+
+
+And here are some relevant things to try typing [&equest;](javascript:alert("glm.vec4(3,2,1,0);glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0)".split(";").map(function(js) { return js+"\\n\\t"+glm.$inspect(eval("1,"+js)); }).join("\\n")); "inline test"):
 
 ```javascript
 > glm.vec4(3,2,1,0)
@@ -87,6 +92,7 @@ And a few relevant things to try typing:
   "z": 1,
   "w": 0
 }
+
 
 > glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
 {
@@ -126,6 +132,8 @@ And a few relevant things to try typing:
 
 ```
 
+######&nbsp;
+----------------------
 #### Trans-Porting 3D Math
 
 The following three snippets are roughly the same despite spanning different "host" languages ([GLSL](#glsl), [C++](#cxx) and [JavaScript](#js), respectively).
