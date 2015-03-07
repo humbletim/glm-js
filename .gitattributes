@@ -1,1 +1,5 @@
 *.min.js -diff
+test/_browser/mocha.js -diff
+test/_browser/chai.js -diff
+test/_browser/blanket.js -diff
+

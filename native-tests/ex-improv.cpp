@@ -46,6 +46,7 @@ int main() {
     log("angle(q)", glm::degrees(glm::angle(q)));
     log("axis(q)", glm::axis(q));
 
+    log("diagonal4x4(vec4(1,2,3,4)): ", glm::diagonal4x4(glm::vec4(1,2,3,4)));
     log("mat3(2): ", glm::mat3(2));
     log("mat4(2): ", glm::mat4(2));
     auto m4 = glm::mat4(1.0,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4);

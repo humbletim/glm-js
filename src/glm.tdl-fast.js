@@ -92,10 +92,10 @@ DLL.operations = {
                              b.elements, a.elements)
          );
       },
-      _mulMatMat: tdl.fast.columnMajor.mulMatrixMatrix4,
-      'mat4,mat4': function(a,b) {
-         return new glm.mat4(
-            this._mulMatMat(new Float32Array(16), 
+      '_mulMatMat<N>': 'tdl.fast.columnMajor.mulMatrixMatrixN',
+      'mat<N>,mat<N>': function(a,b) {
+         return new glm.matN(
+            this._mulMatMatN(new Float32Array(N*N), 
                             a.elements, b.elements)
          );
       }
@@ -106,10 +106,9 @@ DLL.operations = {
          tdl.fast.mulVectorScalar(a.elements, a.elements, b);
          return a;
       },
-      _mulMatMat: tdl.fast.columnMajor.mulMatrixMatrix4,
-      'mat4,mat4': function(a,b) {
-         this._mulMatMat(a.elements,
-                         a.elements, b.elements);
+      '_mulMatMat<N>': 'tdl.fast.columnMajor.mulMatrixMatrixN',
+      'mat<N>,mat<N>': function(a,b) {
+         this._mulMatMatN(a.elements,a.elements, b.elements);
          return a;
       },
       _mulQuatQuat: tdl.quaternions.mulQuaternionQuaternion,

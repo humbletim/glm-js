@@ -2,7 +2,7 @@
     <head> 
       <meta charset="utf-8" /> 
       <title>Mocha Tests</title> 
-      <link rel="stylesheet" href="../node_modules/mocha/mocha.css" /> 
+      <link rel="stylesheet" href="_browser/mocha.css" /> 
       <style>
         .console_debug { color: darkgreen; }
         .console_info { color: darkblue; }
@@ -10,32 +10,58 @@
         .console_error { color: red; }
         .console_fatal { color: magent; }
         .console_log { color: gray; }
+
+        #mocha-stats { border-radius: 5px; padding: 4px !important; background-color: rgba(0,0,0,.05); }
+       .bl-source > div.miss > span:first-child { background-color: #d0d0d0; }
+       html #blanket-main { font-size: 10px; }
       </style>
       
-      <script src="../node_modules/chai/chai.js"></script> 
-      <script src="../node_modules/mocha/mocha.js"></script> 
+      <script src="_browser/chai.js"></script> 
+      <script src="_browser/mocha.js"></script> 
+      <script src="_browser/cane.js"></script> 
 
+      <script src="_browser/tim-inline-mocha-console.js"></script>
       <script>
-         $GLM_log = function(x,y) {
-            var t = document.createElement("div");
-            t.innerHTML = [].slice.call(arguments).join(" ");
-            (function(node) {
-                if (!node) return console.warn("early $GLM_log: ",x,y);
-                node.appendChild(t);
-                node.scrollTop = Math.pow(2,16);
-             })(document.getElementById($GLM_log.nodeId));
-            //console.warn("$GLM_log", x,y);
-         };
-         $GLM_log.nodeId = 'glmlog';
-         $GLM_console_log = function(prefix, _args) {
-            var args = [].slice.call(arguments,1);
-            //console[prefix].apply(console, args);
-            if (window.glm)
-               glm.$log('<span class=console_'+prefix+'>['+prefix+']</span> '+args.join(" "));
-            else
-              (console[prefix]||console.warn.bind(console,'??'+prefix)).apply(console, args);
-         };
+         tim_inline_mocha_console_patch(
+            mocha.run,
+            function(failed) { if(failed&&failed.length)return;
+               mocha._reporter = function() { console.warn("eating second mocha reporting run; (blanket-mocha kludge)");}
+               mocha.noHighlighting();
+               blanket.defaultReporter = (
+                  function(old) {
+                     return function(coverage) {
+                        old.apply(this, arguments);
+                        try {
+                           // augment top-right stats with grand-total blanket coverage results
+                           with([].slice.call(document.querySelectorAll(".bl-success.grand-total"))) {
+                              while(length)with(shift()) {
+                                 var li = LI = document.createElement("li");
+                                 li.innerHTML = "<a href='#blanket-main'>code coverage: </a><em>...</em>";
+                                 li.lastChild.innerHTML = ([].slice.call(querySelectorAll(".bl-cl"),1,2).map(function(x) { return x.innerHTML; }));
+                                 with(document.getElementById('mocha-stats'))
+                                    insertBefore(li, firstChild);
+                              };
+                           }
 
+                           // rig line numbers to jump to "next" miss (for easier code review)
+                           var sources = [].slice.call(document.querySelectorAll(".bl-source"));
+                           sources.forEach(
+                              function(n) {
+                                 n.onclick = function(evt) { 
+                                    var l = evt.target, p = l.parentNode;
+                                    if (!/span/i.test(evt.target))return; 
+                                    var spans = [].filter.call(p.parentNode.childNodes, function(x){return x.nodeType===1});
+                                    var downspans=(spans.slice(spans.indexOf(p)).filter(function(x) { return x.className==='miss'})); 
+                                    console.warn(l,(downspans.shift()||downspans.pop()||spans[0]).scrollIntoView());
+                                 }; 
+                              });
+                           
+                        } catch(e) { console.error(e); }
+                        
+                     };
+                })(blanket.defaultReporter);
+               addMochaBlanket();
+            });
       </script>
 
       <script>
@@ -46,93 +72,69 @@
            libs.append('../lib/gl-matrix.js', '../src/glm.gl-matrix.js');
         else if (/tdl-fast/i.test(l))
            libs.append('../lib/tdl-fast.js', '../src/glm.tdl-fast.js');
-        else if (/three/i.test(l)) // load three first, to double-check its Math.sign polyfill 
-           libs = ['../lib/three.js', libs[0], '../src/glm.three.js'];
-        else //if(/minified/i.test(l))
+        else if(/minified/i.test(l))
            libs = ["../build/glm-three.min.js"];
+        else //if (true || /three/i.test(l) || window.PHANTOMJS) // load three first, to double-check its Math.sign polyfill 
+           libs = ['../lib/three.js', libs[0], '../src/glm.three.js'];
 
         var scripts = libs.map(function(src) {
           return ("<SCR src="+src+"></SCR>").replace(/SCR/ig,'script');
         });
         document.title += '['+libs.pop()+']';
-        document.write(scripts.join("\n"));
+        console.warn(document.title);
+        if (window.PHANTOMJS) {
+           scripts.map(function(x) { 
+                          var src;
+                          x.replace(/src=[\'\"]?([^\'\" >]+)/,
+                                    function(_,_src) {
+                                       src = _src;
+                                    });
+                          return JSON.stringify({ src: src });
+                       }).map(window.callPhantom);
+        } else {
+           document.write(scripts.join("\n"));
+        }
       </script>
- 
-      <script>;
-window['.require'] = window.require;
-require = function(x) { 
-   if (x === 'mocha')
-      x = 'Mocha';
-   if (/\b_BOM$/.test(x)) return window;
-
-   var ret = x in window && window[x];
-   if (require.quiet === true)
-      require.quiet = !confirm(['require',x,ret]);
-   return ret;
-};
-require.quiet=0;
-
-          </script>
-   
-      <script src="../node_modules/blanket/dist/qunit/blanket.js" 
+      <script src='../src/glm.buffers.js'></script>
+      <script src='../src/glm.experimental.js'></script>
+      <script>
+         window['.require'] = window.require;
+         require = function(x) { 
+            //console.info("window.require("+x+")", window[x]);
+            if (x === 'mocha') x = 'Mocha';
+            if (/cane/.test(x)) x = 'cane';
+            if (/\b_BOM$/.test(x)) return window;
+            
+            var ret = x in window && window[x];
+            if (require.quiet === true)
+               require.quiet = !confirm(['require',x,ret]);
+            return ret;
+         };
+         require.quiet=0;
+      </script>
+      
+      <script src="_browser/blanket.js" 
         data-cover-flags="branchTracking" 
-        data-cover-only="//glm.*\.js/"></script>
-
-    </head> 
-    <body> 
+        data-cover-only="//glm.*\.js/"
+        data-cover-timeout="5001"
+        ></script>
+      <script>
+        0&&blanket.options("debug",true);
+      </script>
+    </head>
+    <body>
       <div id="mocha"></div> 
 
       <script> 
         mocha.ui('bdd');
-        console.log(Object.keys(mocha));
-        (function(old) {
-          mocha.run = function() {
-             // this junk just tries to embed console.* output (directly into each tests code callout)
-             //alert('mocha.run!'); console.warn([].slice.call(arguments));
-             return old.apply(this, arguments)
-                .on('test', function(test){
-                       var id = 'glmlog_'+(test.fullTitle()+'').replace(/[^a-z0-9A-Z]/g,'_');
-                       if (document.getElementById(id)) {
-                          console.warn(document.getElementById(id));
-                          alert('existing!');
-                          throw new Error('existing');
-                       }
-                       var pnode = document.querySelector(
-                          "a[href*='grep={test.parent.title}']"
-                          .replace("{test.parent.title}",
-                                   encodeURIComponent(test.parent.fullTitle())));
-                       try {
-                          var lis = pnode.parentNode.parentNode.getElementsByTagName("ul");
-                          if (lis.length)
-                             pnode = lis[lis.length-1];
-                          else
-                             pnode = pnode.parentNode.parentNode;
-                          if (!pnode)return;
-                          pnode.appendChild(document.createElement("li"));
-                          glm.$log._old = glm.$log.nodeId;
-                          glm.$log.nodeId = pnode.lastChild.id=id;
-                          with(pnode.lastChild.style)fontSize='8px',backgroundColor='black',color='white';
-                       }catch(e) { console.error(e); }
-                    })
-                .on('test end', function(test){
-                       if (glm.$log._old) {
-                          var n = document.getElementById(glm.$log.nodeId);
-                          n.nextSibling.lastChild.appendChild(n);
-                          glm.$log.nodeId = glm.$log._old;
-                          delete glm.$log._old;
-                       }
-                    })
-          };
-         })(mocha.run);
-      // runner;
+        console.log('mocha keys:'+Object.keys(mocha));
 
         if (window.PHANTOMJS) { 
-          blanket.options("reporter", "node_modules/grunt-blanket-mocha/support/grunt-reporter.js" 
-        ); 
+           window.callPhantom(JSON.stringify({src: "/node_modules/grunt-blanket-mocha/support/grunt-reporter.js"  }));
+//          blanket.options("reporter", "node_modules/grunt-blanket-mocha/support/grunt-reporter.js" ); 
         } 
       </script> 
 
-      
       <script src="../test/test.js"></script> 
       <script src="../test/ex-improv.js"></script> 
       <script src="../test/ex-readme.js"></script> 
@@ -140,8 +142,9 @@ require.quiet=0;
       
       <div id="glmlog" style='background-color:rgba(0,0,0,.15);width:100%;font-size:10px;font-family:monospace;'></div>
 
-      <script src="../node_modules/grunt-blanket-mocha/support/mocha-blanket.js"></script>
-
+      <script src="_browser/addMochaBlanket.js"></script>
+      <script>
+        mocha.run();
+      </script>
     </body> 
 </html> 
-  

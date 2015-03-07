@@ -81,33 +81,26 @@ DLL.operations =
          },
          'quat,vec3': function(a,b) {
             return this.$vec3.applyQuaternion.call(
-               b.clone(), 
-               this.$quat.fromArray(a.elements));
+               b.clone(), this.$quat.fromArray(a.elements)
+            );
          },
          'vec4,quat': function(a,b) {
-            // need this.$quat.copy(a) to entertain THREE.Quaternion
             return this.$vec4.applyMatrix4.call(a.clone(), glm.toMat4(b));
          },
          'vec3,quat': function(a,b) { return this['quat,vec3'](b,a); },
-         $vec2_multiplyScalar: THREE.Vector2.prototype.multiplyScalar,
-         $vec3_multiplyScalar: THREE.Vector3.prototype.multiplyScalar,
-         $vec4_multiplyScalar: THREE.Vector4.prototype.multiplyScalar,
+         '$vec<N>_multiplyScalar': 'THREE.VectorN.prototype.multiplyScalar',
          'vec<N>,float': function(a,b) {
             return this.$vecN_multiplyScalar.call(a.clone(), b);
          },
-         //          'vec3,float': function(a,b) {
-         //             return this.$vec3.multiplyScalar.call(a.clone(), b);
-         //          },
-         //          'vec2,float': function(a,b) {
-         //             return this.$vec2.multiplyScalar.call(a.clone(), b);
-         //          },
          'mat4,vec4': function(a,b) {
             return this.$vec4.applyMatrix4.call(b.clone(), a);
          },
          $mat4_multiplyMatrices: THREE.Matrix4.prototype.multiplyMatrices,
-         'mat4,mat4': function(a,b) {
-            a = a.clone();
-            return this.$mat4_multiplyMatrices.call(a, a, b);
+         'mat<N>,mat<N>': function(a,b) {
+            // THREE has no mat3*mat3 function?
+            a = new glm.mat4(a);
+            b = new glm.mat4(b);
+            return new glm.matN(this.$mat4_multiplyMatrices.call(a, a, b));
          }
       },
       'mul_eq': {
@@ -117,10 +110,15 @@ DLL.operations =
             return this.$vecN_multiplyScalar.call(a, b);
          },
          $mat4: new THREE.Matrix4(),
-
          'mat4,mat4': function(a,b) {
-            //a = a.clone();
             return this.$mat4.multiplyMatrices.call(a, a, b);
+         },
+         'mat3,mat3': function(a,b) {
+            // THREE has no mat3*mat3 function?
+            return a.copy(
+               new glm.mat3(
+                  this.$mat4.multiplyMatrices(new glm.mat4(a), new glm.mat4(b))
+               ));
          },
 
          $quat: new THREE.Quaternion(),
@@ -189,5 +187,58 @@ DLL.calculators = {
 };
 
 glm.$outer.$import(DLL);
+
+glm.$THREE = (
+   function() {
+      var map = {
+         g2t: GLM.$template.deNify(
+            {
+               'vec<N>': function(g) {
+                  var t = new THREE.VectorN();
+                  return t.set.apply(t, glm.$to_array(g));
+               },
+               'mat<N>': function(g) {
+                  var t = new THREE.MatrixN();
+                  return t.copy(g);//(t, glm.$to_array(g));
+               },
+               'quat': function(g) {
+                  var t = new THREE.Quaternion();
+                  return t.set.apply(t, glm.$to_array(g));
+               }
+            }),
+         t2g: GLM.$template.deNify(
+            {
+               'Vector<N>': function(t) {
+                  return new glm.vecN(t);
+               },
+               'Matrix<N>': function(t) {
+                  return new glm.matN(t);
+               },
+               'Quaternion': function(t) {
+                  return new glm.quat(t._w,t._x,t._y,t._z);
+               },
+               'Euler': function(t) {
+                  return new glm.vec3(t);
+               }
+            })
+      };
+      function mapper(keymap, ns) {
+         var _key = keymap._key = Object.keys(keymap);
+         var _ref = keymap._ref = keymap._key.map(function(k) { return ns[k]; });
+         return keymap.byObject = (function(ob) {
+            var idx = _ref.indexOf(ob.constructor);
+            if (!~idx) throw new GLM.GLMJSError("unsupported argtype for remapping (index not found): "+ob);
+            var redir = this[_key[idx]];
+            if (!redir) throw new GLM.GLMJSError("unsupported argtype for remapping (key not found): "+ob);
+            return redir.apply(this, arguments);
+                 }.bind(keymap));
+      }
+      return {
+         $map: map,
+         to_glm: mapper(map.t2g, THREE),
+         from_glm: mapper(map.g2t, glm)
+      };
+   }
+)();
 
 try { module.exports = glm; } catch(e) {}

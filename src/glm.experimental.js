@@ -20,7 +20,7 @@ GLM.$make_primitive = function(type, type32array) {
       this.elements = GLM.$cast_to_type32array(1, v, type32array);
    };
    var ts = { $to_string: {} };
-   ts.$to_string[type] = function(what) { return "[GLM."+type+" "+(what.elements&&what.elements[0])+"]"; };
+   ts.$to_string[type] = function(what) { return "[GLM."+what.$type+" "+(what.elements&&what.elements[0])+"]"; };
    GLM.$template.varargs_functions(ts);
 
    GLM[type].componentLength = 1;
@@ -117,7 +117,7 @@ GLM.$template.extend(
          '$vvec<N>': function(_sz, dynamic) {
             if (!(this instanceof glm.$vvecN))
                return new glm.$vvecN(_sz, dynamic);
-            this['set<type>'](
+            this._set(
                GLM.$cast_to_type32array(glm.vecN.componentLength, _sz, Float32Array)
             )._setup({ 
                         setters: true,
@@ -128,7 +128,7 @@ GLM.$template.extend(
          '$vmat<N>': function(_sz) {
             if (!(this instanceof glm.$vmatN))
                return new glm.$vmatN(_sz);
-            this['set<type>'](
+            this._set(
                GLM.$cast_to_type32array(glm.matN.componentLength, _sz, Float32Array)
             )._setup({ 
                         setters: true,
@@ -138,7 +138,7 @@ GLM.$template.extend(
          '$vquat': function(_sz) {
             if (!(this instanceof glm.$vquat))
                return new glm.$vquat(_sz);
-            this['set<type>'](
+            this._set(
                GLM.$cast_to_type32array(glm.quat.componentLength, _sz, Float32Array)
             )._setup({ 
                         setters: true,

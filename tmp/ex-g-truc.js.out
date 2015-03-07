@@ -1,2 +1,9 @@
-glm-js[0.0.1][module][three.js]
+CREATED $class: function $GLMBaseType<vec2>(){ [ GLMType@1425685938347 ] }
+CREATED $class: function $GLMBaseType<vec3>(){ [ GLMType@1425685938347 ] }
+CREATED $class: function $GLMBaseType<vec4>(){ [ GLMType@1425685938347 ] }
+CREATED $class: function $GLMBaseType<uvec4>(){ [ GLMType@1425685938347 ] }
+CREATED $class: function $GLMBaseType<mat3>(){ [ GLMType@1425685938347 ] }
+CREATED $class: function $GLMBaseType<mat4>(){ [ GLMType@1425685938347 ] }
+CREATED $class: function $GLMBaseType<quat>(){ [ GLMType@1425685938347 ] }
+glm-js[0.0.2][module][three.js]
 fvec4(2.788964, 4.828427, -2.363051, -2.158529)

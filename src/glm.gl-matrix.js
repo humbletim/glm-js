@@ -102,9 +102,9 @@ DLL.operations = {
                                      b.elements, a.elements)
          );
       },
-      'mat4,mat4': function(a,b) {
-         return new glm.mat4(
-            GLMAT.mat4.mul(new Float32Array(16), 
+      'mat<N>,mat<N>': function(a,b) {
+         return new glm.matN(
+            GLMAT.matN.mul(new Float32Array(N*N), 
                            a.elements, b.elements)
          );
       },
@@ -116,8 +116,8 @@ DLL.operations = {
    },
    'mul_eq': {
       $op: '*=',
-      'mat4,mat4': function(a,b) {
-         GLMAT.mat4.multiply(a.elements,a.elements,b.elements);
+      'mat<N>,mat<N>': function(a,b) {
+         GLMAT.matN.multiply(a.elements,a.elements,b.elements);
          return a;
       },
       'vec<N>,float': function(a,b) {

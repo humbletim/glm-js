@@ -15,6 +15,8 @@ function $GLMVector(typ, sz, type32array) {
                                GLM.$isGLMConstructor(typ));
    this.glmtype = typ;
    if (!this.glmtype.componentLength) throw new Error('need .componentLength '+[typ, sz, type32array]);
+   this.componentLength = this.glmtype.componentLength;
+   this.BYTES_PER_ELEMENT = this.glmtype.BYTES_PER_ELEMENT;
    this.elements = sz && new type32array(sz * typ.componentLength);
    this.length = sz;
 }
@@ -22,172 +24,188 @@ function $GLMVector(typ, sz, type32array) {
 
 GLM.$vector = $GLMVector;
 GLM.$vector.version = '0.0.0';
-GLM.$vector.$ = {
-   to_string: function(what) { return "$vector<.glmtype="+glm.$isGLMConstructor(what.glmtype)+", .length="+what.length+">"; }
-};
+GLM.$template.varargs_functions({
+      $to_string: {
+         $vector: function(what) { return "$vector<.glmtype="+glm.$isGLMConstructor(what.glmtype)+", .length="+what.length+">"; }
+      }
+   });
 
-$GLMVector.prototype = {
-   $type: '$vector',
-   toString: function() {
-      return "[$GLMVector .elements=#"+(this.elements&&this.elements.length)+" .elements[0]="+(this.elements&&this.elements[0])+" ->[0]"+(this['->']&&this['->'][0])+"]";
-   },
-   set: function(elements) { return this.setFromFloats(elements); },
-   setFromFloats: function(elements) {
-      console.warn("$GLMVector.prototype.set..." + [this.elements&&this.elements.constructor.name,
-                                                   this.elements&&this.elements.length], 
-                   [elements.constructor.name,
-                    elements.length]);
-//       if (this.elements.length === elements.length) {
-//          console.info("REUSE... chrome bug, setting via buffers");
-//          var arr = [];
-//          for(var i=0; i < elements.length; i+= 16384) {
-//             console.warn(i, elements.subarray(i,16384).length);
-//             arr.push(elements.subarray(i, 16384));
-//          }
-//          this.fromBuffers(arr);
-//          //this.elements.set(elements);
-//       } else {
-      {
+$GLMVector.prototype = GLM.$template.extend(
+   new GLM.$GLMBaseType($GLMVector, '$vector'),
+   {
+      toString: function() {
+         return "[$GLMVector .elements=#"+(this.elements&&this.elements.length)+
+            " .elements[0]="+(this.elements&&this.elements[0])+
+            " ->[0]"+(this['->']&&this['->'][0])+"]";
+      },
+      set: function(elements) { 
+         return this._set(elements);
+      },
+      _set: function(elements) {
+         if (!(elements instanceof this.type32array))
+            throw new GLM.GLMJSError("unsupported argtype to $GLMVector._set "+(elements&&elements.constructor));
+         GLM.$DEBUG && GLM.$outer.console.debug("$GLMVector.prototype.set..." + 
+                      'this.elements:'+[this.elements&&this.elements.constructor.name,
+                       this.elements&&this.elements.length]+
+                      'elements:'+[elements.constructor.name,
+                       elements.length]);
+         this.length = elements.length / this.componentLength;
+         if (this.length !== Math.round(this.length))
+            throw new Error('$vector.length alignment mismatch '+[this.componentLength, this.length, Math.round(this.length), elements]);
          this.elements = elements;
-      }
-      this.length = elements.length / this.glmtype.componentLength;
-      if (this.length !== Math.round(this.length))
-         throw new Error('$vector.length mismatch '+[this.glmtype.componentLength, this.length, Math.round(this.length), elements]);
-      if ("->" in this)
-         this.arrayize();
-      return this;
-   },
-   arrayize: function(bSetters) {
-      return this._setup({
-                            //stride: this.glmtype.BYTES_PER_ELEMENT,
-                            //offset: ele.byteOffset,
-                            //ele: this.elements,
-                            //container: [],
-                            setters: bSetters
-                         });
-   },
-   _setup: function(kv) {
-      var vec = this.glmtype;
-      var type32array = this.type32array;
-      var n = this.length;
-
-      var stride = kv.stride || this.glmtype.BYTES_PER_ELEMENT,
-      offset = kv.offset || this.elements.byteOffset,
-      ele = kv.elements || this.elements,
-      container = kv.container || [],
-      bSetters = kv.setters || false;
-      
-      //console.warn("ele",typeof ele,ele, this.glmtype.componentLength);
-      if (!ele) throw new $GLMVector("$GLMVector._setup - neither kv.elements nor this.elements...");
-      // cleanup
-      var arr;
-      if (1) {
-         arr = this.arr;
-         this.arr = [];
-         if (arr) {
-            for(var i=0;i < arr.length; i++) {
-               arr[i] = null;
-            }
-            arr.length = 0;
-            arr = null;
-         }
-      }
-      arr = this.arr = this['->'] = container;
-      var cl = this.glmtype.componentLength;
-      arr.assign = [function(offset, x,y) {
-         var off = cl*offset;
-         ele[off+0] = x;
-         ele[off+1] = y;
-      },function(offset, x,y,z) {
-         var off = cl*offset;
-         ele[off+0] = x;
-         ele[off+1] = y;
-         ele[off+2] = z;
-      },function(offset, x,y,z,w) {
-         var off = cl*offset;
-         ele[off+0] = x;
-         ele[off+1] = y;
-         ele[off+2] = z;
-         ele[off+3] = w;
-      }][cl-2];
-
-      var last = ele.buffer.byteLength;
-      for(var i=0; i < n; i++) {
-         var off = offset + i*stride;
-         var next = offset + (i+1)*stride;
-         function dbg() { 
-            kv.i = i; kv.next = next; kv.last = last; kv.offset = kv.offset || offset; kv.stride = kv.stride || stride;
-            return JSON.stringify(kv);//{i:i, eleO: ele.byteOffset, stride: stride, offset:offset, next:next, last:last});
-         }
-         if (off > last)
-            throw new Error('['+i+'] off '+off+' > last '+last+' '+dbg());
-         if (next > last)
-            throw new Error('['+i+'] next '+next+' > last '+last+' '+dbg());
-         
-         arr[i] = null;
-         var ti = arr[i] = (
-            function(i,ele) {
-               return new vec(
-                  new type32array(
-                     ele.buffer,
-                     off,
-                     cl)
-               );
-            })(i, ele);
-         //ti._index = i;
-
-         if (bSetters) {
-            (function(ti,_) {
-               Object.defineProperty(
-                  arr, i, 
-                  {
-                     enumerable: true,
-                     configurable: false,
-                     get: function() { return ti; },//new Function("", "return this["+i+"]"),
-                     set: function(v,_) { 
-                        //console.warn("setter" + JSON.stringify({i:i,ti:ti,v:v},0,2));
-                        ti.copy(v); return;
-                        //return ti.elements.set(v.elements);   },//.bind(ti)//new Function("v", "return this["+i+"].copy(v);")
+         if (this._kv)
+            this._setup(this._kv);
+         return this;
+      },
+      arrayize: function(bSetters,bDynamic) {
+         return this._setup({
+                               //stride: this.glmtype.BYTES_PER_ELEMENT,
+                               //offset: ele.byteOffset,
+                               //ele: this.elements,
+                               //container: [],
+                               dynamic: bDynamic,
+                               setters: bSetters
+                            });
+      },
+      _destroy: function(arr) {
+            if (arr) {
+               var isArray = Array.isArray(arr);
+               for(var i=0;i < arr.length; i++) {
+                  if (i in arr) {
+                     Object.defineProperty(arr, i, { enumerable: true, configurable: true, value: undefined });
+                     delete arr[i];
+                     if (!isArray) {
+                        arr[i] = undefined; // dbl check... fires error if still prop-set
+                        delete arr[i];
                      }
-                  });
-             })(ti,i);
-         }
-      }
-      return this;
-   },
-   setFromBuffers: function(DATA) { // [type32array(),type32array()] buffers
-      var fa = this.elements;
-      var off = 0;
-      var fl = fa.length;
-      DATA.forEach(
-         function(seg) {
-            var sl = seg.length;
-            if (off+sl > fa.length) {
-               var mseg = Math.min(
-                  fa.length - off,
-                  seg.length);
-               if (mseg <= 0) {
-                  return;
-               } else {
-                  seg = seg.subarray(0,mseg);
-                  sl = seg.length;
+                  }
                }
+               if (isArray)
+                  arr.length = 0;
             }
+      },
+      _setup: function(kv) {
+         var vec = this.glmtype;
+         var type32array = this.type32array;
+         var n = this.length;
+         this._kv = kv;
+         var stride = kv.stride || this.glmtype.BYTES_PER_ELEMENT,
+         offset = kv.offset || this.elements.byteOffset,
+         ele = kv.elements || this.elements,
+         container = kv.container || this.arr || [],
+         bSetters = kv.setters || false,
+         dynamic = kv.dynamic || false;
+         
+         if (container === 'self')
+            container = this;
+         //console.warn("ele",typeof ele,ele, this.componentLength);
+         
+         if (!ele) 
+            throw new GLMJSError("GLMVector._setup - neither kv.elements nor this.elements...");
+         
+         this._destroy(this.arr);
+         // cleanup
+         var arr = this.arr = this['->'] = container;
+         
+         // add convenience methods to pseudo-Array containers
+         if (!Array.isArray(arr)) {
+            "forEach,map,slice,filter,join,reduce".split(",")
+               .forEach(function(k) { arr[k] = Array.prototype[k]; });
+            arr.toJSON = function() {
+               return this.slice(0);
+            };
+         }
+         
+         var cl = this.componentLength;
+         if (!cl) throw new GLM.GLMJSError("no componentLength!?"+Object.keys(this));
+         var last = ele.buffer.byteLength;
+         var thiz = this;
+         for(var i=0; i < n; i++) {
+            var off = offset + i*stride;
+            var next = offset + (i+1)*stride;
+            function dbg() { 
+               kv.i = i; kv.next = next; kv.last = last; kv.offset = kv.offset || offset; kv.stride = kv.stride || stride;
+               return JSON.stringify(kv);//{i:i, eleO: ele.byteOffset, stride: stride, offset:offset, next:next, last:last});
+            }
+            if (off > last)
+               throw new Error('['+i+'] off '+off+' > last '+last+' '+dbg());
+            if (next > last)
+               throw new Error('['+i+'] next '+next+' > last '+last+' '+dbg());
             
-            if (off+sl > fa.length)
-               throw new Error('$vector.fromBuffers mismatch '+[off,sl,fa.length]);
-            
-            fa.set(seg,off);
-            off += seg.length;
-            //this.elements = fa;
-         });
-      return off;
-   },
-   setFromPointer: function(ptr) {
-      if(!(ptr instanceof ArrayBuffer)) throw new glm.GLMJSError("unsupported argtype "+[typeof ptr]+" - $GLMVector.setFromPointer");
-      return this.setFromFloats(new Float32Array(ptr));
-   }
+            arr[i] = null;
+            var make_ti = function(ele,off) {
+               var ret = new vec(new type32array(ele.buffer,off,cl));
+               if (dynamic) // to detect underlying .elements changes..
+                  ret.$elements = ele;
+               return ret;
+            };
+            var ti = make_ti(ele,off);
 
-      
-};
+            if (!bSetters && !dynamic) {
+               // read-only array elements
+               arr[i] = ti;
+            } else {
+               // update-able array elements
+               (function(ti,i,off) {
+                   Object.defineProperty(
+                      arr, i, 
+                      {
+                         enumerable: true,
+                         configurable: true,
+                         get: dynamic ? 
+                            function() { if (ti.$elements !== thiz.elements) ti = make_ti(thiz.elements,off); return ti; } :
+                            function() { return ti; },
+                         set: bSetters && (
+                            dynamic ? 
+                               function() { 
+                                  console.warn("dynoset",i,off); 
+                                  if (ti.$elements !== thiz.elements)
+                                     ti = make_ti(thiz.elements,off); 
+                                  return ti.copy(v);
+                               } : 
+                               function(v,_) { 
+                                  //console.warn("setter" + JSON.stringify({i:i,ti:ti,v:v},0,2));
+                                  ti.copy(v); 
+                               }) || undefined
+                      });
+                })(ti,i,off);
+            }
+         }         
+         return this;
+      },
+      // DATA is arg is a set of [type32array(),type32array()] buffers (eg: socket.io buffers)
+      setFromBuffers: function(DATA) {
+         var fa = this.elements;
+         var off = 0;
+         var fl = fa.length;
+         DATA.forEach(
+            function(seg) {
+               var sl = seg.length;
+               if (off+sl > fa.length) {
+                  var mseg = Math.min(
+                     fa.length - off,
+                     seg.length);
+                  if (mseg <= 0) {
+                     return;
+                  } else {
+                     seg = seg.subarray(0,mseg);
+                     sl = seg.length;
+                  }
+               }
+               
+               if (off+sl > fa.length)
+                  throw new glm.GLMJSError('$vector.fromBuffers mismatch '+[off,sl,fa.length]);
+               
+               fa.set(seg,off);
+               off += seg.length;
+            });
+         return off;
+      },
+      setFromPointer: function(ptr) {
+         if(!(ptr instanceof ArrayBuffer)) 
+            throw new glm.GLMJSError("unsupported argtype "+[typeof ptr]+" - $GLMVector.setFromPointer");
+         return this._set(new this.type32array(ptr));
+      }
+   });
+
 

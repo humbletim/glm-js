@@ -21,8 +21,10 @@ if (typeof glm !== 'object') {
       }
    };
    try { var G = process.env.GLM; } catch(e) { G = environment.GLM; }
-//    if (!(G in IMPLEMENTATIONS))
-//       G = 'three';
+   if (!(G in IMPLEMENTATIONS)) {
+      console.error('usage:\n\tenv GLM=<'+Object.keys(IMPLEMENTATIONS).join("|")+"> node test/test.js\n");
+      process.exit(-2);
+   }
    console.warn('IMPLEMENTATIONS['+G+']()');
    IMPLEMENTATIONS[G]();
 }
@@ -35,4 +37,3 @@ with("module,{exports:exports},window,global,self,this".split(','))
    do{try{eval("new Function('ECMAScript3'),"+(glm._=shift())).exports=glm;splice(0,Infinity);}catch(e){}}while(length);
 
 glm.$log(glm+'');
-//glm.$log(_ENV._VERSION+' / glm.vec4(1) = '+glm.vec4(1)+'');
