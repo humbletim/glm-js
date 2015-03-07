@@ -2,7 +2,7 @@
     <head> 
       <meta charset="utf-8" /> 
       <title>Mocha Tests</title> 
-      <link rel="stylesheet" href="_browser/mocha.css" /> 
+      <link rel="stylesheet" href="browser/mocha.css" /> 
       <style>
         .console_debug { color: darkgreen; }
         .console_info { color: darkblue; }
@@ -16,11 +16,11 @@
        html #blanket-main { font-size: 10px; }
       </style>
       
-      <script src="_browser/chai.js"></script> 
-      <script src="_browser/mocha.js"></script> 
-      <script src="_browser/cane.js"></script> 
+      <script src="browser/chai.js"></script> 
+      <script src="browser/mocha.js"></script> 
+      <script src="browser/cane.js"></script> 
 
-      <script src="_browser/tim-inline-mocha-console.js"></script>
+      <script src="browser/tim-inline-mocha-console.js"></script>
       <script>
          tim_inline_mocha_console_patch(
             mocha.run,
@@ -113,7 +113,7 @@
          require.quiet=0;
       </script>
       
-      <script src="_browser/blanket.js" 
+      <script src="browser/blanket.js" 
         data-cover-flags="branchTracking" 
         data-cover-only="//glm.*\.js/"
         data-cover-timeout="5001"
@@ -142,7 +142,7 @@
       
       <div id="glmlog" style='background-color:rgba(0,0,0,.15);width:100%;font-size:10px;font-family:monospace;'></div>
 
-      <script src="_browser/addMochaBlanket.js"></script>
+      <script src="browser/addMochaBlanket.js"></script>
       <script>
         mocha.run();
       </script>

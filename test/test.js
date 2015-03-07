@@ -4,7 +4,7 @@ try { chai.exists; } catch(e) {
 
 should = chai.should();
 expect = chai.expect;
-cane = require('./_browser/cane');
+cane = require('./browser/cane');
 
 glm = require("../src/glm-js") || glm;
 //require("../src/glm.buffers");
