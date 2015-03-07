@@ -10,4 +10,7 @@ namespace glm {
     std::string to_string(const glm::quat &q) {
         return "<quat>"+to_string(glm::degrees(glm::eulerAngles(q)));//glm::vec4(q.w, q.x, q.y, q.z));
     }
+    std::string to_string(const char *s) {
+        return s;
+    }
 }

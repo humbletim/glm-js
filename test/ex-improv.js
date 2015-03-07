@@ -51,9 +51,37 @@ try{
     log("diagonal4x4(vec4(1,2,3,4)): ", glm.diagonal4x4(glm.vec4(1,2,3,4)));
     log("mat3(2): ", glm.mat3(2));
     log("mat4(2): ", glm.mat4(2));
-    var m4 = glm.mat4(1.0,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4);
-    m4['='](glm.mat4(glm.mat3(2.0,2,2,2,2,2,2,2,2)));
-    log("m4[1,2,3,4](mat3(2...2)): ", m4);
+    var m4a = glm.mat4(  glm.vec4(1),
+                         glm.vec4(2),
+                         glm.vec4(3),
+                         glm.vec4(4));
+    log("mat4(vec4 x 4): ", m4a);
+    var m4 =  glm.mat4(  1,1,1,1,
+                         2,2,2,2,
+                         3,3,3,3,
+                         4,4,4,4);
+    log("mat4(1..,2..,3..,4..): ", m4);
+    log("m4 == m4a", ( m4 )['==']( m4a ) ? "true" : "false");
+
+    var m4b = glm.mat4(glm.mat3(2));
+    log("mat4(mat3(2)): ", m4b);
+    log("m4 == m4b", ( m4 )['==']( m4b ) ? "true" : "false");
+
+    var m4c = glm.mat4([
+            [ 1, 2, 3, 4 ],
+            [ 4, 3, 2, 1 ],
+            [ 1, 2, 3, 4 ],
+            [ 4, 3, 2, 1 ]
+        ]);
+    log("mat4({{...} x 4}}: ", m4c);
+
+    var m4d = glm.mat4([
+             1, 2, 3, 4,
+             4, 3, 2, 1 ,
+             1, 2, 3, 4 ,
+             4, 3, 2, 1 
+        ]);
+    log("mat4({ float x 16}}: ", m4d);
 
     log("vec2(200,300)", glm.vec2(200,300));
     log("vec3(200,300,400)", glm.vec3(200,300,400));

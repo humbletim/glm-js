@@ -305,7 +305,6 @@ describe('glm', function(){
                               expect(glm.max(0,.5)).to.equal(.5);
                            });
                         it('._sign', function() {
-                              var e = glm.epsilon();
                               // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sign
                               expect([ 3, -3, '-3', 0, -0, NaN, 'foo', undefined ]
                                      .map(glm._sign)).to.eql(
@@ -313,7 +312,6 @@ describe('glm', function(){
                            });
                         if ("sign" in Math) {
                            it('Math.sign sanity check', function() {
-                                 var e = glm.epsilon();
                                  expect([ 3, -3, '-3', 0, -0, NaN, 'foo', undefined ]
                                         .map(Math.sign)).to.eql(
                                            [ 1, -1, -1, 0, -0, NaN, NaN, NaN ]);
@@ -321,9 +319,9 @@ describe('glm', function(){
                         }
                         it('.sign', function() {
                               var e = glm.epsilon();
-                              expect([ 3, -3, '-3', 0, -0, NaN, 'foo', undefined ]
+                              expect([ e, -e, 3, -3, '-3', 0, -0, NaN, 'foo', undefined ]
                                      .map(glm.sign)).to.eql(
-                                        [ 1, -1, -1, 0, -0, NaN, NaN, NaN ]);
+                                        [ 1, -1, 1, -1, -1, 0, -0, NaN, NaN, NaN ]);
                            });
                         
                         it('.mix<vec2>', function() {
@@ -447,67 +445,114 @@ describe('glm', function(){
                      });
 
 
-            //var qspin = glm.angleAxis(Math.PI,glm.vec3(0,1,0));
-            var qspin = new glm.quat([ 0, 1, 0, 6.123031769111886e-17 ]);
             describe('mat4', function() {
-                        it('core operations', function() {
-                              expect( glm.mat4() ).to.flatten.into('1000010000100001');
-                              glm.$to_array(glm.mat4(glm.mat3(3))).join("").should.equal('3000030000300001');
-                              expect( glm.mat4(glm.mat3(3)) ).to.flatten.into('3000030000300001');
-                              //expect( glm.toMat4(qspin) ).to.be.glsl("234");
-                              glm.toMat4(qspin).toString().should.equal('mat4x4(\n\t(-1.000000, 0.000000, -0.000000, 0.000000), \n\t(0.000000, 1.000000, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.000000, 0.000000), \n\t(0.000000, 0.000000, 0.000000, 1.000000)\n)');
+              describe('core operations', function() {
+                it("construction by n", 
+               function() {
+                  // mat4(undefined) == identity
+                  expect( glm.mat4() )
+                     .to.glm_eq([ 1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 ]);
+                  expect( glm.mat4(0) )
+                     .to.glm_eq([ 0, 0, 0, 0,
+                                  0, 0, 0, 0,
+                                  0, 0, 0, 0,
+                                  0, 0, 0, 0 ]);
 
-                              glm.to_string(glm.toMat4(qq)).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
+                  expect( glm.mat4(-2) )
+                     .to.glm_eq([-2, 0, 0, 0,
+                                 0,-2, 0, 0,
+                                 0, 0,-2, 0,
+                                 0, 0, 0,-2 ]);
 
-                              glm.mat4().mul(glm.mat4()).should.be.instanceOf(glm.mat4);
+                  expect(glm.mat4(0,  1,  2,  3,
+                                  4,  5,  6,  7,
+                                  8,  9,  10, 11,
+                                  12, 13, 14, 15))
+                     .to.glm_eq([ 0,  1,  2,  3,
+                                  4,  5,  6,  7,
+                                  8,  9,  10, 11,
+                                  12, 13, 14, 15 ]);
+               });
+               it("construction by arrays", 
+               function() {
+                  expect(glm.mat4([ 0,  1,  2,  3,
+                                    4,  5,  6,  7,
+                                    8,  9,  10, 11,
+                                    12, 13, 14, 15 ]))
+                     .to.glm_eq([ 0,  1,  2,  3,
+                                  4,  5,  6,  7,
+                                  8,  9,  10, 11,
+                                  12, 13, 14, 15 ]);
+               });
+               it("construction by objects",
+               function() {
+                  expect( glm.mat4(glm.mat3(3)) )
+                     .to.flatten.into('3000030000300001');
 
-                              expect(function() { glm.mat4({}); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
-                              expect(function() { glm.mat4(null); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
-                              expect(function() { glm.mat4(undefined); }).to['throw'](/no template found for mat4[.][$][.]undefined1/);
-                              expect(glm.mat4(0,1,2,3,
-                                              4,5,6,7,
-                                              8,9,10,11,
-                                              12,13,14,15))
-                                 .to.glm_eq([0,1,2,3,
-                                             4,5,6,7,
-                                             8,9,10,11,
-                                             12,13,14,15]);
-                              
-                              expect(glm.mat4([0,1,2,3,
-                                              4,5,6,7,
-                                              8,9,10,11,
-                                              12,13,14,15]))
-                                 .to.glm_eq([0,1,2,3,
-                                             4,5,6,7,
-                                             8,9,10,11,
-                                             12,13,14,15]);
-                           });
-                        it('mat3-partial assignment', function() {
-                              var m4 = glm.mat4("1111222233334444".split(""));
-                              m4['='](glm.mat4(glm.mat3(glm.vec3(5),
-                                                        glm.vec3(6),
-                                                        glm.vec3(7))));
-                              expect(m4).to.flatten.into("5550"+
-                                                         "6660"+
-                                                         "7770"+
-                                                         "0001");
-                          });
-                        it('invert tranpose', function() {
-                              glm.to_string(glm.transpose(glm.inverse(glm.mat4(qq)))).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-                           });
-                       
-                        it('multiply neatly', function() {
-                              var a = glm.toMat4(glm.angleAxis(glm.radians(60), glm.vec3(0,0,1)));
-                              var b = glm.toMat4(glm.angleAxis(glm.radians(45), glm.vec3(0,1,0)));
-                              expect(glm.to_string(a)).to.equal('mat4x4((0.500000, 0.866025, 0.000000, 0.000000), (-0.866025, 0.500000, 0.000000, 0.000000), (0.000000, 0.000000, 1.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-                              expect(glm.to_string(b)).to.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-                              expect(glm.to_string(a['*'](b)), 'normal mul').to.equal( 'mat4x4((0.353553, 0.612372, -0.707107, 0.000000), (-0.866025, 0.500000, 0.000000, 0.000000), (0.353553, 0.612372, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))' );
-                              a['*='](b);
-                              expect(glm.to_string(a),'mul_eq').to.equal( 'mat4x4((0.353553, 0.612372, -0.707107, 0.000000), (-0.866025, 0.500000, 0.000000, 0.000000), (0.353553, 0.612372, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-                              expect(glm.to_string(b)).to.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-                           });
-                     });
+                  var qspin = glm.quat([ 0, 1, 0, 6.123031769111886e-17 ]);
 
+                  expect( glm.toMat4(qspin) )
+                     .to.glm_eq([-1, 0,-0, 0,
+                                  0, 1, 0, 0,
+                                 -0, 0,-1, 0,
+                                  0, 0, 0, 1 ], glm.epsilon());
+
+                  var qq = glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
+
+                  var s = Math.sin(glm.radians(45.0));
+                  expect( glm.toMat4(qq) )
+                     .to.glm_eq([ s, 0,-s, 0,
+                                  0, 1, 0, 0,
+                                  s, 0, s, 0,
+                                  0, 0, 0, 1 ], glm.epsilon() );
+               });
+             });
+             it('exceptions', function() {
+                   expect(function() { glm.mat4({}); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
+                   expect(function() { glm.mat4(null); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
+                   expect(function() { glm.mat4(glm.vec4()); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
+                   expect(function() { glm.mat4([1,2,3,4]); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
+                   expect(function() { glm.mat4(undefined); }).to['throw'](/no template found for mat4[.][$][.]undefined1/);
+                });
+             it('mat3-partial assignment', function() {
+                   var m4 = glm.mat4("1111222233334444".split(""));
+                   m4['='](glm.mat4(glm.mat3(glm.vec3(5),
+                                             glm.vec3(6),
+                                             glm.vec3(7))));
+                   expect(m4).to.flatten.into("5550"+
+                                              "6660"+
+                                              "7770"+
+                                              "0001");
+                });
+             it('invert tranpose', function() {
+                   glm.to_string(glm.transpose(glm.inverse(glm.mat4(qq)))).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
+                });
+                        
+                it('multiply neatly', function() {
+                   expect(glm.mat4().mul(glm.mat4())).to.be.instanceOf(glm.mat4);
+
+                   var a = glm.toMat4(glm.angleAxis(glm.radians(60), glm.vec3(0,0,1)));
+                   var b = glm.toMat4(glm.angleAxis(glm.radians(45), glm.vec3(0,1,0)));
+                   var bstr = 'mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))';
+                   expect(glm.to_string(a))
+                     .to.equal('mat4x4((0.500000, 0.866025, 0.000000, 0.000000), (-0.866025, 0.500000, 0.000000, 0.000000), (0.000000, 0.000000, 1.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
+                   expect(glm.to_string(b)).to.equal(bstr);
+
+                   expect(glm.to_string(
+                             a['*'](b)
+                          ), 'normal mul')
+                         .to.equal( 'mat4x4((0.353553, 0.612372, -0.707107, 0.000000), (-0.866025, 0.500000, 0.000000, 0.000000), (0.353553, 0.612372, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))' );
+
+                   a['*='](b);
+                   expect(glm.to_string(b)).to.equal(bstr);
+                   expect(glm.to_string(a),'mul_eq')
+                     .to.equal( 'mat4x4((0.353553, 0.612372, -0.707107, 0.000000), (-0.866025, 0.500000, 0.000000, 0.000000), (0.353553, 0.612372, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
+
+                   });
+               });
 
             describe('quat', function() {
                         it('core operations', function() {
@@ -637,7 +682,8 @@ describe('glm', function(){
                               expect(glm.vec3([3,2,1])).to.glm_eq([3,2,1]);
                               expect(glm.vec3([3,2,1,0])).to.glm_eq([3,2,1]);
                               expect(glm.vec3(glm.vec2(3,2),1)).to.glm_eq([3,2,1]);
-
+                           });
+                        it('exceptions', function(){
                               expect(function(){glm.vec3({},0)}).to['throw'](/unrecognized object passed to.*?[(]o,z[)]/);
                               expect(function(){glm.vec3(null,0)}).to['throw'](/unrecognized object passed to.*?vec3/);
                               expect(function(){glm.vec3(null)}).to['throw'](/unrecognized object passed to.*?vec3/);
@@ -664,11 +710,21 @@ describe('glm', function(){
                               glm.$to_array(glm.normalize(glm.vec3(0,2,0))).should.eql([0,1,0]);
                            });
                         it('spin about a quat', function() {
-                              glm.$to_array(glm.vec3(100).mul(qspin)).should.eql([-100,100,-100]);
-                              glm.$to_array(qspin.mul(glm.vec3(100))).should.eql([-100,100,-100]);
+                              var qspin = glm.quat([ 0, 1, 0, 6.123031769111886e-17 ]);
+                              expect(
+                                 glm.vec3(100).mul(qspin),
+                                 "vec3 * quat"
+                              ).to.glm_eq([-100,100,-100]);
+
+                              expect(
+                                 qspin.mul(glm.vec3(100)),
+                                 "quat * vec3"
+                              ).to.glm_eq([-100,100,-100]);
                            });
                         it('mixify', function(){ 
-                              glm.$to_glsl(glm.mix(glm.vec3(1),glm.vec3(2),1/Math.PI)).should.equal('vec3(1.3183099031448364)');
+                              expect(
+                                 glm.mix( glm.vec3(1), glm.vec3(2), 1/Math.PI )
+                              ).to.be.glsl('vec3(1.3183099031448364)');
                            });
                      });
 

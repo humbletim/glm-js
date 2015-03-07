@@ -198,7 +198,13 @@ GLM = {
    make_mat4: function(ptr) { return new GLM.mat4([].slice.call(ptr,0,16));},
    diagonal4x4: function(v) { 
       if (v.$type !== 'vec4') throw new GLMJSError('unsupported argtype to GLM.diagonal4x4: '+['type:'+type.o]);
-      return new GLM.mat4(v);
+      v = v.elements;
+      return new GLM.mat4(
+         [v[0], 0, 0, 0,
+          0, v[1], 0, 0,
+          0, 0, v[2], 0,
+          0, 0, 0, v[3]]
+      );
    },
       
    toMat4: function toMat4(q) { return new GLM.mat4(q); },
@@ -1035,12 +1041,6 @@ GLM.mat4 = GLM_template.GLMType(
             if (M instanceof GLM.quat)
                return GLM.$outer.mat4_array_from_quat(M);
             m4 = M.elements || M;
-            if (M instanceof GLM.vec4) {
-               return [m4[0], 0, 0, 0,
-                       0, m4[1], 0, 0,
-                       0, 0, m4[2], 0,
-                       0, 0, 0, m4[3]];
-            }
             if (m4.length === 9) {
                // mat3 -> mat4
                return [
@@ -1050,11 +1050,19 @@ GLM.mat4 = GLM_template.GLMType(
                   0      , 0      , 0      , 1
                ];
             }
+            if (m4.length === 4 && m4[0] && m4[0].length === 4) {
+               return m4[0].concat(m4[1],m4[2],m4[3]);
+            }
             if (m4.length === 16)
                return m4;
          }
          throw new GLMJSError('unrecognized object passed to GLM.mat4: '+[M,m4&&m4.length]);
+      },
+      'object4': function(a,b,c,d) {
+         return [a,b,c,d].map(glm.$to_array)
+            .reduce(function(a,b) { return a.concat(b); });
       }
+
    }); // GLM.mat4.$
 
 
