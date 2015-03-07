@@ -8,7 +8,7 @@ $GLM_log = function(x,y) {
        // some logging happens early during load (ie: before a test node exists to populate)
        if (!node) return console.warn("early $GLM_log: ",x,y);
        node.appendChild(t);
-       node.scrollTop = Math.pow(2,16);
+       clearTimeout(node.scroll_timeout); node.scroll_timeout = setTimeout(function() { node.scrollTop = Math.pow(2,16); },100);
     })(document.getElementById($GLM_log.nodeId));
    //console.warn("$GLM_log", x,y);
 };

@@ -1309,24 +1309,33 @@ GLM.$init = function(hints) {
 // (... currently only used for testing parity with C++ GLM...)
 GLM.using_namespace = function(tpl) {
    GLM.$DEBUG && GLM.$outer.console.debug("GLM.using_namespace munges globals; it should probably not be used!");
-   var restore = [];
    var names = GLM.$symbols;
-   var before = names.filter(function(x) { return eval("1, 'undefined' !== typeof "+x); });
+   var before = [],
+     evals = [],
+     restore = [],
+     after = [];
+
+   eval(names.map(function(x,_) { return "GLM.using_namespace['"+x+"'] = before["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
+   GLM.$DEBUG && console.warn("GLM.using_namespace before #globals: "+before.length);
+   
    names.map(function(x) { 
-                var cme = "GLM.using_namespace."+x+"=undefined;"+
-                   "delete GLM.using_namespace."+x+";";
+                var cme = "GLM.using_namespace['"+x+"']=undefined;"+
+                   "delete GLM.using_namespace['"+x+"'];";
 
                 try {
-                   GLM.using_namespace[x] = eval("1,"+x);
-                   restore.push(new Function("", x+"=GLM.using_namespace."+x+";"+cme));
+                   restore.push(x+"=GLM.using_namespace['"+x+"'];"+cme);
                 } catch(e) {
-                   restore.push(new Function("", x+"=undefined;delete "+x+";"+cme));
+                   restore.push(x+"=undefined;delete "+x+";"+cme);
                 }
-                eval(x+"=GLM."+x);
+                evals.push(x+"=GLM."+x+";");
              });
+   eval(evals.join("\n"));
+
    var ret = tpl();
-   restore.map(function(f){f()});
-   var after = names.filter(function(x) { return eval("1, 'undefined' !== typeof "+x); });
+
+   eval(restore.join("\n"));
+   eval(names.map(function(x,_) { return "after["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
+   GLM.$DEBUG && console.warn("GLM.using_namespace after #globals: "+after.length);
 //    if ((before.length+after.length) !== 0) {
 //       throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
 //    }
@@ -1334,8 +1343,6 @@ GLM.using_namespace = function(tpl) {
       throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
    }
    return ret;
-//    new Function(names+'',"("+tpl+")();")
-//       .apply(this, names.map(function(x){ return GLM[x]; }));
 };
 
 try { module.exports = GLM; } catch(e) {}
