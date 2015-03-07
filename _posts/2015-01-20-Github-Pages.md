@@ -1,59 +1,83 @@
 ---
-title: glm-js second working draft
+title: glm-js working draft
 ---
 
 <style>button.subtle { border: none; outline: none; }</style>
-##### Status
 
 **glm-js** is an experimental JavaScript implementation of the [OpenGL Mathematics (GLM) C++ Library](http://glm.g-truc.net/).
 
-By design glm-js, GLM and GLSL could almost be called siblings.  Here's a fancy table to help illustrate:
+#### Introduction
+
+glm-js is being designed with several *generative qualities* in mind:
+
+* accessible
+* easy to learn
+* easy to master
+* provides good leverage
+* adaptable
+
+And instead of re-inventing the wheels of math, the lowest-level aspects are delegated to existing math libraries -- making room for the higher-level abstractions of GLM and GLSL to emerge.
+
+Using an advanced "dynamic linking" approach, glm-js is able to efficiently adapt several "backend" math vendors simultaneously, including selection of a math backend at runtime. 
+
+* [three.js](https://github.com/mrdoob/three.js/) - JavaScript 3D library. *(tested [&#x2611;](code/test/index.html#three))*
+* [glMatrix](https://github.com/toji/gl-matrix) - Javascript Matrix and Vector library for High Performance WebGL apps *(tested [&#x2611;](code/test/index.html#gl-matrix))*
+* [tdl-fast](https://github.com/greggman/tdl) - A low-level WebGL library *(tested [&#x2611;](code/test/index.html#tdl-fast))*
+
+#### Performance
+
+Comparing performance across different JavaScript math libraries can be like comparing the juicing of oranges to the baking of apple pies.
+
+But glm-js offers a different way to run those experiments -- instead of hand-crafting test cases three times across three backends, you write your test cases once and then glm-js does the rest. 
+
+For example, all of the testing (&#x2611;) links above go to the exact same page and differ only in the location hash, which identfies a particular back-end to run the live glm-js [unit tests](https://github.com/humbletim/glm-js/blob/master/test/test.js) against in your browser.
+
+<a id=GLMenetics></a>
+#### GLMenetics?
+
+[GLM](http://glm.g-truc.net/) seems to encourage a great deal of *mindset* and *code* re-use, in part by substantially adopting the GLSL specification; or to quote from the project's home page:
+
+> GLM provides classes and functions designed and implemented with the same naming conventions and functionalities than GLSL so that when a programmer knows GLSL, he knows GLM as well which makes it really easy to use.
+
+Similarly, **glm-js** aims to provide interfaces designed and implemented with the same naming conventions and functionalities as GLM -- extending the reach of GLMenetics out into JavaScript:
+
+<a id=glm-js-table></a>
 
 | Library | Language   | PU   | Link                    |
 |---------|------------|------|-------------------------|
 | GLSL    | C (like)   | GPU  | [OpenGL Shading Language](https://www.opengl.org/documentation/glsl/) |
 | GLM     | C++        | CPU  | [OpenGL Mathematics](http://glm.g-truc.net/)      |
-| glm-js  | JavaScript | JSPU* | [&infin;](#) |
+| glm-js  | JavaScript | JSPU* | [glm-js](#glm-js-table) |
 
-_* JavaScript Processing Unit (or something like that)_
+_* JavaScript Processing Unit_
 
-If your JSPU can run WebGL, then it can also run glm-js.
+Coding along these lines, math code can be crafted more portably across space, time, platform and environment.
 
-#### Implementation
-
-For now glm-js is implemented as a library wrangler -- stretching existing "backend" math modules into the shape of GLM.  It does this dynamically for the most part, so that the underlying modules can be upgraded and replaced as they continue to evolve separately.
- 
-Currently-supported backends include:
-
-* [three.js](https://github.com/mrdoob/three.js/) - JavaScript 3D library.
-* [glMatrix](https://github.com/toji/gl-matrix) - Javascript Matrix and Vector library for High Performance WebGL apps
-* [tdl-fast](https://github.com/greggman/tdl) - A low-level WebGL library
-
+<a id=examples></a>
 #### Examples
 
-*(soon)*
-
-For now here is one way to tinker with the latest glm-js builds in a console, with node:
+Here is one way to tinker with the latest glm-js builds on the console with **node**:
 
 ```sh
 $ git clone https://github.com/humbletim/glm-js.git
 $ cd glm-js
+$ node # or maybe: rlwrap -a node
 > glm = require("./build/glm-three.min");
+```
 
-# the build/*.min.js files contain everything needed bundled-in
-#   to tinker with src/ instead, try:
+<button class=subtle onclick='with(_altnode.style)display=display==="block"?"none":"block";'>instructions for non-minified glm-js</button>
+<div style=display:none id=_altnode>
+
+```sh
+# ... specify which backend to use with an environment variable:
 $ env GLM=three node  # or GLM=tdl-fast / GLM=gl-matrix
 > glm = require("./src/glm-js");
 
 ```
 
-Probably easiest to use glm-js object inspections with the REPL; here's a snippet for that:
+</div>
 
-```javascript
-> glm.$types.forEach(function(p) { glm[p].prototype.inspect = glm.$inspect; });
-```
-
-And here are some random, relevant things to type:
+And a few relevant things to try typing:
 
 ```javascript
 > glm.vec4(3,2,1,0)
@@ -102,47 +126,17 @@ And here are some random, relevant things to type:
 
 ```
 
-#### GLMenetics
+#### Trans-Porting 3D Math
 
-[GLM](http://glm.g-truc.net/) encourages *mindset* and *code* re-use by substantially adopting the GLSL specification as a basis; to quote from the project's home page:
-
-> GLM provides classes and functions designed and implemented with the same naming conventions and functionalities than GLSL so that when a programmer knows GLSL, he knows GLM as well which makes it really easy to use.
-
-Similarly, **glm-js** provides interfaces designed and implemented with the same naming conventions and functionalities as GLM.
-
-#### Because, 3D math can be portable
-
-The following three examples are roughly the same, despite spanning three different "host" languages (C++, GLSL and JavaScript, respectively).
+The following three snippets are roughly the same despite spanning different "host" languages ([GLSL](#glsl), [C++](#cxx) and [JavaScript](#js), respectively).
 
 ----------------------
-###### <b>*GLM* and *C++11*</b> (typically this would run on one of your main processor cores):
-
-<button class=subtle onclick='with(_gist24f5ce7029b29aa096bd.style)display=display==="block"?"none":"block";'>click for unabridged C++ example</button>
-<div style=display:none id=_gist24f5ce7029b29aa096bd>
-bonus points: try compiling/running using `c++ -std=c++0x -I/path/to/GLM example.cpp`
-{% gist 24f5ce7029b29aa096bd %}</div>
-
-
-```cpp
-#include <glm/glm.hpp>
-
-static auto mrot = glm::angleAxis(glm::radians(45.0f), glm::vec3(0,1,0));
-
-auto m1 = glm::mat4(1.0f); 
-auto m2 = glm::mat4(2.0f);
-
-auto m3 = m1 * m2;
-
-m3 *= glm::toMat4(mrot);
-```
-
-######&nbsp;
-----------------------
-###### <b>*GLSL*</b> (typically this would run on your graphics card):
+###### <b id=glsl>*GLSL*</b> (typically this would run on your graphics card):
+<font style=float:right size=-2>[GLSL](#glsl) | [GLM C++](#cxx) | [glm-js](#js) | [three-js](#three-js)</font>
 
 <button class=subtle onclick='with(_gist848e9069c943dd110d5d.style)display=display==="block"?"none":"block";'>click for unabridged GLSL example</button>        
 <div style=display:none id=_gist848e9069c943dd110d5d>
-bonus points: try pasting this into https://www.shadertoy.com/new
+*bonus points: try pasting this code into https://www.shadertoy.com/new*
 {% gist 848e9069c943dd110d5d %}
 </div>
 
@@ -161,18 +155,42 @@ m3 *= mrot;
  
 ######&nbsp;
 ----------------------
-###### <b>*glm-js* and *JavaScript*</b> (typically this would run in your web browser or on node):
+###### <b id=cxx>*GLM* and *C++11*</b> (typically this would run on one of your main processor cores):
+<font style=float:right size=-2>[GLSL](#glsl) | [GLM C++](#cxx) | [glm-js](#js) | [three-js](#three-js)</font>
+
+<button class=subtle onclick='with(_gist24f5ce7029b29aa096bd.style)display=display==="block"?"none":"block";'>click for unabridged C++ example</button>
+<div style=display:none id=_gist24f5ce7029b29aa096bd>
+*bonus points: try compiling/running using `c++ -std=c++0x -I/path/to/GLM example.cpp && ./a.out`*
+{% gist 24f5ce7029b29aa096bd %}</div>
+
+
+```cpp
+#include <glm/glm.hpp>
+
+static auto mrot = glm::angleAxis(glm::radians(45.0f), glm::vec3(0,1,0));
+
+auto m1 = glm::mat4(1.0f); 
+auto m2 = glm::mat4(2.0f);
+
+auto m3 = m1 * m2;
+
+m3 *= glm::toMat4(mrot);
+```
+
+######&nbsp;
+----------------------
+###### <b id=js>*glm-js* and *JavaScript*</b> (typically this would run in your web browser or on node):
+<font style=float:right size=-2>[GLSL](#glsl) | [GLM C++](#cxx) | [glm-js](#js) | [three-js](#three-js)</font>
 
 <button class=subtle onclick='with(_gist43ffd612a609659dd7a9.style)display=display==="block"?"none":"block";'>click for unabridged JavaScript example</button>
 <div style=display:none id=_gist43ffd612a609659dd7a9>
-bonus points: try pasting into node (from cloned project directory)
+*bonus points: try pasting into node (from cloned project directory)*
 {% gist 43ffd612a609659dd7a9 %}</div>
 
 ```javascript
 var glm = require('./glm');
 
-this.mrot = this.mrot ||
-    glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
+this.mrot = this.mrot || glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
 
 var m1 = glm.mat4(1.0); 
 var m2 = glm.mat4(2.0);
@@ -184,7 +202,10 @@ m3['*='](glm.toMat4(this.mrot));
 
 ######&nbsp;
 ----------------------
-... and for contrast, consider the same math as above implemented using <b>stock *three.js*</b>:
+###### <span id=three-js>*three-js* and *JavaScript*</span>:
+<font style=float:right size=-2>[GLSL](#glsl) | [GLM C++](#cxx) | [glm-js](#js) | [three-js](#three-js)</font>
+
+... here's the same math as above, implemented here using stock *three.js*:
 
 ```javascript
 var THREE = require('./three');

@@ -369,6 +369,18 @@ Full-Width Styles
 }
 
 
+@media screen and (min-width: 800px) {
+.inner {  max-width: 720px; }
+}
+
+@media screen and (min-width: 1024px) {
+.inner {  max-width: 960px; }
+}
+
+@media screen and (max-width: 600px) {
+.inner {  max-width: 480px; }
+}
+
 
 /*******************************************************************************
 Small Device Styles
