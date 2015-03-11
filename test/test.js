@@ -6,6 +6,7 @@ should = chai.should(),
   glm = require("../src/glm-js");
 
 require("../src/glm.buffers");
+require("../src/glm.experimental");
 //glm.$log(glm.$vector.version);
 
 glm.$log('glm: '+glm);
@@ -18,7 +19,77 @@ chai.use(cane.sugar);
 
 var mocha_utils = cane.patchMochaUtils(this.Mocha ? this.Mocha.utils : require("mocha").utils);
 
+var examples = {
+   "=== vec4(1,2,3,4)": function() {
+      function _(v) { expect(v).to.eql(glm.vec4(1,2,3,4)); }
+
+      _( glm.vec4(1,2,3,4) );
+
+      {
+         _( glm.vec4(glm.vec4(1,2,3,4)) );
+         _( glm.vec4(glm.vec3(1,2,3),4) );
+         _( glm.vec4(glm.vec2(1,2),3,4) );
+      }
+      
+      {
+         _( glm.vec4(glm.vec3(glm.vec2(1,2),3),4) );
+      }
+      
+      {
+         var buffer = new ArrayBuffer(glm.vec4.BYTES_PER_ELEMENT);
+         new Float32Array(buffer).set([1,2,3,4]);
+         _( glm.make_vec4(buffer) );
+      }
+      
+      {
+         _(       (glm.vec4(1,0,0,0)) 
+            ['+'] (glm.vec4(0,2,0,0))
+            ['+'] (glm.vec4(0,0,3,0))
+            ['+'] (glm.vec4(0,0,0,4))
+          );//         vec4(1,2,3,4)
+      }
+
+      {
+         _(       (glm.vec4(11,21,31,41))
+            ['-'] (glm.vec4(1)) 
+            ['/'] (10)
+          );//         vec4(1, 2, 3, 4 )
+      }
+
+      {
+         var vx4 = glm.vec4(2,4,6,8);
+                       vx4.div_eq(2);
+         _( vx4 ); //  vec4(1,2,3,4)
+      }
+
+      {
+         var v = glm.vec4(3,4,1,2);
+         v.xy = v.zw;  // 1,2,1,2 
+         v.zw['+='](
+            glm.vec2(2)//+    2,2
+         );
+         _( v );       // 1,2,3,4
+      }
+
+      {
+         _( glm.translate(
+               glm.vec3(1,2,3).mul(1/4)
+            ).mul( glm.diagonal4x4(glm.vec4(4)) )[3] );
+      }
+   }
+};
+function pseudoExportsUI(ob) {
+   for (var p in ob) {
+      if (ob[p].call)
+         it(p, ob[p]);
+      describe(p, pseudoExportsUI.bind(this, ob[p]));
+   }
+};
+
 describe('glm', function(){
+            describe('examples', function() {
+                        pseudoExportsUI(examples);
+                     });
             describe('common', function(){
                         it('module props', function(){
                               expect(glm.version).to.be.a('string');
@@ -230,6 +301,13 @@ describe('glm', function(){
                               expect(glm.radians(v)).to.glm_eq([1,2,3]);
                               expect(glm.radians(0)).to.equal(0);
                            });
+                        it('.perspective', function() {
+                              var Projection = glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0);
+                              expect(
+                                 Projection+''
+                              ).to.equal('mat4x4(\n\t(1.810660, 0.000000, 0.000000, 0.000000), \n\t(0.000000, 2.414214, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.002002, -1.000000), \n\t(0.000000, 0.000000, -0.200200, 0.000000)\n)' );
+                           });
+                        
                         describe('.rotate', function() {
                                     var UP = glm.vec3(0,1,0);
                                     var angle = glm.radians(45);
@@ -834,18 +912,38 @@ describe('glm', function(){
                               expect(glm.make_vec2(bytes))
                                  .to.glm_eq([0,1]);
                               
+                              // should not modify bytes...
                               glm.make_vec4(bytes).xyzw = [4,4,4,4];
 
                               expect(glm.make_vec3(bytes))
-                                 .to.glm_eq([4,4,4]);
+                                 .to.glm_eq([0,1,2]);
                               expect(glm.make_quat(floats))
-                                 .to.glm_eq([4,4,4,4]);
+                                 .to.glm_eq([0,1,2,3]);
+
+                              {
+                                 expect([].slice.call(floats,0,4)).to.eql([0,1,2,3]);
+                                 // new glm.vec<N>(Float32Array) is special case that adopts the typed array
+                                 // (and will therefore modify the underlying bytes)
+                                 new glm.vec4(floats.subarray(0,4)).xyzw = [4,4,4,4];
+                                 expect([].slice.call(floats,0,4)).to.eql([4,4,4,4]);
+                              }
 
                               expect(function() { new glm.mat4(bytes); }).to.throw();
 
+                              expect( glm.make_mat4(bytes)[0]).to.flatten.into("4444");
                               expect( glm.make_mat4(bytes)[1]).to.flatten.into("4567");
 
                               expect( glm.make_mat3(bytes)[2]).to.flatten.into("678");
+
+                              {
+                                 // make_mat4 regression test
+                                 var Projection = glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0);
+                                 var m4 = glm.make_mat4(Projection.elements.buffer);
+                                 m4[0].xyzw = [1,2,3,4];
+                                 expect(
+                                    Projection+''
+                                 ).to.equal('mat4x4(\n\t(1.810660, 0.000000, 0.000000, 0.000000), \n\t(0.000000, 2.414214, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.002002, -1.000000), \n\t(0.000000, 0.000000, -0.200200, 0.000000)\n)' );
+                              }
 
                            });
                         it('regression tests', function(){
@@ -945,6 +1043,14 @@ describe('glm', function(){
                          s['='](b); // this will re-arrayize (so will affect s[0])
                          expect(s[0]).to.glm_eq([0,0,0,0]);
 
+                      });
+                   it('exceptions', function() {
+                         expect(function() {
+                                   new glm.$vector(function() {}, 4);
+                                }).to.throw(/expecting.*GLMConstructor/);
+                         expect(function() {
+                                   new glm.$vector(glm.$int32, 4);
+                                }).to.throw("unsupported argtype");
                       });
                 });
           }//glm.$vector
@@ -1112,6 +1218,7 @@ describe('glm', function(){
                                  glm.$log(x,y.elements);
                                  x._set(y.elements);
                                  expect(x[0]+'').to.equal(y[0]+'');
+                                 expect(x._set.bind(x,"string")).to.throw("unsupported argtype");
                               });
                            it('mat4[]', function() {
                                  var bones = glm.$vmat4(10);

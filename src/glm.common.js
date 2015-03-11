@@ -190,12 +190,15 @@ GLM = {
       return glm.vec3(x.x * tmp2, x.y * tmp2, x.z * tmp2);
    },
 
-   make_vec2: function(ptr) { return new GLM.vec2([].slice.call(ptr,0,2)); },
-   make_vec3: function(ptr) { return new GLM.vec3([].slice.call(ptr,0,3)); },
-   make_vec4: function(ptr) { return new GLM.vec4([].slice.call(ptr,0,4)); },
-   make_quat: function(ptr) { return new GLM.quat([].slice.call(ptr,0,4)); },
-   make_mat3: function(ptr) { return new GLM.mat3([].slice.call(ptr,0,9)); },
-   make_mat4: function(ptr) { return new GLM.mat4([].slice.call(ptr,0,16));},
+   $from_ptr: function(typ, ptr) {
+      return new typ(new Float32Array(new Float32Array(ptr.buffer || ptr,0,typ.componentLength)));
+   },
+   make_vec2: function(ptr) { return GLM.$from_ptr(GLM.vec2, ptr); },
+   make_vec3: function(ptr) { return GLM.$from_ptr(GLM.vec3, ptr); },
+   make_vec4: function(ptr) { return GLM.$from_ptr(GLM.vec4, ptr); },
+   make_quat: function(ptr) { return GLM.$from_ptr(GLM.quat, ptr); },
+   make_mat3: function(ptr) { return GLM.$from_ptr(GLM.mat3, ptr); },
+   make_mat4: function(ptr) { return GLM.$from_ptr(GLM.mat4, ptr); },
    diagonal4x4: function(v) { 
       if (v.$type !== 'vec4') throw new GLMJSError('unsupported argtype to GLM.diagonal4x4: '+['type:'+type.o]);
       v = v.elements;
@@ -294,7 +297,7 @@ GLM.$GLMBaseType = (
 
          this.repr = function() { return "function $GLMBaseType<"+$type+">(){ [ GLMType@"+(GLM.$template.$_module_stamp)+" ] }"; };
 
-         GLM.$outer.console.debug("CREATED $class: "+this.repr());
+         //GLM.$outer.console.debug("CREATED $class: "+this.repr());
 
          GLM.$types.push($type);
       }
@@ -777,10 +780,40 @@ GLM.$template.operations(
             return new glm.vecN(glm.$to_array(me).map(function(v,_) { return v - you[_]; }));
          }
       },
+      sub_eq: {
+         $op: '-=',
+         'vec<N>,vec<N>': function(me,you) { 
+            glm.$to_array(me).map(function(v,_) { return me.elements[_] = v - you[_]; });
+            return me;
+         }
+      },
       add: { 
          $op: '+',
          'vec<N>,vec<N>': function(me,you) { 
             return new glm.vecN(glm.$to_array(me).map(function(v,_) { return v + you[_]; }));
+         }
+      },
+      add_eq: {
+         $op: '+=',
+         'vec<N>,vec<N>': function(me,you) { 
+            glm.$to_array(me).map(function(v,_) { return me.elements[_] = v + you[_]; });
+            return me;
+         }
+      },
+      div: {
+         $op: '/',
+         'vec<N>,float': function(me, k) {
+            return new glm.vecN(
+               glm.$to_array(me).map(function(v,_) { return v / k; })
+            );
+         }
+      },
+      div_eq: {
+         $op: '/=',
+         'vec<N>,float': function(me, k) {
+            for(var i=0; i < N ; i++)
+              me.elements[i] /= k;
+            return me;
          }
       },
       eql: { 

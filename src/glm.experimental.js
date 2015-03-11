@@ -22,13 +22,22 @@ GLM.$make_primitive = function(type, type32array) {
    var ts = { $to_string: {} };
    ts.$to_string[type] = function(what) { return "[GLM."+what.$type+" "+(what.elements&&what.elements[0])+"]"; };
    GLM.$template.varargs_functions(ts);
+   
+   GLM.$template.extend(
+      GLM[type],
+      {
+         componentLength: 1,
+         BYTES_PER_ELEMENT: type32array.BYTES_PER_ELEMENT,
+         prototype: GLM.$template.extend(
+            new GLM.$GLMBaseType(GLM[type], type),
+            {
+               copy: function(v) {
+                  this.elements.set(GLM.$isGLMObject(v) ? v.elements : [v]);
+               }
+            })
+      });
+   GLM[type].prototype['='] = GLM[type].prototype.copy;
 
-   GLM[type].componentLength = 1;
-   GLM[type].BYTES_PER_ELEMENT = type32array.BYTES_PER_ELEMENT;
-   GLM[type].prototype = new GLM.$GLMBaseType(GLM[type], type);
-   GLM[type].prototype.copy = function(v) {
-      this.elements.set(GLM.$isGLMObject(v) ? v.elements : [v]);
-   };
    return GLM[type];
 };
 
@@ -48,7 +57,7 @@ GLM.$cast_to_type32array = function(cl, _sz, type32array) {
 
    if (typeof sz === 'number')
       sz = new type32array(sz * cl);
-   if (sz instanceof ArrayBuffer || sz instanceof Array)
+   if (sz instanceof ArrayBuffer || Array.isArray(sz))
       sz = new type32array(sz);
 
    if (!(sz instanceof type32array)) {

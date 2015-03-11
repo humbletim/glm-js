@@ -12,11 +12,15 @@ function transform(
     Up) 
 {   
    var Projection = glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0); 
-   //console.log(glm.to_string(Projection));
+   glm.$log("Projection",Projection);
    var ViewTranslate = glm.translate(glm.mat4(1.0), Translate); 
    var ViewRotateX = glm.rotate(ViewTranslate, Orientation.y, Up); 
    var View = glm.rotate(ViewRotateX, Orientation.x, Up); 
    var Model = glm.mat4(1.0); 
+   glm.$log("Projection",Projection);
+   glm.$log("ViewTranslate",ViewTranslate);
+   glm.$log("ViewRotateX",ViewRotateX);
+   glm.$log("View",View);
    return Projection ['*'] (View) ['*'] (Model); 
 } 
 

@@ -253,7 +253,7 @@ body {
   height: 40px;
 }
 
-#mocha code .comment { color: #ddd; }
+#mocha code .comment { color: #777; }
 #mocha code .init { color: #2f6fad; }
 #mocha code .string { color: #5890ad; }
 #mocha code .keyword { color: #8a6343; }

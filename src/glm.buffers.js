@@ -13,6 +13,8 @@ function $GLMVector(typ, sz, type32array) {
       throw new GLM.GLMJSError('expecting typ to be GLM.$isGLMConstructor: '+
                                [typeof typ, (typ?typ.$type:typ)]+" // "+
                                GLM.$isGLMConstructor(typ));
+   if (typ.componentLength === 1 && glm[typ.prototype.$type.replace("$","$$v")])
+      throw new GLM.GLMJSError("unsupported argtype to glm.$vector - for single-value types use glm.$v<type> vectors...");      
    this.glmtype = typ;
    if (!this.glmtype.componentLength) throw new Error('need .componentLength '+[typ, sz, type32array]);
    this.componentLength = this.glmtype.componentLength;
@@ -38,7 +40,7 @@ $GLMVector.prototype = GLM.$template.extend(
             " .elements[0]="+(this.elements&&this.elements[0])+
             " ->[0]"+(this['->']&&this['->'][0])+"]";
       },
-      set: function(elements) { 
+      '=': function(elements) { 
          return this._set(elements);
       },
       _set: function(elements) {
@@ -51,7 +53,7 @@ $GLMVector.prototype = GLM.$template.extend(
                        elements.length]);
          this.length = elements.length / this.componentLength;
          if (this.length !== Math.round(this.length))
-            throw new Error('$vector.length alignment mismatch '+[this.componentLength, this.length, Math.round(this.length), elements]);
+            throw new Error('$vector.length alignment mismatch '+JSON.stringify({componentLength:this.componentLength, length:this.length, rounded_length:Math.round(this.length), elements_length: elements.length}));
          this.elements = elements;
          if (this._kv)
             this._setup(this._kv);
@@ -67,22 +69,22 @@ $GLMVector.prototype = GLM.$template.extend(
                                setters: bSetters
                             });
       },
-      _destroy: function(arr) {
-            if (arr) {
-               var isArray = Array.isArray(arr);
-               for(var i=0;i < arr.length; i++) {
-                  if (i in arr) {
+      $destroy: function(arr) {
+         if (arr) {
+            var isArray = Array.isArray(arr);
+            for(var i=0;i < arr.length; i++) {
+               if (i in arr) {
                      Object.defineProperty(arr, i, { enumerable: true, configurable: true, value: undefined });
+                  delete arr[i];
+                  if (!isArray) {
+                     arr[i] = undefined; // dbl check... fires error if still prop-set
                      delete arr[i];
-                     if (!isArray) {
-                        arr[i] = undefined; // dbl check... fires error if still prop-set
-                        delete arr[i];
-                     }
                   }
-               }
-               if (isArray)
-                  arr.length = 0;
+                  }
             }
+            if (isArray)
+               arr.length = 0;
+         }
       },
       _setup: function(kv) {
          var vec = this.glmtype;
@@ -103,7 +105,7 @@ $GLMVector.prototype = GLM.$template.extend(
          if (!ele) 
             throw new GLMJSError("GLMVector._setup - neither kv.elements nor this.elements...");
          
-         this._destroy(this.arr);
+         this.$destroy(this.arr);
          // cleanup
          var arr = this.arr = this['->'] = container;
          
