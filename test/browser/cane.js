@@ -80,6 +80,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
             else
             _chai.Assertion.addMethod(p, self.methods[p]);
          }
+         self.checkForNodeInvocation();
          return self.patchChai(_chai);
       },
       patchMochaUtils: function(utils) {
@@ -147,6 +148,28 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
                                      }).to['throw']("expected 'fvec3(0.000000, 0.000000, 0.000000)' to equal null");
                            });
                   });
+      },
+      checkForNodeInvocation: function() {
+         // workaround to enable direct invocation via node cli
+         if (typeof process === 'object' && 
+               process.versions && 
+               process.versions.node) {
+            try {
+               describe.exists;
+            } catch(e) {
+               console.warn("... direct invocation via node detected; rigging Mocha run");
+               var Mocha = require('mocha');
+               var mocha = new Mocha();
+               mocha.ui('bdd');
+               var api={};
+               mocha.suite.emit('pre-require', api);
+               describe = api.describe, it = api.it;
+               process.nextTick(
+                  function() {
+                     mocha.run(function(failures) { console.warn(failures); });
+                  });
+            }
+         }
       }
    };
 

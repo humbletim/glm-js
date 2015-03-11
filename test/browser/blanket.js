@@ -4099,7 +4099,7 @@ var parseAndModify = (inBrowser ? window.falafel : require("falafel"));
         getCovVar: function(){
             var opt = _blanket.options("customVariable");
             if (opt){
-                if (_blanket.options("debug")) {console.log("BLANKET-Using custom tracking variable:",opt);}
+                if (_blanket.options("debug")) {blanket.console.log("BLANKET-Using custom tracking variable:",opt);}
                 return inBrowser ? "window."+opt : opt;
             }
             return inBrowser ?   "window._$blanket" : "_$jscoverage";
@@ -4120,7 +4120,7 @@ var parseAndModify = (inBrowser ? window.falafel : require("falafel"));
                 inFileName = config.inputFileName;
             //check instrument cache
            if (_blanket.options("instrumentCache") && sessionStorage && sessionStorage.getItem("blanket_instrument_store-"+inFileName)){
-                if (_blanket.options("debug")) {console.log("BLANKET-Reading instrumentation from cache: ",inFileName);}
+                if (_blanket.options("debug")) {blanket.console.log("BLANKET-Reading instrumentation from cache: ",inFileName);}
                 next(sessionStorage.getItem("blanket_instrument_store-"+inFileName));
             }else{
                 var sourceArray = _blanket._prepareSource(inFile);
@@ -4132,9 +4132,9 @@ var parseAndModify = (inBrowser ? window.falafel : require("falafel"));
                 if (_blanket.options("sourceURL")){
                     instrumented += "\n//@ sourceURL="+inFileName.replace("http://","");
                 }
-                if (_blanket.options("debug")) {console.log("BLANKET-Instrumented file: ",inFileName);}
+                if (_blanket.options("debug")) {blanket.console.log("BLANKET-Instrumented file: ",inFileName);}
                 if (_blanket.options("instrumentCache") && sessionStorage){
-                    if (_blanket.options("debug")) {console.log("BLANKET-Saving instrumentation to cache: ",inFileName);}
+                    if (_blanket.options("debug")) {blanket.console.log("BLANKET-Saving instrumentation to cache: ",inFileName);}
                     sessionStorage.setItem("blanket_instrument_store-"+inFileName,instrumented);
                 }
                 next(instrumented);
@@ -4143,7 +4143,7 @@ var parseAndModify = (inBrowser ? window.falafel : require("falafel"));
         _trackingArraySetup: [],
         _branchingArraySetup: [],
         _prepareSource: function(source){
-            return source.replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/(\r\n|\n|\r)/gm,"\n").split('\n');
+            return source.replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/(\r\n|\n|\r)/gm,"\n").split('\n');//"
         },
         _trackingSetup: function(filename,sourceArray){
             var branches = _blanket.options("branchTracking");
@@ -4302,9 +4302,10 @@ var parseAndModify = (inBrowser ? window.falafel : require("falafel"));
             if (!coverageInfo.stats){
                 throw new Error("You must call blanket.setupCoverage() first.");
             }
+           return coverageInfo;
         },
         onTestStart: function(){
-            if (_blanket.options("debug")) {console.log("BLANKET-Test event started");}
+            if (_blanket.options("debug")) {blanket.console.log("BLANKET-Test event started");}
             this._checkIfSetup();
             coverageInfo.stats.tests++;
             coverageInfo.stats.pending++;
@@ -4323,7 +4324,7 @@ var parseAndModify = (inBrowser ? window.falafel : require("falafel"));
             coverageInfo.stats.suites++;
         },
         onTestsDone: function(){
-            if (_blanket.options("debug")) {console.log("BLANKET-Test event done");}
+            if (_blanket.options("debug")) {blanket.console.log("BLANKET-Test event done");}
             this._checkIfSetup();
             coverageInfo.stats.end = new Date();
             if (inBrowser){
@@ -4473,7 +4474,7 @@ _blanket.extend({
         }
         readFile(files[sessionIndx]);
     },
-                                                        _loadFile: function(path){ console.warn("_loadfile", path);
+                                                        _loadFile: function(path){ blanket.console.warn("_loadfile", path);
         if (typeof path !== "undefined"){
             var request = new XMLHttpRequest();
             request.open('GET', path, false);
@@ -4485,7 +4486,7 @@ _blanket.extend({
         var script = document.createElement("script");
         script.type = "text/javascript";
         script.text = data;
-	//console.warn((''+data).substr(0,1000));
+	//blanket.console.warn((''+data).substr(0,1000));
         (document.body || document.getElementsByTagName('head')[0]).appendChild(script);
     },
     hasAdapter: function(callback){
@@ -4502,7 +4503,7 @@ _blanket.extend({
         // Check if we have any covered files that requires reporting
         // otherwise just exit gracefully.
         if (!coverage_data.files || !Object.keys(coverage_data.files).length) {
-            if (_blanket.options("debug")) {console.log("BLANKET-Reporting No files were instrumented.");}
+            if (_blanket.options("debug")) {blanket.console.log("BLANKET-Reporting No files were instrumented.");}
             return;
         }
 
@@ -4540,7 +4541,7 @@ _blanket.extend({
 
           return _copy;
         }
-        if (_blanket.options("debug")) {console.log("BLANKET-Collecting page scripts");}
+       if (_blanket.options("debug")) {blanket.console.log("BLANKET-Collecting page scripts");}
         var scripts = _blanket.utils.collectPageScripts();
         //_blanket.options("filter",scripts);
         if (scripts.length === 0){
@@ -4572,6 +4573,9 @@ _blanket.extend({
         }
     },
     beforeStartTestRunner: function(opts){
+       if (!blanket.console)
+          blanket.console = top.console;
+
         opts = opts || {};
         opts.checkRequirejs = typeof opts.checkRequirejs === "undefined" ? true : opts.checkRequirejs;
         opts.callback = opts.callback || function() {  };
@@ -4586,7 +4590,7 @@ _blanket.extend({
                     };
                     var check = function() {
                         if (allLoaded()) {
-                            if (_blanket.options("debug")) {console.log("BLANKET-All files loaded, init start test runner callback.");}
+                            if (_blanket.options("debug")) {blanket.console.log("BLANKET-All files loaded, init start test runner callback.");}
                             var cb = _blanket.options("testReadyCallback");
 
                             if (cb){
@@ -5120,13 +5124,13 @@ _blanket.extend({
             
             if (!(_blanket.utils.cache[currScript] && _blanket.utils.cache[currScript].loaded)){
                 var attach = function(){
-                    if (_blanket.options("debug")) {console.log("BLANKET-Mark script:"+currScript+", as loaded and move to next script.");}
+                    if (_blanket.options("debug")) {blanket.console.log("BLANKET-Mark script:"+currScript+", as loaded and move to next script.");}
                     isLoaded();
                 };
                 var whenDone = function(result){
-                    if (_blanket.options("debug")) {console.log("BLANKET-File loading finished");}
+                    if (_blanket.options("debug")) {blanket.console.log("BLANKET-File loading finished");}
                     if (typeof result !== 'undefined'){
-                        if (_blanket.options("debug")) {console.log("BLANKET-Add file to DOM.");}
+                        if (_blanket.options("debug")) {blanket.console.log("BLANKET-Add file to DOM.");}
                         _blanket._addScript(result);
                     }
                     attach();
@@ -5153,13 +5157,13 @@ _blanket.extend({
            var timeout = _blanket.options("timeout") || 3000;
            setTimeout(function(){
                 if (!_blanket.utils.cache[options.url].loaded){
-                   throw new Error("error loading source script: "+options.url);
+                   throw new Error("[timeout "+timeout+"] error loading source script: "+options.url);
                 }
            },timeout);
            _blanket.utils.getFile(
                 options.url,
                 cb, 
-              function(){ throw new Error("error loading source script: "+options.url);}
+              function(){ throw new Error("[getFile] error loading source script: "+options.url);}
             );
         },
         ifOrdered: function(nextScript,cb){
@@ -5182,20 +5186,20 @@ _blanket.extend({
            * @param {nextScript} factory for next priority level
            * @param {cb} the done callback
            */
-           if (_blanket.options("debug")) {console.log("BLANKET-Returning function");}
+           if (_blanket.options("debug")) {blanket.console.log("BLANKET-Returning function");}
             return function(){
-                if (_blanket.options("debug")) {console.log("BLANKET-Marking file as loaded: "+url);}
+                if (_blanket.options("debug")) {blanket.console.log("BLANKET-Marking file as loaded: "+url);}
            
                 _blanket.utils.cache[url].loaded=true;
             
                 if (_blanket.utils.allLoaded()){
-                   if (_blanket.options("debug")) {console.log("BLANKET-All files loaded", typeof cb);}
+                   if (_blanket.options("debug")) {blanket.console.log("BLANKET-All files loaded", typeof cb);}
                     cb();
                 }else if (orderedCb){
                     //if it's ordered we need to
                     //traverse down to the next
                     //priority level
-                    if (_blanket.options("debug")) {console.log("BLANKET-Load next file.");}
+                    if (_blanket.options("debug")) {blanket.console.log("BLANKET-Load next file.");}
                     orderedCb(nextScript,cb);
                 }
             };
@@ -5221,16 +5225,16 @@ _blanket.extend({
                     _blanket.utils.matchPatternAttribute(url,antimatch)
                 ){
                 oldCb(content);
-                if (_blanket.options("debug")) {console.log("BLANKET-File will never be instrumented:"+url);}
+                if (_blanket.options("debug")) {blanket.console.log("BLANKET-File will never be instrumented:"+url);}
                 _blanket.requiringFile(url,true);
             }else if (_blanket.utils.matchPatternAttribute(url,match)){
-                if (_blanket.options("debug")) {console.log("BLANKET-Attempting instrument of:"+url);}
+                if (_blanket.options("debug")) {blanket.console.log("BLANKET-Attempting instrument of:"+url);}
                 _blanket.instrument({
                     inputFile: content,
                     inputFileName: url
                 },function(instrumented){
                     try{
-                        if (_blanket.options("debug")) {console.log("BLANKET-instrument of:"+url+" was successfull.");}
+                        if (_blanket.options("debug")) {blanket.console.log("BLANKET-instrument of:"+url+" was successfull.");}
                         _blanket.utils.blanketEval(instrumented);
                         cb();
                         _blanket.requiringFile(url,true);
@@ -5242,7 +5246,7 @@ _blanket.extend({
                             //but otherwise we don't want
                             //to completeLoad or the error might be
                             //missed.
-                            if (_blanket.options("debug")) { console.log("BLANKET-There was an error loading the file:"+url); }
+                            if (_blanket.options("debug")) { blanket.console.log("BLANKET-There was an error loading the file:"+url); }
                             cb(content);
                             _blanket.requiringFile(url,true);
                         }else{
@@ -5251,7 +5255,7 @@ _blanket.extend({
                     }
                 });
             }else{
-                if (_blanket.options("debug")) { console.log("BLANKET-Loading (without instrumenting) the file:"+url);}
+                if (_blanket.options("debug")) { blanket.console.log("BLANKET-Loading (without instrumenting) the file:"+url);}
                 oldCb(content);
                 _blanket.requiringFile(url,true);
             }

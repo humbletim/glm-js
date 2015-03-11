@@ -36,7 +36,7 @@ try {
    describe.exists;
    var _main = main;
    main = function(log) {
-      if (log !== $GLM_log) alert([log+'', $GLM_log+''])
+      if (log !== $GLM_log) alert(["log !== $GLM_log", "log:"+log, "$GLM_log:"+$GLM_log].join("\r\n"))
       $GLM_log('testing');
       log('ex-g-truc');
       describe('ex-g-truc', function() {
