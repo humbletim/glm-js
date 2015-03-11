@@ -101,6 +101,11 @@ int main() {
 
     log("glm.inverse(q)", glm::inverse(q));
     log("glm.quat(glm.inverse(glm.toMat4(m)))", glm::quat(glm::inverse(glm::toMat4(q))));
+
+    auto qq = glm::angleAxis(glm::radians(30.0f), glm::normalize(glm::vec3(1.0)));
+    log("qq", qq);
+    log("qq * v3: ", qq * (v3));
+
     {
         using namespace glm;
         auto qa = angleAxis(radians(45.0f), vec3(0,1,0));

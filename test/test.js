@@ -214,6 +214,9 @@ describe('glm', function(){
                                           expect(glm.$to_glsl(glm.mat3(-2))).to.equal('mat3(-2)');
                                           expect(glm.$to_glsl(glm.uvec4(0))).to.equal('uvec4(0)');
                                           expect(glm.$to_glsl(glm.quat(1))).to.equal('quat(1)');
+                                          expect(glm.$to_glsl(glm.normalize(glm.angleAxis(glm.radians(30), glm.normalize(glm.vec3(1))))))
+                                             .to.equal('quat(0.14942924678325653,0.14942924678325653,0.14942924678325653,0.9659258127212524)');
+
                                        });
                                     
                                     it('$from_glsl', function() {
@@ -641,6 +644,9 @@ describe('glm', function(){
                               expect(glm.quat(glm.vec3(glm.radians(3)))).euler.to.glm_eq([3,3,3]);
                               expect(glm.quat(glm.radians(glm.vec3(15,30,45)))).euler.to.glm_eq([15,30,45]);
                               expect(glm.normalize(glm.quat({w:.8,x:.2,y:.2,z:.2}))).euler.to.glm_eq([33.69006,18.40848,33.69006]);
+
+                              var q = glm.normalize(glm.angleAxis(glm.radians(30), glm.normalize(glm.vec3(1))));
+                              expect(q).euler.to.glm_eq([20.1039,14.1237,20.1039]);
                               
                            });
                         it('core operations, more', function(){
@@ -977,6 +983,35 @@ describe('glm', function(){
              describe(
                 'GLMVector',
                 function() {
+                   it('+ / +=', function() {
+                         var a = glm.$vvec2(2);
+                         a[0] = [1,2];
+                         a[1] = [3,4];
+                         
+                         var b = glm.$vvec2(2);
+                         b[0] = glm.vec2(-1);
+                         b[1] = glm.vec2(-2);
+                         
+                         function _(m) { return m.map(GLM.$to_glsl).join("|"); }
+
+                         expect(_( a )).to.equal('vec2(1,2)|vec2(3,4)');
+                         expect(_( b )).to.equal('vec2(-1)|vec2(-2)');
+
+                         {
+                            var c = a['+'](b);
+                            
+                            expect(_( a )).to.equal('vec2(1,2)|vec2(3,4)');
+                            expect(_( b )).to.equal('vec2(-1)|vec2(-2)');
+                            expect(_( c )).to.equal('vec2(1,2)|vec2(3,4)|vec2(-1)|vec2(-2)');
+                         }
+
+                         {
+                            a['+='](a);
+                            
+                            expect(_( a )).to.equal('vec2(1,2)|vec2(3,4)|vec2(1,2)|vec2(3,4)');
+                         }
+                         
+                      });
                    it('arrayize', function() {
                          var vv = new glm.$vector(glm.vec4, 4).arrayize(true);
                          expect(vv).to.be.instanceOf(glm.$vector);
@@ -1017,6 +1052,17 @@ describe('glm', function(){
                             ]);
                          expect(mm).to.flatten.into('98765432101234567890123456789987');
                       });
+                   it('.$to_glsl', function() {
+                         var mm = new glm.$vmat4(2);
+                         mm[0] = glm.toMat4(glm.angleAxis(glm.radians(45), glm.vec3(0,1,0)));
+                         expect(glm.$to_glsl(mm, 'mm')).to.equal('mat4 mm[2];\n mm[0] = mat4(0.7071067690849304,0,-0.7071067690849304,0,0,1,0,0,0.7071067690849304,0,0.7071067690849304,0,0,0,0,1);\n mm[1] = mat4(0);');
+                         
+                         var floats = new glm.$vfloat(2);
+                         floats[0] = Math.PI;
+                         floats[1] = Math.PI/2;
+                         expect(glm.$to_glsl(floats, 'f')).to.equal('float f[2];f[0] = 3.1415927410125732;f[1] = 1.5707963705062866;');
+                      });
+
                    it(
                       'dynamic mode', 
                       function() {
@@ -1216,7 +1262,7 @@ describe('glm', function(){
                                  x[0].xyzw = [9,8,7,6];
                                  expect(x[0]+'').to.not.equal(y[0]+'');
                                  glm.$log(x,y.elements);
-                                 x._set(y.elements);
+                                 x._set(y);
                                  expect(x[0]+'').to.equal(y[0]+'');
                                  expect(x._set.bind(x,"string")).to.throw("unsupported argtype");
                               });

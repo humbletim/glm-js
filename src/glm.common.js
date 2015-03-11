@@ -347,11 +347,20 @@ var GLM_template = GLM.$template = {
       "string": "string",
       "[object Float32Array]": "Float32Array"
    },
+   _add_overrides: function(type, kvfuncs) {
+      for(var p in kvfuncs)
+         if(kvfuncs[p]) GLM[p].override(type, kvfuncs[p]);
+   },
+   _add_inline_override: function(dbg, type, func) { 
+      this[type] = /*TRACING*/ eval(GLM_template._traceable("glm_"+dbg+"_"+type, func))();
+      return this;
+   },
    "<T>": function(F, dbg) {
       var types = GLM_template.jstypes;
       F.$sig = "<T>";
       /*TRACING*/ return this.slingshot(
-         { $template: F }, eval(this._traceable("glm_"+dbg, 
+         { $template: F, override: this._add_inline_override.bind(F,dbg) },
+         eval(this._traceable("glm_"+dbg, 
          function(o) {
             if (this instanceof GLM.$GLMBaseType) { o=this; }
             var T = [(o&&o.$type) || types[typeof o] || "null"];
@@ -364,7 +373,8 @@ var GLM_template = GLM.$template = {
       var types = GLM_template.jstypes;
       F.$sig = "<T,...>";
       /*TRACING*/ return this.slingshot(
-         { $template: F }, eval(this._traceable("glm_"+dbg, 
+         { $template: F, override: this._add_inline_override.bind(F,dbg) }, 
+         eval(this._traceable("glm_"+dbg, 
          function(o) {
             var args = [].slice.call(arguments);
             if (this instanceof GLM.$GLMBaseType) { args.unshift(o=this); }
@@ -378,7 +388,8 @@ var GLM_template = GLM.$template = {
       var types = GLM_template.jstypes;
       F.$sig = "<T,V,n>";
       /*TRACING*/ return this.slingshot(
-         { $template: F }, eval(this._traceable("glm_"+dbg, 
+         { $template: F, override: this._add_inline_override.bind(F,dbg) }, 
+         eval(this._traceable("glm_"+dbg, 
          function (o,p,v) {
             if (this instanceof GLM.$GLMBaseType) { v=p, p=o, o=this; }
             var TV = [(o&&o.$type) || types[typeof o] || types[o+''] || "<unknown "+o+">", 
@@ -395,7 +406,8 @@ var GLM_template = GLM.$template = {
       F.$sig = '<T,V>';
       
       /*TRACING*/ return this.slingshot(
-         { $template: F }, eval(this._traceable("glm_"+dbg, 
+         { $template: F, override: this._add_inline_override.bind(F,dbg) }, 
+         eval(this._traceable("glm_"+dbg, 
          function(o,p,a,b,c) {
             if (this instanceof GLM.$GLMBaseType) { c=b, b=a, a=p, p=o, o=this; }
             var TV = [(o&&o.$type) || types[typeof o], 
@@ -660,27 +672,6 @@ GLM.$template.extend(
                                        3:this.vec4(v[3])}; }
       },
 
-      $to_glsl: {
-         "vec<N>": function(v) { 
-            var arr = GLM.$to_array(v);
-            // un-expand identical trailing values
-            while(arr.length && arr[arr.length-2] === arr[arr.length-1])
-               arr.pop();
-            return v.$type+"("+arr+")";
-         },
-         uvec4: function(v) { return this.vec4(v); },// will pick up "uvec4" from $type
-         quat: function(q) { // note: quat()s aren't actually available in GLSL yet
-            if((q.x+q.y+q.z)===0)
-               return "quat("+q.w+")";
-            return "quat("+GLM.$to_array(q)+")";
-         },
-         'mat<N>': function(M) { 
-            // FIXME: this could fail on particular diagonals that sum to N
-            var m=GLM.$to_array(M); var ss=m.reduce(function(s,e){return s+e; },0);
-            if (ss === m[0]*N) return "matN("+m[0]+")";
-            return "matN("+m+")";
-         }
-      },
       $from_glsl: {
          'string': function(v) {
             var ret;
@@ -691,7 +682,32 @@ GLM.$template.extend(
             return ret;
          }
       }
-   })
+   }),
+   GLM.$template.varargs_functions(
+      {
+         $to_glsl: {
+            "vec<N>": function(v) { 
+               var arr = GLM.$to_array(v);
+            // un-expand identical trailing values
+               while(arr.length && arr[arr.length-2] === arr[arr.length-1])
+                  arr.pop();
+               return v.$type+"("+arr+")";
+            },
+            uvec4: function(v) { return this.vec4(v); },// will pick up "uvec4" from $type
+            quat: function(q) { // note: quat()s aren't actually available in GLSL yet
+               if((q.x+q.y+q.z)===0)
+                  return "quat("+q.w+")";
+               return "quat("+GLM.$to_array(q)+")";
+            },
+            'mat<N>': function(M) { 
+               // FIXME: this could fail on particular diagonals that sum to N
+               var m=GLM.$to_array(M); var ss=m.reduce(function(s,e){return s+e; },0);
+               if (ss === m[0]*N) return "matN("+m[0]+")";
+               return "matN("+m+")";
+            }
+         }
+      }
+   )
 );
 
 GLM.$template.operations(

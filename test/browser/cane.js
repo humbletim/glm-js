@@ -20,6 +20,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
                value = [value];
                obj = [obj];
             }
+            if (!value) throw new Error('!value '+value);
             return value.map(
                function(value,_) { 
                   //glm.$log(this,Array.isArray(value), value, delta);

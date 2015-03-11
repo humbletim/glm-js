@@ -43,7 +43,29 @@ $GLMVector.prototype = GLM.$template.extend(
       '=': function(elements) { 
          return this._set(elements);
       },
+      '+': function(elements) {
+         if (elements instanceof this.constructor)
+            elements = elements.elements;
+         
+         var n = this.elements.length + elements.length;
+         var e = new this.type32array(n);
+         e.set(this.elements);
+         e.set(elements, this.elements.length);
+         return new this.constructor(e);
+      },
+      '+=': function(elements) {
+         if (elements instanceof this.constructor)
+            elements = elements.elements;
+         
+         var n = this.elements.length + elements.length;
+         var e = new this.type32array(n);
+         e.set(this.elements);
+         e.set(elements, this.elements.length);
+         return this._set(e);
+      },
       _set: function(elements) {
+         if (elements instanceof this.constructor)
+            elements = new this.type32array(elements.elements);
          if (!(elements instanceof this.type32array))
             throw new GLM.GLMJSError("unsupported argtype to $GLMVector._set "+(elements&&elements.constructor));
          GLM.$DEBUG && GLM.$outer.console.debug("$GLMVector.prototype.set..." + 

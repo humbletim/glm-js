@@ -101,6 +101,11 @@ try{
 
     log("glm.inverse(q)", glm.inverse(q));
     log("glm.quat(glm.inverse(glm.toMat4(m)))", glm.quat(glm.inverse(glm.toMat4(q))));
+
+    var qq = glm.angleAxis(glm.radians(30.0), glm.normalize(glm.vec3(1)));
+    log("qq", qq);
+    log("qq * v3", qq ['*'] (v3));
+
     {
        glm.using_namespace(
           function() {
