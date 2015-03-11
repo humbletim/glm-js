@@ -82,7 +82,7 @@ You can also open a browser debug console while on this web page -- glm-js <span
 Depending on browser you might need to append an .inspect() or .toString() for pretty-printed results -- eg: `glm.vec2(window.innerWidth,window.innerHeight).inspect()` [&equest;](javascript:alert(glm.vec2(innerWidth,innerHeight).inspect()); "inline test").
 
 
-And here are some relevant things to try typing [&equest;](javascript:alert("glm.vec4(3,2,1,0);glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0)".split(";").map(function(js) { return js+"\\n\\t"+glm.$inspect(eval("1,"+js)); }).join("\\n")); "inline test"):
+And here are some relevant things to try typing [&equest;](javascript:(function(str){console.warn(str);return alert(str);})("glm.vec4(3,2,1,0);v = glm.vec4(1), v.xyz = [.1,.2,.3], v.toString();v['*='](5);q = glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));glm.degrees(glm.eulerAngles(q));v['*'](q);glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0).toString();glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0)".split(";").map(function(js) { var V = eval("1,"+js); return js+"\\n\\t"+("string"===typeof(V)?V:glm.$inspect(V)); }).join("\\n")); "inline test"):
 
 ```javascript
 > glm.vec4(3,2,1,0)
@@ -93,14 +93,47 @@ And here are some relevant things to try typing [&equest;](javascript:alert("glm
   "w": 0
 }
 
+> v = glm.vec4(1), v.xyz = [.1,.2,.3], v.toString()
+'fvec4(0.100000, 0.200000, 0.300000, 1.000000)'
 
-> glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
+> v['*='](5) // or v.mul_eq(5)
+{
+  "x": 0.5,
+  "y": 1,
+  "z": 1.5,
+  "w": 5
+}
+
+> q = glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
 {
   "w": 0.9238795042037964,
   "x": 0,
   "y": 0.3826834261417389,
   "z": 0
 }
+
+> glm.degrees(glm.eulerAngles(q))
+{
+  "x": 0,
+  "y": 44.999996185302734,
+  "z": 0
+}
+
+> v['*'](q) // or v.mul(q)
+{
+  "x": 1.4142135381698608,
+  "y": 1,
+  "z": 0.7071067690849304,
+  "w": 5
+}
+
+> glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0).toString()
+mat4x4(
+    (1.810660, 0.000000, 0.000000, 0.000000), 
+    (0.000000, 2.414214, 0.000000, 0.000000), 
+    (0.000000, 0.000000, -1.002002, -1.000000), 
+    (0.000000, 0.000000, -0.200200, 0.000000)
+)
 
 > glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0)
 {
