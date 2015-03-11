@@ -58,7 +58,7 @@ $LQ = $LAB
       blanket.options('data-cover-flags', "branchTracking");
       //blanket.options('data-cover-only', "*");
       blanket.utils.collectPageScripts = function() {
-         var scriptNames = [].filter.call(document.scripts, function(x) { return /\b(glm)\b/.test(x.src); }).reverse()
+        var scriptNames = [].filter.call(document.scripts, function(x) { return /(src|build)[/](glm)\b/.test(x.src); }).reverse()
             .map(function(x) { return x.src; });
          _blanket.options("filter","['"+scriptNames.join("','")+"']");
          return scriptNames;
