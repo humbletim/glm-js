@@ -12,7 +12,6 @@ THREE.exists;
 
 glm = GLM;
 
-//throw new glm.GLMJSError(glm.degrees(5));
 var DLL = {
    vendor_name: "three.js",
    vendor_version: THREE.REVISION,
@@ -24,19 +23,20 @@ var DLL = {
 };
    
 DLL.statics = {
-   //          degrees: function(n) { return THREE.Math.radToDeg(n); },
-   //          radians: function(n) { return THREE.Math.degToRad(n); },
    $mat4: new THREE.Matrix4(),
    mat4_perspective: function(fov, aspect, near, far) {
       fov = glm.degrees(fov);
-      return glm.make_mat4(
-         this.$mat4.makePerspective( fov, aspect, near, far ).elements
+      return new glm.mat4(
+         new Float32Array(this.$mat4.makePerspective( fov, aspect, near, far ).elements)
       );
    }, 
    mat4_angleAxis: function(theta, axis) {
-      return glm.make_mat4(
-         this.$mat4.makeRotationAxis(axis,theta).elements
+      return new glm.mat4(
+         this.$mat4.makeRotationAxis(axis,theta)
       );
+//      return glm.make_mat4(
+//          this.$mat4.makeRotationAxis(axis,theta).elements
+//       );
    },
    quat_angleAxis: function(angle, axis) {
       return new glm.quat(
@@ -44,21 +44,27 @@ DLL.statics = {
       );
    },
    mat4_translation: function(v) {
-      return glm.make_mat4(
-         this.$mat4.makeTranslation(v.x,v.y,v.z).elements
+      return new glm.mat4(
+         this.$mat4.makeTranslation(v.x,v.y,v.z)
       );
+//       return glm.make_mat4(
+//          this.$mat4.makeTranslation(v.x,v.y,v.z).elements
+//       );
    },
    mat4_scale: function(v) {
-      return glm.make_mat4(
-         this.$mat4.makeScale(v.x,v.y,v.z).elements
+      return new glm.mat4(
+         this.$mat4.makeScale(v.x,v.y,v.z)
       );
+//       return glm.make_mat4(
+//          this.$mat4.makeScale(v.x,v.y,v.z).elements
+//       );
    },
    $euler: new THREE.Euler(),
    vec3_eulerAngles: function(q) {
       return new glm.vec3(this.$euler.setFromQuaternion(q, 'ZYX'));
    },
    mat4_array_from_quat: function(q) {
-      return this.$mat4.makeRotationFromQuaternion(q).elements;
+      return this.$mat4.makeRotationFromQuaternion(q).toArray();
    },
    $quat: new THREE.Quaternion(),
    quat_array_from_mat4: function(o) {
@@ -135,14 +141,16 @@ DLL.operations =
 
 DLL.functions = {
    mix: {
-      $quat: new THREE.Quaternion(),
-      $quat2: new THREE.Quaternion(),
-      "quat,quat": function(a,b,rt) {
-         return new glm.quat(
-            this.$quat.fromArray(a.elements)
-               .slerp(this.$quat2.fromArray(b.elements),rt)
-         );
-      }
+      "quat,quat": (function() {
+                       var $quat = new THREE.Quaternion();
+                       var $quat2 = new THREE.Quaternion();
+                       return function glm_mix_quat_quat(a,b,rt) {
+                          return new glm.quat(
+                             $quat.fromArray(a.elements)
+                                .slerp($quat2.fromArray(b.elements),rt)
+                          );
+                       };
+                    })()
    }
 }; // functions
 
@@ -168,8 +176,6 @@ DLL.calculators = {
       "vec<N>": function(v) { return this.$vecN.length.call(v); },
       $quat: new THREE.Quaternion(),
       quat: function(q) { return this.$quat.fromArray(q.elements).length(); },
-      //             vec3: function(v) { return this.$vec3.length.call(v); },
-      //             vec4: function(v) { return this.$vec4.length.call(v); },
    },
    inverse: {
       $quat: new THREE.Quaternion(),
@@ -178,7 +184,9 @@ DLL.calculators = {
          //return new glm.quat(this.$quat.set(q.x,q.y,q.z,q.w).inverse());
          return new glm.quat(this.$quat.fromArray(q.elements).inverse());
       },
-      mat4: function(m) { return new glm.mat4(this.$mat4.getInverse(m)); },
+      slowmat4: function(m) { return new glm.mat4(this.$mat4.getInverse(m)); },
+      _pm: {multiplyScalar: function(n) { for(var i=0;i<16; i++)this.elements[i]*=n;}},
+      mat4: function(m) { m=m.clone(); this._pm.elements=m.elements; this.$mat4.getInverse.call(this._pm,m); return m;},
    },
    transpose: {
       $mat4_transpose: THREE.Matrix4.prototype.transpose,

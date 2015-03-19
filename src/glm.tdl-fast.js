@@ -21,13 +21,13 @@ var DLL = {
 
 DLL.statics = {
    mat4_perspective: function(fov, aspect, near, far) {
-      return new glm.mat4(
+      return glm.mat4(
          tdl.fast.matrix4.perspective(new Float32Array(16),
                                       fov, aspect, near, far)
       );
    }, 
    mat4_angleAxis: function(theta, axis) {
-      return new glm.mat4(
+      return glm.mat4(
          tdl.fast.matrix4.axisRotation(new Float32Array(16), axis.elements, theta)
       );
    },
@@ -36,10 +36,10 @@ DLL.statics = {
       return new glm.quat(q);//throw new Error(q);
    },
    mat4_translation: function(v) {
-      return new glm.mat4(tdl.fast.matrix4.translation(new Float32Array(16), v.elements));
+      return glm.mat4(tdl.fast.matrix4.translation(new Float32Array(16), v.elements));
    },
    mat4_scale: function(v) {
-      return new glm.mat4(tdl.fast.matrix4.scaling(new Float32Array(16), v.elements));
+      return glm.mat4(tdl.fast.matrix4.scaling(new Float32Array(16), v.elements));
    },
    //          _inverse_transpose: function(m) {
    //             return m;
@@ -77,7 +77,7 @@ DLL.operations = {
       },
       _mulVecSca: tdl.fast.mulVectorScalar,
       'vec<N>,float': function(a,b) {
-         return new glm.vecN(
+         return glm.vecN(
             this._mulVecSca(new Float32Array(N), a.elements, b));
       },
       'mat4,vec3': function(a,b) { 
@@ -87,14 +87,14 @@ DLL.operations = {
       },
       _mulVecMat4: tdl.fast.rowMajor.mulVectorMatrix4,
       'mat4,vec4': function(a,b) {
-         return new glm.vec4(
+         return glm.vec4(
             this._mulVecMat4(new Float32Array(4), 
                              b.elements, a.elements)
          );
       },
       '_mulMatMat<N>': 'tdl.fast.columnMajor.mulMatrixMatrixN',
       'mat<N>,mat<N>': function(a,b) {
-         return new glm.matN(
+         return glm.matN(
             this._mulMatMatN(new Float32Array(N*N), 
                             a.elements, b.elements)
          );
@@ -125,7 +125,7 @@ DLL.functions = {
          //var _a=a,_b=b;
          a = a.elements;
          b = b.elements;
-         var o = new glm.quat(new Float32Array(4));
+         var o = glm.quat(new Float32Array(4));
          var out = o.elements;
          
          { //http://jsperf.com/quaternion-slerp-implementations
@@ -176,7 +176,7 @@ DLL.functions = {
 DLL.calculators = {
    normalize: {
       'vec<N>': function(v) { 
-         return new glm.vecN(tdl.fast.normalize(new Float32Array(N), v.elements));
+         return glm.vecN(tdl.fast.normalize(new Float32Array(N), v.elements));
       },
       quat: function(q) { 
          return new glm.quat(tdl.quaternions.normalize(q.elements));
@@ -192,10 +192,12 @@ DLL.calculators = {
    },
    inverse: {
       quat: function(q) { return new glm.quat(tdl.quaternions.inverse(q.elements)); },
-      mat4: function(m) { return new glm.mat4(tdl.fast.inverse4(new Float32Array(16), m.elements)); }
+      xmat4: function(m) { return glm.mat4(tdl.fast.inverse4(new Float32Array(16), m.elements)); },
+      mat4: function(m) { m=m.clone(); tdl.fast.inverse4(m.elements, m.elements); return m; }
    },
    transpose: {
-      mat4: function(m) { return new glm.mat4(tdl.fast.transpose4(new Float32Array(16), m.elements)); }
+      xmat4: function(m) { return glm.mat4(tdl.fast.transpose4(new Float32Array(16), m.elements)); },
+      mat4: function(m) { m=m.clone(); tdl.fast.transpose4(m.elements, m.elements); return m; }
    }
 };//calculators
 

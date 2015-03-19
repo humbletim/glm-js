@@ -67,9 +67,9 @@ DLL.statics = {
    mat4_array_from_quat: function(q) {
       return GLMAT.mat4.fromQuat(new Float32Array(16), q.elements);
    },
+   $qtmp: new Float32Array(9),
    quat_array_from_mat4: function(o) {
-      var m3 = GLMAT.mat3.fromMat4(new Float32Array(9), o.elements);
-      return GLMAT.quat.fromMat3(new Float32Array(4), m3);
+      return GLMAT.quat.fromMat3(new Float32Array(4), GLMAT.mat3.fromMat4(this.$qtmp, o.elements));
    }
 }; //statics
 
@@ -121,7 +121,8 @@ DLL.operations = {
          return a;
       },
       'vec<N>,float': function(a,b) {
-         return GLMAT.vecN.scale(a,a,b);
+         GLMAT.vecN.scale(a.elements,a.elements,b);
+         return a;
       },
       'quat,quat': function(a,b) {
          GLMAT.quat.multiply(
@@ -165,21 +166,31 @@ DLL.calculators = {
 
    inverse: {
       quat: function(q) { 
-         return new glm.quat(
+         return glm.quat(
             GLMAT.quat.invert(new Float32Array(4), q.elements)
          );
       },
-      mat4: function(m) { 
-         return new glm.mat4(
+      xmat4: function(m) { 
+         return glm.mat4(
             GLMAT.mat4.invert(new Float32Array(16), m.elements)
          );
+      },
+      mat4: function(m) { 
+         m=m.clone();
+         GLMAT.mat4.invert(m.elements, m.elements);
+         return m;
       }
    },
    transpose: {
-      mat4: function(m) { 
-         return new glm.mat4(
+      xmat4: function(m) { 
+         return glm.mat4(
             GLMAT.mat4.transpose(new Float32Array(16), m.elements)
          );
+      },
+      mat4: function(m) { 
+         m=m.clone();
+         GLMAT.mat4.transpose(m.elements, m.elements);
+         return m;
       }
    }
 }; //calculators
