@@ -80,13 +80,19 @@ $LQ = $LAB
    function() {
       var l = location+'';      
       
-      if (/gl-matrix/i.test(l)) 
+      if(/gl-matrix-min/i.test(l))
+         libs = ['../build/glm-gl-matrix.min.js'];
+
+      else if(/tdl-fast-min/i.test(l))
+         libs = ['../build/glm-tdl-fast.min.js'];
+
+      else if (/gl-matrix/i.test(l)) 
          libs = ['../src/glm.common.js', '../lib/gl-matrix.js', '../src/glm.gl-matrix.js'];
 
       else if (/tdl-fast/i.test(l))
          libs = ['../src/glm.common.js', '../lib/tdl-fast.js', '../src/glm.tdl-fast.js'];
 
-      else if(/minified/i.test(l))
+      else if(/minified|three-min/i.test(l))
          libs = ['../build/glm-three.min.js'];
 
       else //if (true || /three/i.test(l) || window.PHANTOMJS)

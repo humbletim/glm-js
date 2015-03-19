@@ -604,7 +604,8 @@ var GLM_template = GLM.$template = {
                   }
                );
             }.bind(this));
-         if (!bN && 'function' === typeof TSP[TN] && !TSP[TN].name) {
+         if (/^[$]/.test(TN)) GLM.$DEBUG && GLM.$outer.console.debug("@ NOT naming "+TN);
+         else if (!bN && 'function' === typeof TSP[TN] && !TSP[TN].name) {
             GLM.$DEBUG && GLM.$outer.console.debug("naming "+_tojsname(hint+"_"+TN));
             /*TRACING*/ TSP[TN] = /*EVAL*/eval(this._traceable("glm_"+hint+"_"+TN, TSP[TN]))();
          }
@@ -1559,12 +1560,12 @@ GLM.$init = function(hints) {
 GLM.using_namespace = function(tpl) {
    GLM.$DEBUG && GLM.$outer.console.debug("GLM.using_namespace munges globals; it should probably not be used!");
    var names = GLM.$symbols;
-   var before = [],
-     evals = [],
-     restore = [],
-     after = [];
+   var evals = [],
+   restore = [],
+   before = GLM.using_namespace.before = [],
+   after = GLM.using_namespace.after = [];
 
-   eval(names.map(function(x,_) { return "GLM.using_namespace['"+x+"'] = before["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
+   eval(names.map(function(x,_) { return "GLM.using_namespace['"+x+"'] = GLM.using_namespace.before["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
    GLM.$DEBUG && console.warn("GLM.using_namespace before #globals: "+before.length);
    
    names.map(function(x) { 
@@ -1583,7 +1584,7 @@ GLM.using_namespace = function(tpl) {
    var ret = tpl();
 
    eval(restore.join("\n"));
-   eval(names.map(function(x,_) { return "after["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
+   eval(names.map(function(x,_) { return "GLM.using_namespace.after["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
    GLM.$DEBUG && console.warn("GLM.using_namespace after #globals: "+after.length);
 //    if ((before.length+after.length) !== 0) {
 //       throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));

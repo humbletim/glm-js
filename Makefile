@@ -12,8 +12,15 @@ build/glm-gl-matrix.js: lib/gl-matrix.js src/glm.common.js src/glm.gl-matrix.js
 build/glm-tdl-fast.js: lib/tdl-fast.js src/glm.common.js src/glm.tdl-fast.js
 	cat $^ > $@
 
+build/__VA_ARGS__.js: src/glm.common.js
+	( echo "var src = require('fs').readFileSync('/dev/stdin').toString('utf8');" ; \
+	grep __VA_ARGS__I $< -A1 -B3 ; \
+	echo "process.stdout.write(src, 'utf8');" ; \
+	) > $@
+	echo test | node $@
+
 build/%.min.js: build/%.js
-	cat $< | $(MINIFIER) > $@
+	cat $< | node build/__VA_ARGS__.js | $(MINIFIER) > $@
 
 build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.js
 	echo OK
@@ -21,13 +28,25 @@ build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.
 test-three:
 	GLM=three ../node_modules/.bin/mocha -b
 
+test-three-min:
+	GLM=three-min ../node_modules/.bin/mocha -b
+
 test-gl-matrix:
 	GLM=gl-matrix ../node_modules/.bin/mocha -b
+
+test-gl-matrix-min:
+	GLM=gl-matrix-min ../node_modules/.bin/mocha -b
 
 test-tdl-fast:
 	GLM=tdl-fast ../node_modules/.bin/mocha -b
 
+test-tdl-fast-min:
+	GLM=tdl-fast-min ../node_modules/.bin/mocha -b
+
 test: test-three test-gl-matrix test-tdl-fast
+	@echo OK
+
+test-min: test-three-min test-gl-matrix-min test-tdl-fast-min
 	@echo OK
 
 coverage-three:
