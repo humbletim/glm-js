@@ -84,6 +84,9 @@ int main() {
     log("mat4({ float x 16}}: ", m4d);
 
     log("vec2(200,300)", glm::vec2(200,300));
+    log("uvec2(2.99,3.99)", glm::uvec2(2.99,3.99));
+    log("uvec2(-2.1,0.01)", glm::uvec2(-2.1,0.01));
+    log("uvec2(-2.5,0).x", glm::uvec2(-2.5,0).x);
     log("vec3(200,300,400)", glm::vec3(200,300,400));
     log("vec3(vec4(5))", glm::vec3(glm::vec4(5)));
 
@@ -94,6 +97,7 @@ int main() {
     log("q length", glm::length(q));
     q = glm::normalize(q);
     log("q normalized", glm::eulerAngles(q));
+    log("q[0,1,2,3]", glm::vec4(q[0],q[1],q[2],q[3]));
     log("q(e(q))", glm::quat(glm::eulerAngles(q)));
     log("q * v3: ", q * (v3));
 

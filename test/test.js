@@ -7,7 +7,7 @@ should = chai.should(),
 
 require("../src/glm.buffers");
 require("../src/glm.experimental");
-//glm.$log(glm.$vector.version);
+//glm.$log(glm.$vectorType.version);
 
 glm.$log('glm: '+glm);
 glm.$log('chai: '+chai);
@@ -208,6 +208,7 @@ describe('glm', function(){
                                     it('$to_glsl', function() {
                                           expect(glm.$to_glsl(glm.vec3(1))).to.equal('vec3(1)');
                                           expect(glm.$to_glsl(glm.vec3(1,2,3))).to.equal('vec3(1,2,3)');
+                                          expect(glm.$to_glsl(glm.uvec3(1,2,3))).to.equal('uvec3(1,2,3)');
                                           expect(glm.$to_glsl(glm.mat4(0))).to.equal('mat4(0)');
                                           expect(glm.$to_glsl(glm.mat3(1))).to.equal('mat3(1)');
                                           expect(glm.$to_glsl(glm.mat3(2))).to.equal('mat3(2)');
@@ -284,6 +285,11 @@ describe('glm', function(){
                                  .to.equal('fvec3(15.0, -16.0, 170.0)');
                               
                               expect(glm.to_string("cheese")).to.equal("cheese");
+
+                              expect(glm.$to_string(new Float32Array(new ArrayBuffer(16),4,3))).to.equal('[object Float32Array {"length":3,"byteOffset":4,"byteLength":12,"BPE":4}]');
+                              expect(glm.$to_string(new ArrayBuffer(16))).to.equal('[object ArrayBuffer {"byteLength":16}]');
+                              expect(glm.$to_string(function asdf(){})).to.equal('[function asdf]');
+
                            });
                      });
 
@@ -306,9 +312,13 @@ describe('glm', function(){
                            });
                         it('.perspective', function() {
                               var Projection = glm.perspective(glm.radians(45.0), 4.0 / 3.0, 0.1, 100.0);
+                              var str = glm.$to_string(Projection);
                               expect(
-                                 Projection+''
+                                 str
                               ).to.equal('mat4x4(\n\t(1.810660, 0.000000, 0.000000, 0.000000), \n\t(0.000000, 2.414214, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.002002, -1.000000), \n\t(0.000000, 0.000000, -0.200200, 0.000000)\n)' );
+                              var b = glm.perspective(glm.radians(30), 1, .1,10);
+                              expect(b+'').not.to.equal(Projection+'');
+                              expect(b+'').not.to.equal(str);
                            });
                         
                         describe('.rotate', function() {
@@ -436,6 +446,11 @@ describe('glm', function(){
                            });
                         it('$template', function() {
                               expect(glm.$template).to.be.an('object');
+                              expect(glm.mul.link('mat4,mat4')(glm.mat4(2),glm.mat4(3))).to.eql(glm.mat4(2)['*'](glm.mat4(3)));
+                              expect(function() {
+                                        glm.mul.link('asdf')(glm.mat4(2),glm.mat4(3));
+                                     }).to.throw("error linking");
+                              expect(glm.translate.link('vec3')(glm.vec3(3))).to.eql(glm.translate(glm.vec3(3)));
                            });
                         it('operators', function() {
                               expect(glm.$to_array(glm.vec3(1).sub(glm.vec3(2,1,2)))).to.eql([-1,0,-1]);
@@ -491,6 +506,11 @@ describe('glm', function(){
                               expect(v4).to.glm_eq([1,8,4,5]);
                               v4.yzw = glm.vec3(2,3,4);
                               expect(v4).to.glm_eq([1,2,3,4]);
+
+                              expect(glm.uvec4(1,2,3,4).zw).to.be.instanceOf(glm.uvec2);
+                              expect(glm.uvec4(1,2,3,4).zw).to.eql(glm.uvec2(3,4));
+                              expect(glm.uvec3(1,2,3).xyz).to.glm_eq([1,2,3]);
+                              expect(glm.uvec2(2).xy).to.glm_eq([2,2]);
                            });
                      });
             
@@ -607,7 +627,7 @@ describe('glm', function(){
                                               "0001");
                 });
              it('invert tranpose', function() {
-                   glm.to_string(glm.transpose(glm.inverse(glm.mat4(qq)))).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
+                   glm.to_string(glm.transpose(glm.inverse(glm.toMat4(qq)))).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
                 });
                         
                 it('multiply neatly', function() {
@@ -645,6 +665,8 @@ describe('glm', function(){
                               expect(glm.quat(glm.radians(glm.vec3(15,30,45)))).euler.to.glm_eq([15,30,45]);
                               expect(glm.normalize(glm.quat({w:.8,x:.2,y:.2,z:.2}))).euler.to.glm_eq([33.69006,18.40848,33.69006]);
 
+                              expect(glm.normalize(glm.quat(1.01,2.02,3.03,4.04))[0]).to.be.approximately(.365,.001);
+
                               var q = glm.normalize(glm.angleAxis(glm.radians(30), glm.normalize(glm.vec3(1))));
                               expect(q).euler.to.glm_eq([20.1039,14.1237,20.1039]);
                               
@@ -660,6 +682,30 @@ describe('glm', function(){
                         it('core operations, yet more', function(){
                               glm.to_string(glm.toMat4(glm.normalize(glm.quat(1,0,1,0)))).should.equal('mat4x4((0.000000, 0.000000, -1.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
 
+                              var q = glm.angleAxis(glm.radians(45.0),glm.vec3(0,1,0));;
+                              var m=glm.toMat4(q);
+                              var n=glm.toMat4(q);
+                              n[3].xyz = [1,2,3];
+                              expect(n).to.not.eql(m);
+
+//                               var q = glm.angleAxis(glm.radians(45.0),glm.vec3(0,1,0));;
+//                               var m=glm.mat4(q);
+//                               var n=glm.mat4(q);
+//                               n[3].xyz = [1,2,3];
+//                               expect(n).to.not.eql(m);
+                              
+                              var q = glm.quat();
+                              q.xyzw = [0,0,0,9];
+                              expect(q.w).to.equal(9);
+                              expect(q).to.eql(glm.quat(9,0,0,0));
+
+                              q.wxyz = [8,0,0,0];
+                              expect(q).to.eql(glm.quat(8,0,0,0));
+                              expect(q.wxyz).to.glm_eq([8,0,0,0]);
+                              expect(q.wxyz).to.be.instanceOf(glm.vec4);
+                              expect(q.w).to.equal(8);
+
+                              
                            });
                         it('core operations, as a mat4 too', function() { 
                               glm.to_string(glm.toMat4(qq)[0]).should.equal('fvec4(0.707107, 0.000000, -0.707107, 0.000000)');
@@ -877,7 +923,7 @@ describe('glm', function(){
                                                 arr.push(k+": "+v);
                                              });
                               glm.$log('arr:'+arr.join("\n"));
-                              if(glm.$vector) expect(arr.length).to.be.gte(7);
+                              if(glm.$vectorType) expect(arr.length).to.be.gte(7);
                               if(glm.$int32) expect(arr.length).to.be.gte(10);
                            });
 
@@ -951,6 +997,8 @@ describe('glm', function(){
                                  ).to.equal('mat4x4(\n\t(1.810660, 0.000000, 0.000000, 0.000000), \n\t(0.000000, 2.414214, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.002002, -1.000000), \n\t(0.000000, 0.000000, -0.200200, 0.000000)\n)' );
                               }
 
+                              expect( function() { new glm.make_vec4({}); } ).to.throw(/not new/);
+                              expect( function() { new glm.make_vec4(); } ).to.throw(/byteOffset/);
                            });
                         it('regression tests', function(){
                               var b = new ArrayBuffer(glm.mat4.BYTES_PER_ELEMENT * 4);
@@ -978,10 +1026,18 @@ describe('glm', function(){
                               glm.$to_array({elements:f}).map(function(x) {return Math.abs(x.toFixed(5)); }).join("").should.eql("0000123400000000010010000010000100000000000000000000000000000000");
                               
                               expect(new glm.vec4(f.subarray(16,20)).address).to.equal("0x00000040");
+
+                              var b = new ArrayBuffer(100);
+                              var mid = new Float32Array(b, 100-4*4);
+                              mid[0] = 1;
+                              expect(new glm.vec4(mid)).to.glm_eq([1,0,0,0]);
+                              expect(glm.make_vec4(mid.buffer)).to.glm_eq([0,0,0,0]); // should this adopt the offset?? not sure yet
+                              expect(glm.make_vec4(mid.buffer, mid.byteOffset), "offset: "+mid.byteOffset).to.glm_eq([1,0,0,0]); // should this adopt the offset?? not sure yet
+
                            });
-          if(glm.$vector) {
+          if(glm.$vectorType) {
              describe(
-                'GLMVector',
+                '.$vectorType',
                 function() {
                    it('+ / +=', function() {
                          var a = glm.$vvec2(2);
@@ -1010,11 +1066,15 @@ describe('glm', function(){
                             
                             expect(_( a )).to.equal('vec2(1,2)|vec2(3,4)|vec2(1,2)|vec2(3,4)');
                          }
-                         
+
+                         expect(_( b )).to.equal('vec2(-1)|vec2(-2)');
+                         expect(_( b['+'](glm.vec2(5,6)) )).to.equal('vec2(-1)|vec2(-2)|vec2(5,6)');
+
+                         expect(function() { b['+']([1]); }).to.throw(/alignment mismatch/);
                       });
                    it('arrayize', function() {
-                         var vv = new glm.$vector(glm.vec4, 4).arrayize(true);
-                         expect(vv).to.be.instanceOf(glm.$vector);
+                         var vv = new glm.$vectorType(glm.vec4, 4).arrayize(true);
+                         expect(vv).to.be.instanceOf(glm.$vectorType);
                          
                          expect(vv['->'].map(function(x) { return glm.to_string(x); }))
                             .to.eql(",,,,".split('').map(function(){return glm.vec4()+''}));
@@ -1068,40 +1128,63 @@ describe('glm', function(){
                       function() {
                          var a = new Float32Array(4*10);
                          var b = new Float32Array(4*10);
-                         var v = new glm.$vvec4(a, true);
+                         var dynamic = new glm.$vvec4(a, true);
                          var s = new glm.$vvec4(a);
 
-                         v[0].xyzw = s[0].xyzw = [1,2,3,4];
+                         dynamic[0].xyzw = s[0].xyzw = [1,2,3,4];
 
-                         expect(v[0]+'').to.equal(s[0]+'');
-                         expect(v[0]).to.glm_eq([].slice.call(s.elements,0,4));
-                         expect(v[0]).to.glm_eq([].slice.call(a,0,4));
-                         expect(v[0]).to.not.glm_eq([].slice.call(b,0,4));
+                         expect(dynamic[0]+'').to.equal(s[0]+'');
+                         expect(dynamic[0]).to.glm_eq([].slice.call(s.elements,0,4));
+                         expect(dynamic[0]).to.glm_eq([].slice.call(a,0,4));
+                         expect(dynamic[0]).to.not.glm_eq([].slice.call(b,0,4));
 
-                         v.elements = b; // will affect v[0] (existing and future)
+                         dynamic.elements = b; // will affect dynamic[0] (existing and future)
                          s.elements = b; // is not dynamic, so this will NOT affect s[0]
 
-                         expect(v[0]+'').to.not.equal(s[0]+'');
+                         expect(dynamic[0]+'').to.not.equal(s[0]+'');
 
-                         expect(v[0]).to.glm_eq([0,0,0,0]);
+                         expect(dynamic[0]).to.glm_eq([0,0,0,0]);
+                         expect(s[0]).to.glm_eq([1,2,3,4]);
+                         
+                         dynamic[0] = glm.vec4(9,8,7,6);
+                         expect(dynamic[0]).to.glm_eq([9,8,7,6]);
                          expect(s[0]).to.glm_eq([1,2,3,4]);
 
-                         s['='](b); // this will re-arrayize (so will affect s[0])
-                         expect(s[0]).to.glm_eq([0,0,0,0]);
+                         s['='](b); // this will re-arrayize (so will affect s[0] as a side-effect)
+                         expect(s[0]).to.glm_eq([9,8,7,6]);
+                          
+                         dynamic[0]['*='](10);
 
+                         expect(dynamic[0]).to.glm_eq([90,80,70,60]);
+                         expect(s[0]).to.glm_eq([9,8,7,6]); // but still won't be affected by changes to b
+                         
+                         dynamic.elements = new Float32Array(dynamic.elements.length); // swap-out underlying buffer
+                         s.elements = new Float32Array(s.elements.length);
+                         
+                         expect(dynamic[0]).to.glm_eq([0,0,0,0]); // dynamic is now all zeros (from the fresh buffer)
+                         expect(s[0]).to.glm_eq([9,8,7,6]); // but s still references the cached buffer...
+
+                         // note: there is an added overhead to support/detect dynamic mapping...
+                         // (so only use when actually needed)
                       });
                    it('exceptions', function() {
                          expect(function() {
-                                   new glm.$vector(function() {}, 4);
+                                   new glm.$vectorType(function() {}, 4);
                                 }).to.throw(/expecting.*GLMConstructor/);
                          expect(function() {
-                                   new glm.$vector(glm.$int32, 4);
+                                   new glm.$vectorType(glm.$int32, 4);
                                 }).to.throw("unsupported argtype");
                       });
+                   it('misc', function() {
+                         var i = glm.$int32();
+                         expect(i['='](5)).to.equal(i);
+                         expect(i['='](4)).to.glm_eq([4]);
+                         expect(i['='](glm.$int32(3))).to.glm_eq([3]);
+                      });
                 });
-          }//glm.$vector
+          }//glm.$vectorType
                      });// buffers
-            describe('uvec4', function(){
+            describe('uvecN', function(){
                         it('core operations', function(){
                               glm.uvec4().should.be.instanceOf(glm.uvec4);
                               glm.$to_array(glm.uvec4(-2)).should.eql([0,0,0,0]);
@@ -1116,14 +1199,39 @@ describe('glm', function(){
                               glm.$to_array(glm.uvec4([-1,-1,-1])).should.eql([0,0,0,0]);
                               glm.$to_array(glm.uvec4([-1,1])).should.eql([0,1,1,1]);
                               glm.$to_array(glm.uvec4({x:-1,y:1,z:-1,w:1})).should.eql([0,1,0,1]);
-                              expect(glm.to_string(glm.uvec4(-1,-2,1,2))).to.equal("uvec4(0,0,1,2)");
+                              expect(glm.to_string(glm.uvec4(-1,-2,1,2))).to.equal("uvec4(0, 0, 1, 2)");
 
                               expect(glm.uvec4(2,3,4,5).x).to.equal(2);
                               expect(glm.uvec4(2,3,4,5)[3]).to.equal(5);
+
+                              expect(glm.uvec4(glm.vec3(1,2,3),4)).to.glm_eq([1,2,3,4]);
+                              expect(glm.uvec4(glm.vec2(-1,-2),3,4)).to.glm_eq([0,0,3,4]);
+                              expect(glm.uvec4(glm.vec4(-1))).to.glm_eq([0,0,0,0]);
+                              expect(glm.uvec4(glm.vec4(1.5,2.5,3.5,4.5))).to.glm_eq([1,2,3,4]);
+                              
+                              expect(glm.uvec2()).to.glm_eq([0,0]);
+                              expect(glm.$to_json(glm.uvec2({x:1,y:2}))).to.equal('{"x":1,"y":2}');
+                              expect(glm.$to_json(glm.uvec3())).to.equal('{"x":0,"y":0,"z":0}');
+                              expect(glm.$to_json(glm.uvec3(1))).to.equal('{"x":1,"y":1,"z":1}');
+                              expect(glm.$to_json(glm.uvec3(1,2))).to.equal('{"x":1,"y":2,"z":2}');
+                              expect(glm.$to_json(glm.uvec3([1,2]))).to.equal('{"x":1,"y":2,"z":2}');
+                              expect(glm.$to_json(glm.uvec3([1,2,3,4]))).to.equal('{"x":1,"y":2,"z":3}');
+                              expect(glm.$to_json(glm.uvec3(glm.$to_object(glm.vec3(9,8,7))))).to.equal('{"x":9,"y":8,"z":7}');
+                              expect(glm.$to_json(glm.uvec3(glm.vec2(1),2))).to.equal('{"x":1,"y":1,"z":2}');
+                              expect(glm.$to_json(glm.uvec3(glm.uvec2(1),2))).to.equal('{"x":1,"y":1,"z":2}');
+
+                              expect(glm.uvec4(glm.uvec3(glm.uvec2(2),3),4)).to.glm_eq([2,2,3,4]);
+                              expect(glm.uvec4(glm.uvec2(2),3,4)).to.glm_eq([2,2,3,4]);
+
+
                            });
                         it('exceptions', function() {
                               expect(function() { glm.uvec4({}); }).to['throw'](/unrecognized object passed to .*?uvec4/);
                               expect(function() { glm.uvec4({},1); }).to['throw'](/unrecognized object passed to .*?uvec4/);
+
+
+                              expect(function() { glm.uvec3({}); }).to['throw'](/unrecognized object passed to .*?uvec3/);
+                              expect(function() { glm.uvec2({}); }).to['throw'](/unrecognized object passed to .*?uvec2/);
                            });
                      });
 
@@ -1230,7 +1338,7 @@ describe('glm', function(){
                               });
                            it('setters - regressiont tests', function() {
                                  function testit(with_setters) {
-                                    var tmp = new glm.$vector(glm.mat4);
+                                    var tmp = glm.$vmat4();//new glm.$vectorType(glm.mat4);
                                     var v = glm.$vfloat(32);
                                     tmp.setFromPointer(v.elements.buffer);
                                     tmp.arrayize(with_setters);
@@ -1272,16 +1380,53 @@ describe('glm', function(){
                                  expect(bones[0][3].xyz).to.glm_eq([0,1,0]);
                               });
                            it('vector<int32>', function() {
-                                 expect(glm.$vint32([0.1,1.1,2.2,Math.PI])).to.glm_eq([0,1,2,3]);
+                                 expect(glm.$vint32([-10.1,1.1,2.2,Math.PI])).to.glm_eq([-10,1,2,3]);
                                  var x = new Uint8Array(16);
                                  x.set([0,1,0,0]);
                                  expect(glm.$vint32(x)).to.glm_eq([256,0,0,0]);
                                  x.set([0,0,0,0,1,0,0,0,-1,-1,-1,-1]);
                                  expect(glm.$vint32(x.buffer)).to.glm_eq([0,1,-1,0]);
                               });
+                           it('vector<uint16>', function() {
+                                 expect(glm.$vuint16([-1,1.1,2.2,Math.PI])).to.glm_eq([0xffff,1,2,3]);
+                                 expect(glm.$to_json(glm.$vuint16([-1,1.1,2.2,Math.PI]))).to.equal("[65535,1,2,3]");
+                                 expect(glm.$vuint16().BYTES_PER_ELEMENT).to.equal(2);
+                                 var indices_A = glm.$vuint16([0,1,2,3]);
+                                 var indices_B = glm.$vuint16([3,2,1,0]);
+                                 expect(indices_A+'').to.equal('[vector<$vuint16> {0,1,2,3}]');
+                                 indices_A['='](indices_B);
+                                 expect(indices_A.elements).to.eql(indices_B.elements);
+                                 expect(indices_A).to.eql(indices_B);
+                                 expect(indices_A.elements.buffer).to.not.equal(indices_B.elements.buffer);
+
+                                 expect(glm.$to_array(indices_A['+']([-1]))).to.eql([3,2,1,0,0xffff]);
+                                 expect(glm.$to_array(indices_A)).to.eql([3,2,1,0]);
+
+                                 indices_A['+=']([-1]);
+                                 expect(glm.$to_array(indices_A)).to.eql([3,2,1,0,0xffff]);
+
+                                 indices_A['+='](indices_A);
+                                 expect(glm.$to_array(indices_A)).to.eql([3,2,1,0,0xffff,3,2,1,0,0xffff]);
+                                 indices_B['+='](indices_A);
+                                 expect(glm.$to_array(indices_B)).to.eql([3,2,1,0,3,2,1,0,0xffff,3,2,1,0,0xffff]);
+
+                                 indices_A['='](glm.$vint32([9,8,7,6,5,4,3,2,1,0]));
+                                 expect(glm.$to_array(indices_A)).to.eql([9,8,7,6,5,4,3,2,1,0]);
+                                 expect(indices_A.elements).to.be.instanceOf(Uint16Array);
+
+                                 indices_A['='](glm.$vfloat([9.8,7.6,5.4,3.2,1.0]));
+                                 expect(glm.$to_array(indices_A)).to.eql([9,7,5,3,1]);
+                                 expect(indices_A.elements).to.be.instanceOf(Uint16Array);
+                              });
                            it('primitives', function() {
                                  expect(glm.$int32(5.5)).to.glm_eq([5]);
+                                 expect(glm.$int32.BYTES_PER_ELEMENT).to.equal(4);
+                                 expect(glm.$uint16(-1)).to.glm_eq([65535]);
+                                 expect(glm.$uint16.BYTES_PER_ELEMENT).to.equal(2);
                                  expect(glm.$float(5.5)).to.glm_eq([5.5]);
+                                 expect(glm.to_string(glm.$bool(true))).to.equal('bool(1)');
+                                 expect(glm.to_string(glm.$int32(-5.5))).to.equal('int(-5)');
+                                 expect(glm.to_string(glm.$float(5.5))).to.equal('float(5.5)');
                               });
                         });
 

@@ -5,35 +5,30 @@
 // MIT LICENSE
 // ----------------------------------------------------------------------------
 
-function $GLMVector(typ, sz, type32array) {
-   type32array = type32array || Float32Array;
-   this.type32array = type32array;
+function $GLMVector(typ, sz, typearray) {
+   typearray = typearray || Float32Array;
+   this.typearray = typearray;
    if (!(this instanceof $GLMVector)) throw new GLM.GLMJSError('use new');
    if (!('function' === typeof typ) || !GLM.$isGLMConstructor(typ)) 
       throw new GLM.GLMJSError('expecting typ to be GLM.$isGLMConstructor: '+
                                [typeof typ, (typ?typ.$type:typ)]+" // "+
                                GLM.$isGLMConstructor(typ));
    if (typ.componentLength === 1 && glm[typ.prototype.$type.replace("$","$$v")])
-      throw new GLM.GLMJSError("unsupported argtype to glm.$vector - for single-value types use glm.$v<type> vectors...");      
+      throw new GLM.GLMJSError("unsupported argtype to glm.$vectorType - for single-value types use glm."+typ.prototype.$type.replace("$","$$v")+"..."+typ.prototype.$type);
    this.glmtype = typ;
-   if (!this.glmtype.componentLength) throw new Error('need .componentLength '+[typ, sz, type32array]);
+   if (!this.glmtype.componentLength) throw new Error('need .componentLength '+[typ, sz, typearray]);
    this.componentLength = this.glmtype.componentLength;
    this.BYTES_PER_ELEMENT = this.glmtype.BYTES_PER_ELEMENT;
-   this.elements = sz && new type32array(sz * typ.componentLength);
+   this.elements = sz && new typearray(sz * typ.componentLength);
    this.length = sz;
 }
 
 
-GLM.$vector = $GLMVector;
-GLM.$vector.version = '0.0.0';
-GLM.$template.varargs_functions({
-      $to_string: {
-         $vector: function(what) { return "$vector<.glmtype="+glm.$isGLMConstructor(what.glmtype)+", .length="+what.length+">"; }
-      }
-   });
+GLM.$vectorType = $GLMVector;
+GLM.$vectorType.version = '0.0.1';
 
 $GLMVector.prototype = GLM.$template.extend(
-   new GLM.$GLMBaseType($GLMVector, '$vector'),
+   new GLM.$GLMBaseType($GLMVector, '$vectorType'),
    {
       toString: function() {
          return "[$GLMVector .elements=#"+(this.elements&&this.elements.length)+
@@ -41,32 +36,31 @@ $GLMVector.prototype = GLM.$template.extend(
             " ->[0]"+(this['->']&&this['->'][0])+"]";
       },
       '=': function(elements) { 
-         return this._set(elements);
+         if (elements instanceof this.constructor || glm.$isGLMObject(elements))
+            elements = elements.elements;
+         return this._set(new this.typearray(elements)); // makes a copy
+      },
+      _typed_concat: function(a,b,out) {
+         var n = a.length + b.length;
+         out = out || new a.constructor(n);
+         out.set(a);
+         out.set(b, a.length);
+         return out;
       },
       '+': function(elements) {
-         if (elements instanceof this.constructor)
+         if (elements instanceof this.constructor || glm.$isGLMObject(elements))
             elements = elements.elements;
-         
-         var n = this.elements.length + elements.length;
-         var e = new this.type32array(n);
-         e.set(this.elements);
-         e.set(elements, this.elements.length);
-         return new this.constructor(e);
+         return new this.constructor(this._typed_concat(this.elements, elements));
       },
       '+=': function(elements) {
-         if (elements instanceof this.constructor)
+         if (elements instanceof this.constructor || glm.$isGLMObject(elements))
             elements = elements.elements;
-         
-         var n = this.elements.length + elements.length;
-         var e = new this.type32array(n);
-         e.set(this.elements);
-         e.set(elements, this.elements.length);
-         return this._set(e);
+         return this._set(this._typed_concat(this.elements, elements));
       },
       _set: function(elements) {
          if (elements instanceof this.constructor)
-            elements = new this.type32array(elements.elements);
-         if (!(elements instanceof this.type32array))
+            elements = new this.typearray(elements.elements);
+         if (!(elements instanceof this.typearray))
             throw new GLM.GLMJSError("unsupported argtype to $GLMVector._set "+(elements&&elements.constructor));
          GLM.$DEBUG && GLM.$outer.console.debug("$GLMVector.prototype.set..." + 
                       'this.elements:'+[this.elements&&this.elements.constructor.name,
@@ -75,7 +69,7 @@ $GLMVector.prototype = GLM.$template.extend(
                        elements.length]);
          this.length = elements.length / this.componentLength;
          if (this.length !== Math.round(this.length))
-            throw new Error('$vector.length alignment mismatch '+JSON.stringify({componentLength:this.componentLength, length:this.length, rounded_length:Math.round(this.length), elements_length: elements.length}));
+            throw new Error('$vectorType.length alignment mismatch '+JSON.stringify({componentLength:this.componentLength, length:this.length, rounded_length:Math.round(this.length), elements_length: elements.length}));
          this.elements = elements;
          if (this._kv)
             this._setup(this._kv);
@@ -110,7 +104,7 @@ $GLMVector.prototype = GLM.$template.extend(
       },
       _setup: function(kv) {
          var vec = this.glmtype;
-         var type32array = this.type32array;
+         var typearray = this.typearray;
          var n = this.length;
          this._kv = kv;
          var stride = kv.stride || this.glmtype.BYTES_PER_ELEMENT,
@@ -158,8 +152,9 @@ $GLMVector.prototype = GLM.$template.extend(
             
             arr[i] = null;
             var make_ti = function(ele,off) {
-               var ret = new vec(new type32array(ele.buffer,off,cl));
-               if (dynamic) // to detect underlying .elements changes..
+               ///if (!ele) { throw new Error('!ele ' + (+new Date())); onmessage({stop:1}); }
+               var ret = new vec(new typearray(ele.buffer,off,cl));
+               if (dynamic) // for detecting underlying .elements changes..
                   ret.$elements = ele;
                return ret;
             };
@@ -181,7 +176,7 @@ $GLMVector.prototype = GLM.$template.extend(
                             function() { return ti; },
                          set: bSetters && (
                             dynamic ? 
-                               function() { 
+                               function(v) { 
                                   console.warn("dynoset",i,off); 
                                   if (ti.$elements !== thiz.elements)
                                      ti = make_ti(thiz.elements,off); 
@@ -189,7 +184,7 @@ $GLMVector.prototype = GLM.$template.extend(
                                } : 
                                function(v,_) { 
                                   //console.warn("setter" + JSON.stringify({i:i,ti:ti,v:v},0,2));
-                                  ti.copy(v); 
+                                  return ti.copy(v); 
                                }) || undefined
                       });
                 })(ti,i,off);
@@ -197,7 +192,7 @@ $GLMVector.prototype = GLM.$template.extend(
          }         
          return this;
       },
-      // DATA is arg is a set of [type32array(),type32array()] buffers (eg: socket.io buffers)
+      // DATA is arg is a set of [typearray(),typearray()] buffers (eg: socket.io buffers)
       setFromBuffers: function(DATA) {
          var fa = this.elements;
          var off = 0;
@@ -218,7 +213,7 @@ $GLMVector.prototype = GLM.$template.extend(
                }
                
                if (off+sl > fa.length)
-                  throw new glm.GLMJSError('$vector.fromBuffers mismatch '+[off,sl,fa.length]);
+                  throw new glm.GLMJSError('$vectorType.fromBuffers mismatch '+[off,sl,fa.length]);
                
                fa.set(seg,off);
                off += seg.length;
@@ -228,7 +223,7 @@ $GLMVector.prototype = GLM.$template.extend(
       setFromPointer: function(ptr) {
          if(!(ptr instanceof ArrayBuffer)) 
             throw new glm.GLMJSError("unsupported argtype "+[typeof ptr]+" - $GLMVector.setFromPointer");
-         return this._set(new this.type32array(ptr));
+         return this._set(new this.typearray(ptr));
       }
    });
 
