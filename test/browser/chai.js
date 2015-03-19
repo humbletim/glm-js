@@ -438,7 +438,13 @@ module.exports = deepEqual;
  * @return {Boolean} equal match
  */
 
+deepEqual.nope = function(issue) {
+   deepEqual.issues.push(issue);
+   return false;
+};
+
 function deepEqual(a, b, m) {
+  deepEqual.issues = [];
   if (sameValue(a, b)) {
     return true;
   } else if ('date' === type(a)) {
@@ -450,7 +456,7 @@ function deepEqual(a, b, m) {
   } else if ('arguments' === type(a)) {
     return argumentsEqual(a, b, m);
   } else if (!typeEqual(a, b)) {
-    return false;
+     return deepEqual.nope("!typeEqual(a,b)");
   } else if (('object' !== type(a) && 'object' !== type(b))
   && ('array' !== type(a) && 'array' !== type(b))) {
     return sameValue(a, b);
@@ -485,7 +491,7 @@ function sameValue(a, b) {
  */
 
 function typeEqual(a, b) {
-  return type(a) === type(b);
+   return type(a) === type(b) || deepEqual.nope("type("+type(a)+") !== type("+type(b)+")"); //TJD 20150315
 }
 
 /*!
@@ -557,14 +563,16 @@ function enumerable(a) {
  */
 
 function iterableEqual(a, b) {
-  if (a.length !==  b.length) return false;
+   if (a.length !==  b.length) {
+      return deepEqual.nope("a.length !== b.length"); //TJD 201503
+   }
 
   var i = 0;
   var match = true;
 
   for (; i < a.length; i++) {
     if (a[i] !== b[i]) {
-      match = false;
+      match = deepEqual.nope("a["+i+"] !== b["+i+"]"); //TJD 201503
       break;
     }
   }
@@ -611,11 +619,11 @@ function isValue(a) {
 
 function objectEqual(a, b, m) {
   if (!isValue(a) || !isValue(b)) {
-    return false;
+     return deepEqual.nope("!isValue(a) || !isValue(b)"); //TJD 201503
   }
 
   if (a.prototype !== b.prototype) {
-    return false;
+     return deepEqual.nope("a.prototype !== b.prototype"); //TJD 201503
   }
 
   var i;
@@ -634,14 +642,14 @@ function objectEqual(a, b, m) {
     var ka = enumerable(a);
     var kb = enumerable(b);
   } catch (ex) {
-    return false;
+     return deepEqual.nope("enumerable(a); enumerable(b); exception: "+ex);
   }
 
   ka.sort();
   kb.sort();
 
   if (!iterableEqual(ka, kb)) {
-    return false;
+     return deepEqual.nope("!iterableEqual(ka, kb)");
   }
 
   m.push([ a, b ]);
@@ -650,7 +658,7 @@ function objectEqual(a, b, m) {
   for (i = ka.length - 1; i >= 0; i--) {
     key = ka[i];
     if (!deepEqual(a[key], b[key], m)) {
-      return false;
+       return deepEqual.nope("!deepEqual(a."+key+", b."+key+")");
     }
   }
 
@@ -1411,7 +1419,8 @@ module.exports = function (chai, _) {
     if (msg) flag(this, 'message', msg);
     this.assert(
         _.eql(obj, flag(this, 'object'))
-      , 'expected #{this} to deeply equal #{exp}'
+      , function() { var xtra = _.eql.issues; _.eql.issues=[]; return 'expected #{this} to deeply equal #{exp} : '+(xtra?"["+xtra+"]":""); } //TJD 201503
+      //, 'expected #{this} to deeply equal #{exp}'
       , 'expected #{this} to not deeply equal #{exp}'
       , obj
       , this._obj

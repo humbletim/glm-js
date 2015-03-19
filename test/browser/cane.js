@@ -36,30 +36,33 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
          },
          glm_eq: function (arr, ep) {
             var obj = cane.flag(this,'object');
+            var message = cane.flag(this,"message") || "";
+            var not = cane.flag(this,'negate');
+            ep = ep || cane.flag(this, 'glm_epsilon');
+
             expect(obj).to.have.property("$type");
             if (cane.flag(this, "glm_eulers")) {
                obj = (glm.eulerAngles(obj));
                var ss = JSON.stringify(glm.$to_array(obj));
-               expect(obj[0],ss+"[0]").to.be.degrees(arr[0]);
-               expect(obj[1],ss+"[1]").to.be.degrees(arr[1]);
-               expect(obj[2],ss+"[2]").to.be.degrees(arr[2]);
+               expect(obj[0],message+" "+ss+"[0]").to.be.degrees(arr[0]);
+               expect(obj[1],message+" "+ss+"[1]").to.be.degrees(arr[1]);
+               expect(obj[2],message+" "+ss+"[2]").to.be.degrees(arr[2]);
                return;
             }
             //          if (cane.flag(this, "glm_degrees")) {
             //             obj = glm.degrees(obj);
             //          }
             
-            ep = ep || cane.flag(this, 'glm_epsilon');
             if (ep) {
                glm.$to_array(obj).map(
                   function(v, _) {
-                     expect(v).to.be.closeTo(arr[_],ep);
+                     expect(v,message).to.be.closeTo(arr[_],ep);
                   });
                return true;
             }
-            if (cane.flag(this,'negate'))
-               return expect(glm.$to_array(obj)).to.not.eql(arr);
-            return expect(glm.$to_array(obj)).to.eql(arr);
+            if (not)
+               return expect(glm.$to_array(obj),message).to.not.eql(arr);
+            return expect(glm.$to_array(obj),message).to.eql(arr);
          },
 
          roughly: function(d) { 
@@ -131,7 +134,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
                   function(original) {
                      return function(obj) {
                         if (_chai.config.toDisplayObject)
-                           obj = _chai.config.toDisplayObject(obj);
+                           obj = _chai.config.toDisplayObject(obj);// + "#####\n" + original(obj);
                         return original(obj);
                      };
                   })(utils.objDisplay);
@@ -146,7 +149,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
                         it('chai.config.toDisplayObject', function() {
                               expect(function() {
                                         expect(glm.vec3()).to.equal(null);
-                                     }).to['throw']("expected 'fvec3(0.000000, 0.000000, 0.000000)' to equal null");
+                                     }).to['throw'](/expected \'fvec3.0.00000.*? to equal.*?null/);
                            });
                   });
       },
