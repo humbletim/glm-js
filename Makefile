@@ -72,3 +72,8 @@ j.js: lib/three.js src/glm.common.js src/glm.three.js src/glm-js.js
 engine-test: j.js
 	for x in node node-0.6.6 smjs v8 d8 ; do which $$x && $$x j.js ; done
 
+smjs-test: lib/three.js \
+	src/glm.common.js src/glm.three.js src/glm.buffers.js src/glm.experimental.js \
+	test/browser/chai.js test/browser/mocha.js test/browser/cane.js \
+	 test/test.js
+	( cat  xjs._ENV.js ; cat smjs.js; echo 'PRE();' ; for x in $^ ; do echo "load('$$x');"; done ; echo ';POST();' )  | env DEBUG=1 GLM=three smjs

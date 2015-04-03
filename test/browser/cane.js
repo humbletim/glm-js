@@ -84,7 +84,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
             else
             _chai.Assertion.addMethod(p, self.methods[p]);
          }
-         self.checkForNodeInvocation();
+         self.checkForDirectInvocation();
          return self.patchChai(_chai);
       },
       patchMochaUtils: function(utils) {
@@ -153,22 +153,26 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
                            });
                   });
       },
-      checkForNodeInvocation: function() {
-         // workaround to enable direct invocation via node cli
-         if (typeof process === 'object' && 
-               process.versions && 
-               process.versions.node) {
+      checkForDirectInvocation: function(force) {
+         // workaround to enable direct invocation via node/spidermonkey cli
+         if (force || 
+             (typeof process === 'object' && 
+              process.versions && 
+              process.versions.node) ||
+             (typeof _ENV === 'object' && 
+              /spidermonkey/.test(_ENV._VERSION))
+            ) {
             try {
                describe.exists;
             } catch(e) {
-               console.warn("... direct invocation via node detected; rigging Mocha run");
-               var Mocha = require('mocha');
+               console.warn("... direct invocation detected; rigging Mocha run");
+               var _Mocha = typeof Mocha === 'function' ? Mocha : require('mocha');
                var mocha = new Mocha();
-               mocha.ui('bdd');
+               mocha.ui('bdd').enableTimeouts(false).reporter("list").bail(true);
                var api={};
                mocha.suite.emit('pre-require', api);
                describe = api.describe, it = api.it;
-               process.nextTick(
+               setTimeout(
                   function() {
                      mocha.run(function(failures) { console.warn(failures); });
                   });

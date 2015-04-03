@@ -12,6 +12,8 @@ require("../src/glm.experimental");
 glm.$log('glm: '+glm);
 glm.$log('chai: '+chai);
 glm.$log('should: '+should);
+glm.$log('mocha: '+typeof mocha);
+glm.$log('Mocha: '+typeof Mocha);
 glm.$log('cane: '+cane);
 if (!cane) throw new Error('cane expected');
 
@@ -98,6 +100,37 @@ describe('glm', function(){
                               expect(glm.vendor.vendor_version).to.be.a('string');
                               glm.$log(glm.version);
                            });
+                        describe('$subarray', function() {
+                                    it('.subarray', function() {
+                                          var f = new Float32Array([0,0]);
+                                          f.subarray(1).subarray(0)[0] = 1;
+                                          if (f[1] !== 1) glm.$log("spidermonkey broken subarray detected...");
+                                          
+                                          f.set([0,1]);
+                                          expect([].slice.call(GLM.$subarray(f,0))).to.eql([0,1]);
+                                          expect([].slice.call(GLM.$subarray(f,0,1))).to.eql([0]);
+                                          expect([].slice.call(GLM.$subarray(f,0,2))).to.eql([0,1]);
+                                          var g = GLM.$subarray(f,1);
+                                          expect([].slice.call(GLM.$subarray(g,0))).to.eql([1]);
+                                          expect([].slice.call(
+                                                    new Float32Array(
+                                                       GLM.$subarray(GLM.$subarray(f,1),0)
+                                                    )
+                                                 ))
+                                             .to.eql([1]);
+                                          var buf = new ArrayBuffer(16);
+                                          var f = new Float32Array(buf, 4); // floats[1]
+                                          f.set([1,2,3]);
+                                          expect([].slice.call(f)).to.eql([1,2,3]);
+                                          expect([].slice.call(new Float32Array(buf))).to.eql([0,1,2,3]);
+                                          var sa = GLM.$subarray(GLM.$subarray(f,1,3),0);
+                                          sa[0] = 5; sa[1] = 6;
+                                          var v = new glm.vec3(new Float32Array(buf,4));
+                                          v.xy['=']([55,66]);
+                                          expect([].slice.call(new Float32Array(buf))).to.eql([0,55,66,6]);
+
+                                       });
+                                 });
                         describe('.$outer', function() {
                                     it('.console', function() {
                                           // shameless invocations for code coverage testing
@@ -201,6 +234,9 @@ describe('glm', function(){
                                           expect(glm.$inspect(glm.mat4())).to.equal('{\n  "0": {\n    "x": 1,\n    "y": 0,\n    "z": 0,\n    "w": 0\n  },\n  "1": {\n    "x": 0,\n    "y": 1,\n    "z": 0,\n    "w": 0\n  },\n  "2": {\n    "x": 0,\n    "y": 0,\n    "z": 1,\n    "w": 0\n  },\n  "3": {\n    "x": 0,\n    "y": 0,\n    "z": 0,\n    "w": 1\n  }\n}');
                                           expect(glm.vec3(1,2,3).inspect()).to.equal('{\n  "x": 1,\n  "y": 2,\n  "z": 3\n}');
                                        });
+                                    it('JSON.stringify', function() {
+                                          expect(JSON.stringify(glm.vec2())).to.equal('{"x":0,"y":0}');
+                                       });
 
                                  });
 
@@ -221,6 +257,8 @@ describe('glm', function(){
                                        });
                                     
                                     it('$from_glsl', function() {
+                                          expect(glm.$from_glsl('vec3(1)', true)).to.eql([1,1,1]);
+                                          expect(glm.$from_glsl('vec3(1)', false)).to.be.instanceOf(glm.vec3);
                                           expect(glm.$from_glsl('vec3(1)')).to.glm_eq([1,1,1]);
                                           expect(glm.$from_glsl('mat4(1)')).to.glm_eq(glm.$to_array(glm.mat4(1)));
                                           expect(glm.$from_glsl('vec2(0,3)')).to.glm_eq(glm.$to_array(glm.vec2(0,3)));
@@ -325,16 +363,16 @@ describe('glm', function(){
                                     var UP = glm.vec3(0,1,0);
                                     var angle = glm.radians(45);
                                     var ref = glm.toMat4(glm.angleAxis(angle, UP));
-                                    it('<mat4,angle,vec3>', function() {
-                                          expect( 
+                                    //it('<mat4,angle,vec3>', function() {
+                                          expect(
                                              glm.rotate(glm.mat4(), glm.radians(45), UP)
                                           ).to.eql(ref)
-                                       });
-                                    it('<angle,vec3>', function() {
-                                          expect( 
+                                    //   });
+                                    //it('<angle,vec3>', function() {
+                                          expect(
                                              glm.rotate(glm.radians(45), UP)
                                           ).to.eql(ref)
-                                       });
+                                     //  });
                                  });
                         describe('.scale', function() {
                                     var ref = '1000020000300001';
@@ -868,6 +906,8 @@ describe('glm', function(){
                               expect(glm.vec4([3,2,1,0])).to.glm_eq([3,2,1,0]);
                               expect(glm.vec4(glm.vec2(3,2),1,0)).to.glm_eq([3,2,1,0]);
                               expect(glm.vec4(glm.vec3(3,2,1),0)).to.glm_eq([3,2,1,0]);
+
+                              expect(glm.vec4()['='](glm.uvec4(-1,2,3,4))).to.glm_eq([0,2,3,4]);
                            });
                         it('exceptions', function() {
                               expect(function(){glm.vec4({},0)}).to['throw'](/unrecognized object passed to.*?[(]o,w[)]/);
@@ -998,7 +1038,7 @@ describe('glm', function(){
                               }
 
                               expect( function() { new glm.make_vec4({}); } ).to.throw(/not new/);
-                              expect( function() { new glm.make_vec4(); } ).to.throw(/byteOffset/);
+                              expect( function() { new glm.make_vec4(); } ).to.throw(/undefined/);
                            });
                         it('regression tests', function(){
                               var b = new ArrayBuffer(glm.mat4.BYTES_PER_ELEMENT * 4);
@@ -1126,46 +1166,103 @@ describe('glm', function(){
                    it(
                       'dynamic mode', 
                       function() {
+                         // note: there's a small overhead to support/detect dynamic remapping of the underlying Float32Array
+
                          var a = new Float32Array(4*10);
                          var b = new Float32Array(4*10);
-                         var dynamic = new glm.$vvec4(a, true);
-                         var s = new glm.$vvec4(a);
+                         b.set([-1,-2,-3,-4,
+                                -10,-11,-12,-13]);
 
-                         dynamic[0].xyzw = s[0].xyzw = [1,2,3,4];
+                         {
+                            // allow .elements to be swapped-out
+                            var dynamic = new glm.$vvec4(a, true);
+                         }
 
-                         expect(dynamic[0]+'').to.equal(s[0]+'');
-                         expect(dynamic[0]).to.glm_eq([].slice.call(s.elements,0,4));
-                         expect(dynamic[0]).to.glm_eq([].slice.call(a,0,4));
-                         expect(dynamic[0]).to.not.glm_eq([].slice.call(b,0,4));
+                         {
+                            // marginally-faster setup & access, but ignores future changes to .elements
+                            var classic = new glm.$vvec4(a); 
+                         }
 
-                         dynamic.elements = b; // will affect dynamic[0] (existing and future)
-                         s.elements = b; // is not dynamic, so this will NOT affect s[0]
+                         { // initially these will be mutually-entangled (via shared, underlying buffer)
 
-                         expect(dynamic[0]+'').to.not.equal(s[0]+'');
+                            expect( dynamic[0].elements.buffer ).to.equal( classic[0].elements.buffer );
 
-                         expect(dynamic[0]).to.glm_eq([0,0,0,0]);
-                         expect(s[0]).to.glm_eq([1,2,3,4]);
+                            expect( dynamic[0].elements.buffer ).to.equal( a.buffer );
+                            expect( classic[0].elements.buffer ).to.equal( a.buffer );
+
+                            expect(dynamic[0]+'').to.equal(classic[0]+'');
+                            expect(classic[1]+'').to.equal(dynamic[1]+'');
+                            
+                            dynamic[0].xyzw = [1, 2, 3, 4 ];
+                            classic[1].xyzw = [10,11,12,13];
+
+                            expect( dynamic[0] ).to.glm_eq( [1, 2, 3, 4 ] );
+                            expect( dynamic[1] ).to.glm_eq( [10,11,12,13] );
+
+                            expect( classic[0] ).to.glm_eq( [1, 2, 3, 4 ] );
+                            expect( classic[1] ).to.glm_eq( [10,11,12,13] );
+
+                            expect(dynamic[0]).to.glm_eq([].slice.call(classic.elements,0,4));
+                            expect(dynamic[0]).to.glm_eq([].slice.call(a,0,4));
+
+                            expect(dynamic[0]).to.not.glm_eq([].slice.call(b,0,4));
+                         }
+
+                         dynamic.elements = b; // dynamic[0] will now pull from updated .elements
+                         classic.elements = b; // classic[0] will NOT pull from updated .elements
+
+                         { // now unentangled
+
+                            // classic unchanged (still refers to a)
+                            expect( classic[0] ).to.glm_eq( [1, 2, 3, 4 ] );
+                            expect( classic[1] ).to.glm_eq( [10,11,12,13] );
+                            expect( classic[0].elements.buffer ).to.equal( a.buffer );
+
+                            expect( dynamic[0] +'').to.not.equal(classic[0]+'');
+
+                            // dynamic elements now refer to b
+                            expect( dynamic[0].elements.buffer ).to.equal( b.buffer );
+
+                            expect( dynamic[0] ).to.glm_eq( [-1, -2, -3, -4 ] );
+                            expect( dynamic[1] ).to.glm_eq( [-10,-11,-12,-13] );
                          
-                         dynamic[0] = glm.vec4(9,8,7,6);
-                         expect(dynamic[0]).to.glm_eq([9,8,7,6]);
-                         expect(s[0]).to.glm_eq([1,2,3,4]);
+                            dynamic[0] = glm.vec4(  9, 8, 7, 6 );
+                            dynamic[1] = glm.vec4( -9,-8,-7,-6 );
+                            expect( dynamic[0] ).to.glm_eq( [ 9, 8, 7, 6] );
+                            expect( dynamic[1] ).to.glm_eq( [-9,-8,-7,-6] );
 
-                         s['='](b); // this will re-arrayize (so will affect s[0] as a side-effect)
-                         expect(s[0]).to.glm_eq([9,8,7,6]);
-                          
+                            // unchanged
+                            expect( classic[0] ).to.glm_eq( [ 1, 2, 3, 4] );
+                            expect( classic[1] ).to.glm_eq( [10,11,12,13] );
+                         }
+
+                         classic['='](b); // this will re-arrayize, effectively cloning b
+                         expect(classic.elements).not.to.equal(b);
+                         expect(classic.elements).to.eql(b);
+
+                         expect( classic[0] ).to.glm_eq( [ 9, 8, 7, 6] );
+                         expect( classic[1] ).to.glm_eq( [-9,-8,-7,-6] );
+
+                         expect( classic[0] ).to.eql( dynamic[0] );
+                         expect( classic[1] ).to.eql( dynamic[1] );
+
                          dynamic[0]['*='](10);
 
                          expect(dynamic[0]).to.glm_eq([90,80,70,60]);
-                         expect(s[0]).to.glm_eq([9,8,7,6]); // but still won't be affected by changes to b
-                         
-                         dynamic.elements = new Float32Array(dynamic.elements.length); // swap-out underlying buffer
-                         s.elements = new Float32Array(s.elements.length);
-                         
-                         expect(dynamic[0]).to.glm_eq([0,0,0,0]); // dynamic is now all zeros (from the fresh buffer)
-                         expect(s[0]).to.glm_eq([9,8,7,6]); // but s still references the cached buffer...
 
-                         // note: there is an added overhead to support/detect dynamic mapping...
-                         // (so only use when actually needed)
+                         expect(classic[0]).to.glm_eq([9,8,7,6]); // but still won't be affected by changes to b
+
+                         dynamic['='](a); // this effectively clones a (dynamic !== overwrite-on-copy)
+                         expect(dynamic.elements).not.to.equal(a);
+                         expect(dynamic.elements).to.eql(a);
+                         expect(a).not.to.eql(b);
+                         
+                         // swap-out underlying buffer with zeros
+                         dynamic.elements = new Float32Array(dynamic.elements.length); 
+                         classic.elements = new Float32Array(classic.elements.length);
+                         
+                         expect( dynamic[0] ).to.glm_eq( [0, 0, 0, 0] ); // dynamic is now all zeros (from the fresh buffer)
+                         expect( classic[0] ).to.glm_eq( [9, 8, 7, 6] ); // but classic still references its cached buffer...
                       });
                    it('exceptions', function() {
                          expect(function() {
@@ -1202,7 +1299,12 @@ describe('glm', function(){
                               expect(glm.to_string(glm.uvec4(-1,-2,1,2))).to.equal("uvec4(0, 0, 1, 2)");
 
                               expect(glm.uvec4(2,3,4,5).x).to.equal(2);
-                              expect(glm.uvec4(2,3,4,5)[3]).to.equal(5);
+                              var uv = glm.uvec4();
+                              uv['=']([2,3,4,5]);
+                              expect(uv[3]).to.equal(5);
+                              uv['='](glm.uvec4(glm.uvec3(1),2));
+                              expect(uv[3]).to.equal(2);
+                              expect(uv['='](glm.vec4(9))[3]).to.equal(9);
 
                               expect(glm.uvec4(glm.vec3(1,2,3),4)).to.glm_eq([1,2,3,4]);
                               expect(glm.uvec4(glm.vec2(-1,-2),3,4)).to.glm_eq([0,0,3,4]);
@@ -1335,8 +1437,13 @@ describe('glm', function(){
                                  ).xyzw = [2,3,4,5];
                                  
                                  expect(floats.join("")).to.equal("00000000000000001000000000002345");
+
+                                 expect(JSON.stringify(floats)).to
+                                   .eql("["+("00000000000000001000000000002345".split(""))+"]");
+
+                                 expect(JSON.stringify(floats)).to.equal(glm.$to_json(floats));
                               });
-                           it('setters - regressiont tests', function() {
+                           it('setters - regression tests', function() {
                                  function testit(with_setters) {
                                     var tmp = glm.$vmat4();//new glm.$vectorType(glm.mat4);
                                     var v = glm.$vfloat(32);
@@ -1373,6 +1480,19 @@ describe('glm', function(){
                                  x._set(y);
                                  expect(x[0]+'').to.equal(y[0]+'');
                                  expect(x._set.bind(x,"string")).to.throw("unsupported argtype");
+
+                                 expect(glm.$to_json(glm.$vvec4(y))).to.equal('[{"x":0,"y":1,"z":2,"w":3},{"x":0,"y":0,"z":0,"w":0}]');
+                              });
+                           it('buffer trimming', function() {                                 
+                                 var x = glm.$vvec4(2);
+                                 expect(x.length).to.equal(2);
+                                 x[0].xyzw = [0,1,2,3];
+                                 x[1].xyzw = [4,5,6,7];
+                                 expect(x[1]).not.to.equal(undefined);
+                                 x._set(glm.$vvec4([9,8,7,6])); // 1 x vec4
+                                 expect(x.length).to.equal(1);
+                                 expect(x[1]).to.equal(undefined);
+                                 expect(x[0]).to.glm_eq([9,8,7,6]);
                               });
                            it('mat4[]', function() {
                                  var bones = glm.$vmat4(10);
@@ -1386,6 +1506,8 @@ describe('glm', function(){
                                  expect(glm.$vint32(x)).to.glm_eq([256,0,0,0]);
                                  x.set([0,0,0,0,1,0,0,0,-1,-1,-1,-1]);
                                  expect(glm.$vint32(x.buffer)).to.glm_eq([0,1,-1,0]);
+
+                                 expect(JSON.stringify(glm.$vint32(2)._set([0,1]))).to.equal("[0,1]");
                               });
                            it('vector<uint16>', function() {
                                  expect(glm.$vuint16([-1,1.1,2.2,Math.PI])).to.glm_eq([0xffff,1,2,3]);
@@ -1427,6 +1549,52 @@ describe('glm', function(){
                                  expect(glm.to_string(glm.$bool(true))).to.equal('bool(1)');
                                  expect(glm.to_string(glm.$int32(-5.5))).to.equal('int(-5)');
                                  expect(glm.to_string(glm.$float(5.5))).to.equal('float(5.5)');
+
+                                 expect(glm.$float(5.5) * 10).to.equal(5.5*10);
+
+                                 // this will coerce appropriately(?)
+                                 expect(+glm.$uint16(2 * -2)).to.equal(65532);
+
+                                 // but it's not actually a native uint
+                                 expect(glm.$uint16(2) * -2).to.equal(-4);
+                              });
+                           it('.base64', function() {
+                                 {
+                                    var pipi = '2w9JQNsPSUA=';
+                                    expect(glm.$to_base64(glm.vec2(Math.PI))).to.equal(pipi);
+                                    expect(glm.vec2(Math.PI).base64).to.equal(pipi);
+                                    var v = glm.vec2();
+                                    v.base64 = pipi;
+                                    expect(v.base64).to.equal(pipi);
+                                    expect(v).to.glm_eq([Math.PI, Math.PI],glm.epsilon());
+                                 }
+                                 
+                                 {
+                                    var vvec = glm.$vvec4([0,1,2,3,0,0,0,0,1,1,1,1,2,2,2,2]);
+                                    expect(vvec.base64).to.equal(
+                                       'AAAAAAAAgD8AAABAAABAQAAAAAAAAAAAAAAAAAAAAAAAAIA'+
+                                          '/AACAPwAAgD8AAIA/AAAAQAAAAEAAAABAAAAAQA==');
+                                    var vmat = glm.$vmat4(2);
+                                    vmat.base64 = vvec.base64;
+                                    expect(vmat[0].base64).to.equal(vvec.base64);
+                                    expect(glm.$to_array(vmat[0])).to.eql(glm.$to_array(vvec));
+                                    vmat[1][0].base64 = vvec[0].base64;
+                                    vmat[1][1].xyz.base64 = glm.vec3([-1,-2,-3]).base64;
+                                    expect(vmat[1]).to.glm_eq([0,1,2,3,-1,-2,-3,0,0,0,0,0,0,0,0,0]);
+                                 }
+
+                              });
+                           it('.json', function() {
+                                 var v = glm.vec2(1,2);
+                                 expect(v.json).to.equal('{"x":1,"y":2}');
+                                 v.json = glm.vec2(3,4).json;
+                                 expect(v).to.glm_eq([3,4]);
+                              });
+                           it('.glsl', function() {
+                                 var v = glm.vec2(1,2);
+                                 expect(v.glsl).to.equal('vec2(1,2)');
+                                 v.glsl = glm.vec2(3,4).glsl;
+                                 expect(v).to.glm_eq([3,4]);
                               });
                         });
 
