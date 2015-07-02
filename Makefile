@@ -20,7 +20,9 @@ build/__VA_ARGS__.js: src/glm.common.js
 	echo test | node $@
 
 build/%.min.js: build/%.js
-	cat $< | node build/__VA_ARGS__.js | $(MINIFIER) > $@
+	( echo "glm = (function glmjs_scope(g) { var GLMJS_PREFIX, \$$GLM_reset_logging;" ; \
+	cat $< | node build/__VA_ARGS__.js | $(MINIFIER) ; \
+	echo "return glm; })(this);" ) > $@
 
 build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.js
 	echo OK
