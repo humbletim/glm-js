@@ -64,17 +64,13 @@ DLL.statics = {
 DLL.operations = {
    mul: {
       $op: '*',
+      //note: tdl.fast has no mulQuaternionQuaternion(dst,a,b) yet
       _mulQuatQuat: tdl.quaternions.mulQuaternionQuaternion,
       'quat,quat': function(a,b) {
          return new glm.quat(this._mulQuatQuat(a.elements, b.elements));
       },
-      //TODO: does tdl have 'native quat' quat*vecN somewheres?
-      'quat,vec<N>': function(a,b) {
-         return glm.toMat4(a).mul(b);
-      },
-      'vec<N>,quat': function(a,b) {
-         return glm.toMat4(b).mul(a);
-      },
+      'quat,vec<N>': function(a,b) { return this['mat4,vecN'](glm.toMat4(a), b); },
+      'vec<N>,quat': function(a,b) { return this['quat,vecN'](glm.inverse(b), a); },
       _mulVecSca: tdl.fast.mulVectorScalar,
       'vec<N>,float': function(a,b) {
          return glm.vecN(
@@ -92,6 +88,7 @@ DLL.operations = {
                              b.elements, a.elements)
          );
       },
+      'vec4,mat4': function(a,b) { return this['mat4,vec4'](glm.inverse(b),a); },
       '_mulMatMat<N>': 'tdl.fast.columnMajor.mulMatrixMatrixN',
       'mat<N>,mat<N>': function(a,b) {
          return glm.matN(
@@ -111,11 +108,30 @@ DLL.operations = {
          this._mulMatMatN(a.elements,a.elements, b.elements);
          return a;
       },
+      //note: tdl.fast has no mulQuaternionQuaternion(dst,a,b) yet
       _mulQuatQuat: tdl.quaternions.mulQuaternionQuaternion,
       'quat,quat': function(a,b) {
          a.elements.set(this._mulQuatQuat(a.elements, b.elements));
          return a;
+      },
+      _mulVecMat4: tdl.fast.rowMajor.mulVectorMatrix4,
+
+      // note: this can be referenced as: glm.mul_eq.link('inplace:vec3,quat');
+      'inplace:vec3,quat': function(a,b) {
+         var m4 = glm.toMat4(glm.inverse(b)).elements;
+         var v4 = glm.vec4(a,1).elements;
+         this._mulVecMat4(a.elements, v4, m4);
+         return a;
+      },
+      // note: this can be referenced as: glm.mul_eq.link('inplace:vec3,quat');
+      'inplace:vec4,mat4': function(a,b) {
+         var m4 = glm.inverse(b);
+         // note: tdl-fast has a bug in mulVectorMatrix4 --
+         //  dst and the input vector can't be the same (hence the Float32Array)
+         this._mulVecMat4(a.elements, new Float32Array(a.elements), m4.elements);
+         return a;
       }
+
    }
 }; //operations
 

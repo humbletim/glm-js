@@ -505,7 +505,8 @@ describe('glm', function(){
                               expect(glm.$to_array(glm.vec4(2.5,-.5,Math.PI,0).add(glm.vec4(-2.5,.5,-Math.PI,-0)))).to.eql([0,0,0,0]);
                               expect(glm.vec3(1)['=='](glm.vec3(2))).to.be.equal(false);
                               expect(glm.vec4(1).eql(glm.vec4(1))).to.be.equal(true);
-                              expect(glm.uvec4(0)['=='](glm.uvec4(-1))).to.be.equal(true);
+                              expect(glm.uvec4(-1.5)['=='](glm.uvec4(-1))).to.be.equal(true);
+                              expect(glm.uvec3(-2.9)['=='](glm.uvec3(-2))).to.be.equal(true);
                               expect(glm.mat4(1)['=='](glm.mat4(0))).to.be.equal(false);
                               expect(glm.quat(1)['=='](glm.quat(1))).to.be.equal(true);
                            });
@@ -584,6 +585,15 @@ describe('glm', function(){
 
             describe('mat4', function() {
               describe('core operations', function() {
+                it("construction by reference", 
+               function() {
+                  var ref = glm.mat4(2);
+                  expect(ref).to.be.glsl("mat4(2)");
+                  var byref = glm.mat4(ref);
+                  expect(ref.elements).to.equal(byref.elements);
+                  var bycopy = new glm.mat4(ref);
+                  expect(ref.elements).not.to.equal(bycopy.elements);
+               });
                 it("construction by n", 
                function() {
                   // mat4(undefined) == identity
@@ -652,7 +662,7 @@ describe('glm', function(){
                    expect(function() { glm.mat4(null); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
                    expect(function() { glm.mat4(glm.vec4()); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
                    expect(function() { glm.mat4([1,2,3,4]); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
-                   expect(function() { glm.mat4(undefined); }).to['throw'](/no template found for mat4[.][$][.]undefined1/);
+                   expect(function() { glm.mat4(undefined); }).to['throw']("no constructor found for: glm.mat4(undefined)");
                 });
              it('mat3-partial assignment', function() {
                    var m4 = glm.mat4("1111222233334444".split(""));
@@ -787,11 +797,11 @@ describe('glm', function(){
                                  .euler.to.glm_eq([0,0,45]);
                            });
                         it('angle/axis', function() {
-                              expect(glm.axis(glm.angleAxis(glm.radians(45),0,1,0)))
+                              expect(glm.axis(glm.angleAxis(glm.radians(45),glm.vec3(0,1,0))))
                                  .to.approximate.glm_eq([0,1,0],glm.epsilon());
                               expect(glm.axis(glm.quat()))
                                  .to.glm_eq([0,0,1]);
-                              expect((glm.angle(glm.angleAxis(glm.radians(45),0,1,0))))
+                              expect((glm.angle(glm.angleAxis(glm.radians(45),glm.vec3(0,1,0)))))
                                  .to.be.degrees(45);
                            });
                         it('exceptions', function() {
@@ -869,6 +879,18 @@ describe('glm', function(){
                               glm.$to_array(v3['*='](1/Math.PI)).should.eql([1,1,1]);
                               glm.$to_array(v3).should.eql([1,1,1]);
                            });
+                        it('inplace multiply by a quat (experimental)', function(){ 
+                              var v3 = glm.vec3(100,-200,300);
+                              var qspin = glm.angleAxis(glm.radians(30), glm.vec3(0,1,0));
+                              var vq_mul_eq = glm.mul_eq.link('inplace:vec3,quat');
+                              var ref = glm.$to_array(v3['*'](qspin));
+                              vq_mul_eq(v3, qspin);
+                              expect(v3, 'ref').to.glm_eq(ref);
+                              expect(
+                                 v3,
+                                 "vec3 * quat"
+                              ).to.glm_eq([-63.4,-200,309.8], .05);
+                           });
                         it('lengthify', function(){ 
                               glm.length(glm.vec3(Math.PI)).should.be.approximately(5.44,.1);
                            });
@@ -907,7 +929,7 @@ describe('glm', function(){
                               expect(glm.vec4(glm.vec2(3,2),1,0)).to.glm_eq([3,2,1,0]);
                               expect(glm.vec4(glm.vec3(3,2,1),0)).to.glm_eq([3,2,1,0]);
 
-                              expect(glm.vec4()['='](glm.uvec4(-1,2,3,4))).to.glm_eq([0,2,3,4]);
+                              expect(glm.vec4()['='](glm.uvec4(-1.5,2,3,4))).to.glm_eq([-1,2,3,4]);
                            });
                         it('exceptions', function() {
                               expect(function(){glm.vec4({},0)}).to['throw'](/unrecognized object passed to.*?[(]o,w[)]/);
@@ -942,11 +964,37 @@ describe('glm', function(){
                         var qspin = new glm.quat([ 0, 1, 0, 6.123031769111886e-17 ]);
                         it('spin about a quat', function() {
                               glm.$to_array(glm.vec4(100,100,100,1).mul(qspin)).should.eql([-100,100,-100,1]);
+
+                              expect(
+                                 glm.vec4(100)['*'](qspin),
+                                 "vec4 * quat"
+                              ).to.glm_eq([-100,100,-100,100]);
+
+                              expect(
+                                 qspin['*'](glm.vec4(100)),
+                                 "quat * vec4"
+                              ).to.glm_eq([-100,100,-100,100]);
+
                            });
                         var M = glm.toMat4(qspin);
-                        it('matrixify', function() {
+                        it('apply mat4', function() {
+                              glm.$to_array(glm.vec4(1,2,3,1)['*'](M)).should.eql([-1,2,-3,1]);
                               glm.$to_array(M['*'](glm.vec4(1,2,3,1))).should.eql([-1,2,-3,1]);
                               glm.$to_array(M['*'](glm.vec4(-1,-1,2,2))).should.eql([1,-1,-2,2]);
+                           });
+                        it('inplace multiply by a mat4 (experimental)', function(){ 
+                              var v = glm.vec4(1,2,3,1);
+                              var m4 = glm.toMat4(glm.angleAxis(glm.radians(30), glm.vec3(0,1,0)));
+                              var vm_mul_eq = glm.mul_eq.link('inplace:vec4,mat4');
+                              var ref = glm.$to_array(v['*'](m4));
+                              vm_mul_eq(v, m4);
+                              expect(v, 'ref').to.glm_eq(ref);
+                              expect(v, 'abs').to.glm_eq([-0.63,2,3.09,1],.05);
+
+                              v = glm.vec4(100,-200,300,1);
+                              ref = glm.$to_array(v['*'](m4));
+                              vm_mul_eq(v, m4);
+                              expect(v, 'ref').to.glm_eq(ref);
                            });
                         it('length2ify', function(){ 
                               glm.length2(glm.vec4(Math.PI)).should.be.approximately(39.4784,.1);
@@ -1284,19 +1332,19 @@ describe('glm', function(){
             describe('uvecN', function(){
                         it('core operations', function(){
                               glm.uvec4().should.be.instanceOf(glm.uvec4);
-                              glm.$to_array(glm.uvec4(-2)).should.eql([0,0,0,0]);
+                              glm.$to_array(glm.uvec4(-2.1,-2.5,-2.9,2.9)).should.eql([-2,-2,-2,2]);
                               glm.$to_array(glm.uvec4(.5)).should.eql([0,0,0,0]);
                               glm.$to_array(glm.uvec4(1)).should.eql([1,1,1,1]);
                               glm.$to_array(glm.uvec4(-.5)).should.eql([0,0,0,0]);
-                              glm.$to_array(glm.uvec4(glm.vec3(-1),1)).should.eql([0,0,0,1]);
-                              glm.$to_array(glm.uvec4(-1,-1,-1,1)).should.eql([0,0,0,1]);
-                              glm.$to_array(glm.uvec4(-1,-1,-1)).should.eql([0,0,0,0]);
-                              glm.$to_array(glm.uvec4(-1,-1)).should.eql([0,0,0,0]);
-                              glm.$to_array(glm.uvec4([-1,-1,-1,-1])).should.eql([0,0,0,0]);
-                              glm.$to_array(glm.uvec4([-1,-1,-1])).should.eql([0,0,0,0]);
-                              glm.$to_array(glm.uvec4([-1,1])).should.eql([0,1,1,1]);
-                              glm.$to_array(glm.uvec4({x:-1,y:1,z:-1,w:1})).should.eql([0,1,0,1]);
-                              expect(glm.to_string(glm.uvec4(-1,-2,1,2))).to.equal("uvec4(0, 0, 1, 2)");
+                              glm.$to_array(glm.uvec4(glm.vec3(-1,-1.1,-1.9),1)).should.eql([-1,-1,-1,1]);
+                              glm.$to_array(glm.uvec4(-1,-1,-1,1)).should.eql([-1,-1,-1,1]);
+                              glm.$to_array(glm.uvec4(-1,-1,-1)).should.eql([-1,-1,-1,-1]);
+                              glm.$to_array(glm.uvec4(-1,-1)).should.eql([-1,-1,-1,-1]);
+                              glm.$to_array(glm.uvec4([-1,-1,-1,-1])).should.eql([-1,-1,-1,-1]);
+                              glm.$to_array(glm.uvec4([-1,-1,-1])).should.eql([-1,-1,-1,-1]);
+                              glm.$to_array(glm.uvec4([-1,1])).should.eql([-1,1,1,1]);
+                              glm.$to_array(glm.uvec4({x:-1,y:1,z:-.1,w:1})).should.eql([-1,1,0,1]);
+                              expect(glm.to_string(glm.uvec4(-1.1,-2.2,1.1,2.2))).to.equal("uvec4(-1, -2, 1, 2)");
 
                               expect(glm.uvec4(2,3,4,5).x).to.equal(2);
                               var uv = glm.uvec4();
@@ -1307,8 +1355,8 @@ describe('glm', function(){
                               expect(uv['='](glm.vec4(9))[3]).to.equal(9);
 
                               expect(glm.uvec4(glm.vec3(1,2,3),4)).to.glm_eq([1,2,3,4]);
-                              expect(glm.uvec4(glm.vec2(-1,-2),3,4)).to.glm_eq([0,0,3,4]);
-                              expect(glm.uvec4(glm.vec4(-1))).to.glm_eq([0,0,0,0]);
+                              expect(glm.uvec4(glm.vec2(-1,-2),3,4)).to.glm_eq([-1,-2,3,4]);
+                              expect(glm.uvec4(glm.vec4(-1))).to.glm_eq([-1,-1,-1,-1]);
                               expect(glm.uvec4(glm.vec4(1.5,2.5,3.5,4.5))).to.glm_eq([1,2,3,4]);
                               
                               expect(glm.uvec2()).to.glm_eq([0,0]);
@@ -1411,7 +1459,7 @@ describe('glm', function(){
                                            }, typ).not.to['throw']();
                                     expect(function() {
                                               glm[typ]('hi');
-                                           }, typ).to['throw'](/no template found for vec....string1/);
+                                           }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
                                     expect(function() {
                                               glm[typ]({});
                                            }, typ).to['throw'](/unrecognized object/);
@@ -1648,7 +1696,7 @@ describe('glm', function(){
 
                         });
             
-            describe(GLMJS_PREFIX+' info', function(){
+            describe(glm.$prefix + ' info', function(){
                         it('...OK', function(){
                               if (typeof window === 'object') {
                                  Object.keys(glm.vendor).forEach(function(k) { glm.$log(k+": "+glm.vendor[k]); });

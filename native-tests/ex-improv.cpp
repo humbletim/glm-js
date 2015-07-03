@@ -109,12 +109,33 @@ int main() {
     auto qq = glm::angleAxis(glm::radians(30.0f), glm::normalize(glm::vec3(1.0)));
     log("qq", qq);
     log("qq * v3: ", qq * (v3));
+    log("v3 * q: ", v3 * (q));
+
+    v3 = v3 * q;
+    log("v3 = v3 * q: ", v3);
+
+    auto qqq = glm::angleAxis(glm::radians(30.0f), glm::vec3(0.0, 1.0, 0.0));
+    log("qqq", qqq);
+    log("qqq * v4: ", qqq * (glm::vec4(1.0)));
+    log("v4 * qqq: ", glm::vec4(1.0) * (qqq));
+
+    m4 = glm::toMat4(qqq);
+    auto v4 = glm::vec4(1.0);
+    log("m4", m4);
+    log("v4", v4);
+    log("v4 * m4: ", v4 * (m4));
+    log("m4 * v4: ", m4 * (v4));
+
+    v4 = v4 * (m4);
+    log("v4 = v4 * m4: ", v4);
 
     {
         using namespace glm;
+
         auto qa = angleAxis(radians(45.0f), vec3(0,1,0));
         auto qb = angleAxis(radians(-35.0f), vec3(0,1,0));
         log("glm.mix(qa,qb,.5)", mix(qa,qb,.1f));
+
     }
 
     return 0;

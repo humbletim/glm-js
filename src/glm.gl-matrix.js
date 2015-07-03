@@ -82,14 +82,9 @@ DLL.operations = {
                                      b.elements, a.elements)
          );
       },
-      'vec3,quat': function(a,b) { return this['quat,vec3'](b,a); },
-      'vec4,quat': function(a,b) {
-         return new glm.vec4(this['quat,vec3'](b,a), 1);
-         //                GLMAT.vec3.transformQuat(new Float32Array(3), 
-         //                                         a.elements, b.elements),
-         //                1 // glMatrix doesn't set .w appropriately; so return vec4(vec3*quat,1)
-         //             );
-      },
+      'vec3,quat': function(a,b) { return this['quat,vec3'](glm.inverse(b),a); },
+      'quat,vec4': function(a,b) { return this['mat4,vec4'](glm.toMat4(a), b); },
+      'vec4,quat': function(a,b) { return this['quat,vec4'](glm.inverse(b),a); },
       'vec<N>,float': function(a,b) {
          return new glm.vecN(
             GLMAT.vecN.scale(new Float32Array(N),
@@ -102,6 +97,7 @@ DLL.operations = {
                                      b.elements, a.elements)
          );
       },
+      'vec4,mat4': function(a,b) { return this['mat4,vec4'](glm.inverse(b),a); },
       'mat<N>,mat<N>': function(a,b) {
          return new glm.matN(
             GLMAT.matN.mul(new Float32Array(N*N), 
@@ -129,7 +125,23 @@ DLL.operations = {
             a.elements,
             a.elements, b.elements);
          return a;
+      },
+
+      // note: v3 *= q; is not supported by GLM C++
+      //  but v3['*='](q); seems to perform slightly-better in JS
+      //  and can be used as: glm.mul_eq.link('inplace:vec3,quat')(v3,q);
+      'inplace:vec3,quat': function(a,b) {
+         var Q = GLMAT.quat.invert(new Float32Array(4), b.elements);
+         GLMAT.vec3.transformQuat(a.elements, a.elements, Q);
+         return a;
+      },
+
+      'inplace:vec4,mat4': function(a,b) {
+         var M = GLMAT.mat4.invert(new Float32Array(16), b.elements);
+         GLMAT.vec4.transformMat4(a.elements, a.elements, M);
+         return a;
       }
+
    }
 }; //operations
 

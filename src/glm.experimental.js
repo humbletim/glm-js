@@ -166,8 +166,8 @@ GLM.$make_primitive_vector = function(type, glmtype, typearray) {
             //Object.defineProperty(this, 'elements', { configurable: true, value: e });//GLM.$toTypedArray(this.typearray, e, this.glmtype.componentLength);
             this.elements = e;
             this.length = !this.elements ? 0 : (this.elements.length / this.glmtype.componentLength);
-            if (this.length)
-               this.arrayize();
+            //if (this.length)
+            this.arrayize();
             return this;
          },
 

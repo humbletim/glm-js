@@ -109,6 +109,26 @@ try{
     var qq = glm.angleAxis(glm.radians(30.0), glm.normalize(glm.vec3(1)));
     log("qq", qq);
     log("qq * v3", qq ['*'] (v3));
+    log("v3 * q: ", v3 ['*'] (q));
+
+    v3 = v3 ['*'] (q);
+    log("v3 = v3 * q: ", v3);
+
+    var qqq = glm.angleAxis(glm.radians(30.0), glm.vec3(0.0, 1.0, 0.0));
+    log("qqq", qqq);
+    log("qqq * v4: ", qqq ['*'] (glm.vec4(1.0)));
+    log("v4 * qqq: ", glm.vec4(1.0) ['*'] (qqq));
+
+    m4 = glm.toMat4(qqq);
+    var v4 = glm.vec4(1.0);
+    log("m4", m4);
+    log("v4", v4);
+    log("v4 * m4: ", v4 ['*'] (m4));
+    log("m4 * v4: ", m4 ['*'] (v4));
+
+    // v4 *= m4; // disallowed by GLM
+    v4 = v4 ['*'] (m4);
+    log("v4 = v4 * m4: ", v4);
 
     {
        glm.using_namespace(
