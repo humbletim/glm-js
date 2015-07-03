@@ -274,3 +274,6 @@ m3.multiply(new THREE.Matrix4().makeRotationFromQuaternion(this.mrot));
 * glm-js itself is released under the MIT license - see [glm-js/LICENSE](https://github.com/humbletim/glm-js/blob/master/LICENSE)
 * "math vendor" backends are included per individual licenses - see [glm-js/lib/LICENSE.*](https://github.com/humbletim/glm-js/tree/master/lib)
 
+<script>
+  [].forEach.call(document.querySelectorAll("*[id]"), function(n) { window[n.id] = n; });
+</script>
