@@ -29,7 +29,7 @@ GLM.$toTypedArray = function(arrayType, elementSource, componentLength) {
    if (sz instanceof arrayType)
       return sz;
 
-   if (sz instanceof ArrayBuffer || Array.isArray(sz))
+   if (sz instanceof GLM.$outer.ArrayBuffer || Array.isArray(sz))
       return new arrayType(sz);
 
    if (GLM.$isGLMObject(sz)) {
@@ -111,12 +111,12 @@ GLM.$make_primitive = function(type, typearray) {
    return GLM[type];
 };
 
-GLM.$make_primitive("$bool", Int32Array);
+GLM.$make_primitive("$bool", GLM.$outer.Int32Array);
 GLM.$template.jstypes['boolean'] = 'float'; // internal representation
-GLM.$make_primitive("$int32", Int32Array);
-GLM.$make_primitive("$uint32", Uint32Array);
-GLM.$make_primitive("$uint16", Uint16Array);
-GLM.$make_primitive("$float", Float32Array);
+GLM.$make_primitive("$int32", GLM.$outer.Int32Array);
+GLM.$make_primitive("$uint32", GLM.$outer.Uint32Array);
+GLM.$make_primitive("$uint16", GLM.$outer.Uint16Array);
+GLM.$make_primitive("$float", GLM.$outer.Float32Array);
 
 GLM.$make_primitive_vector = function(type, glmtype, typearray) {
    typearray = typearray || new glmtype().elements.constructor;
@@ -286,7 +286,7 @@ GLM.$make_componentized_vector = function(type, glmtype, typearray) {
 //  .glsl <=> <GLSL-encoded representation>
 (function() {
     GLM.$b64 = (function(d){
-                   var A=ArrayBuffer, U=Uint8Array, D=d.indexOf.bind(d);
+                   var A=GLM.$outer.ArrayBuffer, U=GLM.$outer.Uint8Array, D=d.indexOf.bind(d);
                    return {
                       b64_to_utf8: function(s){return decodeURIComponent(escape(atob(s)));},
                       utf8_to_b64: function(s){return btoa(unescape(encodeURIComponent(s)));},

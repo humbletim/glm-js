@@ -56,7 +56,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
             if (ep) {
                glm.$to_array(obj).map(
                   function(v, _) {
-                     expect(v,message).to.be.closeTo(arr[_],ep);
+                     expect(v,message).to[not ? 'not' : 'be'].be.closeTo(arr[_],ep);
                   });
                return true;
             }
@@ -68,8 +68,8 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
          roughly: function(d) { 
             return this.to.be.approximately(d, glm.epsilon());
          },
-         glsl: function(g) { 
-            return expect(glm.$to_glsl(this._obj)).to.equal(g);
+         glsl: function(g, precision) { 
+            return expect(glm.$to_glsl(this._obj, precision)).to.equal(g);
          }
       },
       sugar: function(_chai, utils) {

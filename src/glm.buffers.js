@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------------
 
 function $GLMVector(typ, sz, typearray) {
-   typearray = typearray || Float32Array;
+   typearray = typearray || GLM.$outer.Float32Array;
    this.typearray = typearray;
    if (!(this instanceof $GLMVector)) throw new GLM.GLMJSError('use new');
    if (!('function' === typeof typ) || !GLM.$isGLMConstructor(typ))
@@ -282,7 +282,7 @@ $GLMVector.prototype = GLM.$template.extend(
          return off;
       },
       setFromPointer: function(ptr) {
-         if(!(ptr instanceof ArrayBuffer))
+         if(!(ptr instanceof GLM.$outer.ArrayBuffer))
             throw new glm.GLMJSError("unsupported argtype "+[typeof ptr]+" - $GLMVector.setFromPointer");
          return this._set(new this.typearray(ptr));
       }

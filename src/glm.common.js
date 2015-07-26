@@ -93,7 +93,7 @@ $GLM_extern = function(func, local) {
  });
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
-   version: "0.0.4",
+   version: "0.0.4b",
    GLM_VERSION: 96,
 
    $outer: {
@@ -150,6 +150,27 @@ GLM = {
 			thiz.z = Math.atan2( - m12, m22 );
 		 }
          return thiz;
+      },
+
+      // so that people can work-around faulty TypedArray implementations
+      ArrayBuffer: ArrayBuffer,
+      Float32Array: Float32Array, Float64Array: Float64Array,
+      Uint8Array:Uint8Array, Uint16Array: Uint16Array, Uint32Array: Uint32Array,
+      Int8Array: Int8Array, Int16Array: Int16Array, Int32Array: Int32Array,
+      $rebindTypedArrays: function(alternator) {
+         var ret = Object.keys(GLM.$outer)
+            .filter(RegExp.prototype.test.bind(/Array/))
+            .map(
+               function(p) {
+                  var rep = alternator.call(this, p, GLM.$outer[p]);
+                  if (rep !== GLM.$outer[p]) {
+                     GLM.$outer.console.warn("$rebindTypedArrays("+p+")... replacing");
+                     GLM.$outer[p] = rep;
+                  }
+                  return rep;
+               });
+         GLM.$subarray = GLM.patch_subarray();
+         return ret;
       }
    },
    $extern: $GLM_extern,
@@ -196,8 +217,8 @@ GLM = {
 
    $from_ptr: function(typ, ptr, byteOffset) {
       if (this !== GLM) throw new GLM.GLMJSError("... use glm.make_<type>() (not new glm.make<type>())");
-      var components = new Float32Array(ptr.buffer || ptr,byteOffset||0,typ.componentLength);
-      var elements = new Float32Array(components);// ensure it's a clone
+      var components = new GLM.$outer.Float32Array(ptr.buffer || ptr,byteOffset||0,typ.componentLength);
+      var elements = new GLM.$outer.Float32Array(components);// ensure it's a clone
       return new typ(elements);
    },
    make_vec2: function(ptr,byteOffset) { return GLM.$from_ptr.call(this, GLM.vec2, ptr, arguments.length === 2 ? byteOffset : ptr.byteOffset); },
@@ -224,15 +245,15 @@ GLM = {
 
    FAITHFUL: true, // attempt to match GLM::to_string output ASCII-for-ASCII
 
-   to_string: function to_string(o, prec) {
+   to_string: function to_string(o, opts) {
       try {
          var type = o.$type || typeof o;
          if (!GLM[type])
             throw new GLM.GLMJSError('unsupported argtype to GLM.to_string: '+['type:'+type,o]);
          if (!GLM.FAITHFUL)
-            return GLM.$to_string(o, prec); // pretty-printed
+            return GLM.$to_string(o, opts); // prettier-printed w/indentation
          else
-            return GLM.$to_string(o, prec).replace(/[\t\n]/g,'');
+            return GLM.$to_string(o, opts).replace(/[\t\n]/g,''); // flat
       } catch(e) {
          GLM.$DEBUG && GLM.$outer.console.error('to_string error: ',type,o+'',e);
          return e+'';
@@ -269,7 +290,8 @@ GLM = {
    epsilon: function() { return 1e-6; },
    FIXEDPRECISION: 6,
    $toFixedString: function(prefix, what, props, precision) {
-      precision = precision === undefined ? GLM.FIXEDPRECISION : precision;
+      if (precision === undefined)
+         precision = GLM.FIXEDPRECISION;
       if (!props || !props.map) throw new Error('unsupported argtype to $toFixedString(..,..,props='+typeof props+')');
       try {
          // pre-check .toFixed conversion would work
@@ -343,31 +365,43 @@ GLM.$GLMBaseType = (
   if(f.subarray(1).subarray(0) !== f[1]) throw "broken subarrays!"
 */
 
-GLM.$subarray = (
-   function() {
-      function native_subarray(o, a, b) {
-         return o.subarray(a, b || o.length);
-      }
+(function() {
+    function native_subarray(o, a, b) {
+       return o.subarray(a, b || o.length);
+    }
 
-      function workaround_broken_spidermonkey_subarray(o, a, b) {
-         // re-calculate subarray offsets directly
-         b = b || o.length;
-         return new Float32Array(
-            o.buffer, o.byteOffset +
-               a * Float32Array.BYTES_PER_ELEMENT,
-            (b-a));
-      }
+    function workaround_broken_spidermonkey_subarray(o, a, b) {
+       // re-calculate subarray offsets directly
+       b = b || o.length;
+       return new GLM.$outer.Float32Array(
+          o.buffer, o.byteOffset +
+             a * GLM.$outer.Float32Array.BYTES_PER_ELEMENT,
+          (b-a));
+    }
 
-      var f = new Float32Array([0,0]);
-      f.subarray(1).subarray(0)[0] = 1;
-      var busted = 
-         f[1] !== 1 || // SpiderMonkey
-         4 !== new Float32Array(16).subarray(12,16).length; // QtScript
+    var ab = new ArrayBuffer(16*4);
+    var fb = new Float32Array(ab);
+    if (fb.length === ab.byteLength)
+       GLM.$outer.console.error("BROKEN TypedArrays detected");
+       
+    Object.defineProperty(
+       GLM, 'patch_subarray',
+       {
+          configurable: true,
+          value: function patch_subarray() {
+             var f = new GLM.$outer.Float32Array([0,0]);
+             f.subarray(1).subarray(0)[0] = 1;
+             var busted = 
+                f[1] !== 1 || // SpiderMonkey
+                4 !== new GLM.$outer.Float32Array(16).subarray(12,16).length; // QtScript
 
-      return busted ?
-         workaround_broken_spidermonkey_subarray :
-         native_subarray;
-   })();
+             return busted ?
+                workaround_broken_spidermonkey_subarray :
+                native_subarray;
+          }
+       });
+ })();
+GLM.$subarray = GLM.patch_subarray();
 
 // ----------------------------------------------------------------------------
 
@@ -391,8 +425,8 @@ var GLM_template = GLM.$template = {
              auxiliary(x) );
          function auxiliary(x) {
             if ('object' === typeof x) { // older versions of node
-               if (x instanceof Float32Array) return "Float32Array";
-               if (x instanceof ArrayBuffer) return "ArrayBuffer";
+               if (x instanceof GLM.$outer.Float32Array) return "Float32Array";
+               if (x instanceof GLM.$outer.ArrayBuffer) return "ArrayBuffer";
             }
             return "<unknown "+[typeof x, x]+">";
          }
@@ -666,9 +700,10 @@ var GLM_template = GLM.$template = {
    $_module_stamp: +new Date(),
 
    // see also: http://stackoverflow.com/a/31194949
-   _get_argnames: function $args(func) {  
+   _iso: '/[*][^/\*]*[*]/',
+   _get_argnames: function $args(func) {
       return (func+'').replace(/\s+/g,'')  
-         .replace(/[/][*][^/\*]*[*][/]/g,'') // strip simple comments  
+         .replace(new RegExp(this._iso,'g'),'') // strip simple comments  
          .split('){',1)[0].replace(/^[^(]*[(]/,'') // extract the parameters  
          .replace(/=[^,]+/g,'') // strip any ES6 defaults  
          .split(',').filter(Boolean); // split & filter [""]  
@@ -719,7 +754,7 @@ var GLM_template = GLM.$template = {
             return new $class(builder.apply($, args));
          } else {
             // called as "new $class()"
-            if (n instanceof Float32Array) {
+            if (n instanceof GLM.$outer.Float32Array) {
                // note: $class(<Float32Array>) is a special case in which we adopt the passed buffer
                //       (bypassing the builder / causing updates to the existing buffer instead)
                GLM.$DEBUG > 2 && GLM.$outer.console.info("adopting elements...", typeof n);
@@ -738,7 +773,7 @@ var GLM_template = GLM.$template = {
                elements = n;
             } else {
                // new $class(<Float32Array>) will make new copy of the buffer
-               (elements = new Float32Array( $class.componentLength ))
+               (elements = new GLM.$outer.Float32Array( $class.componentLength ))
                   .set(builder.apply($, args));
             }
             Object.defineProperty(this, 'elements', { enumerable: false, configurable: true, value: elements });
@@ -753,7 +788,7 @@ var GLM_template = GLM.$template = {
 
       $class.$ = $;
       $class.componentLength = $len;
-      $class.BYTES_PER_ELEMENT = $len * Float32Array.BYTES_PER_ELEMENT,
+      $class.BYTES_PER_ELEMENT = $len * GLM.$outer.Float32Array.BYTES_PER_ELEMENT,
       $class.prototype = new GLM.$GLMBaseType($class, $type);
       return $class;
    }
@@ -843,22 +878,32 @@ GLM.$template.extend(
          },
 
          $to_glsl: {
-            "vec<N>": function(v) {
+            "vec<N>": function(v, opts) {
                var arr = GLM.$to_array(v);
-            // un-expand identical trailing values
+               if (opts && typeof opts === 'object' && "precision" in opts)
+                  arr = arr.map(function(_) { return _.toFixed(opts.precision); });
+               // un-expand identical trailing values
                while(arr.length && arr[arr.length-2] === arr[arr.length-1])
                   arr.pop();
                return v.$type+"("+arr+")";
             },
-            "uvec<N>": function(v) { return this.vecN(v); },// will pick up "uvecN" from $type
-            quat: function(q) { // note: quat()s aren't actually available in GLSL yet
+            "uvec<N>": function(v, opts) { return this.vecN(v, opts); },// will pick up "uvecN" from $type
+            quat: function(q, opts) { // note: quat()s aren't actually available in GLSL yet
+               var precision;
+               if (opts && typeof opts === 'object' && "precision" in opts) precision = opts.precision;
                if((q.x+q.y+q.z)===0)
-                  return "quat("+q.w+")";
-               return "quat("+GLM.$to_array(q)+")";
+                  return "quat("+(precision === undefined ? q.w : q.w.toFixed(precision))+")";
+               return this.vec4(q, opts);
+               //return "quat("+GLM.$to_array(q)+")";
             },
-            'mat<N>': function(M) {
+            'mat<N>': function(M, opts) {
+               var precision;
+               if (opts && typeof opts === 'object' && "precision" in opts) precision = opts.precision;
                // FIXME: this could fail on particular diagonals that sum to N
-               var m=GLM.$to_array(M); var ss=m.reduce(function(s,e){return s+e; },0);
+               var m=GLM.$to_array(M);
+               if (precision !== undefined)
+                  m = m.map(function(_) { return _.toFixed(precision); });
+               var ss=m.reduce(function(s,e){return s+e; },0);
                if (ss === m[0]*N) return "matN("+m[0]+")";
                return "matN("+m+")";
             }
@@ -913,29 +958,29 @@ GLM.$to_string = GLM.$template.varargs_functions(
          "Float32Array": function(b) {
             return "[object Float32Array "+JSON.stringify({length: b.length, byteOffset: b.byteOffset, byteLength: b.byteLength, BPE: b.BYTES_PER_ELEMENT})+"]";
          },
-         "float": function(what,prec) {
-            return GLM.$toFixedString("float", { value: what }, ['value'], prec);
+         "float": function(what, opts) {
+            return GLM.$toFixedString("float", { value: what }, ['value'], opts && opts.precision);
          },
          string: function(what) { return what; },
-         'vec<N>': function(what, prec) {
-            return GLM.$toFixedString(what.$type_name, what, what.$components, prec);
+         'vec<N>': function(what, opts) {
+            return GLM.$toFixedString(what.$type_name, what, what.$components, opts && opts.precision);
          },
-         'uvec<N>': function(what, prec) {
-            prec = prec || 0;
+         'uvec<N>': function(what, opts) {
+            var prec = (opts && typeof opts === 'object' && opts.precision) || 0;
             return GLM.$toFixedString(what.$type_name, what, what.$components, prec);
             //return what.$type_name+"("+glm.$to_array(what)+")";
          },
-         'mat<N>': function(what, prec) {
+         'mat<N>': function(what, opts) {
             var ret = [0,1,2,3].slice(0,N)
             .map(function(_) { return what[_]; }) // into columns
             .map(function(wi) { // each column's vecN
-                    return GLM.$toFixedString("\t", wi, wi.$components, prec);
+                    return GLM.$toFixedString("\t", wi, wi.$components, opts && opts.precision);
                  });
             return what.$type_name + '(\n'+ ret.join(", \n") +"\n)";
          },
-         quat: function(what, prec) {
+         quat: function(what, opts) {
             what = GLM.degrees(GLM.eulerAngles(what));
-            return GLM.$toFixedString("<quat>"+what.$type_name, what, ['x','y','z'], prec);
+            return GLM.$toFixedString("<quat>"+what.$type_name, what, ['x','y','z'], opts && opts.precision);
          }
       }
    }).$to_string;
@@ -1051,6 +1096,8 @@ GLM.vec2 = GLM.$template.GLMType(
                if ("y" in o && "x" in o) {
                   if (typeof o.x !== typeof o.y)
                      throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.vec2: '+o);
+                  if (typeof o.x === 'string') // coerce into numbers
+                     return [o.x*1, o.y*1];
                   return [o.x, o.y];
                }
          }
@@ -1116,6 +1163,8 @@ GLM.vec3 = GLM.$template.GLMType(
                   if ("z" in o /*&& "y" in o*/ && "x" in o) {
                      if (typeof o.x !== typeof o.y)
                         throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.vec3: '+o);
+                     if (typeof o.x === 'string') // coerce into numbers
+                        return [o.x*1, o.y*1, o.z*1];
                      return [o.x, o.y, o.z];
                   }
             }
@@ -1210,6 +1259,8 @@ GLM.vec4 = GLM.$template.GLMType(
                   if ("w" in o /*&& "z" in o && "y" in o*/ && "x" in o)  {
                      if (typeof o.x !== typeof o.w)
                         throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.vec4: '+o);
+                     if (typeof o.x === 'string') // coerce into numbers
+                        return [o.x*1, o.y*1, o.z*1, o.w*1];
                      return [o.x, o.y, o.z, o.w];
                   }
             }
@@ -1323,6 +1374,13 @@ GLM.mat3 = GLM.$template.GLMType(
             }
             if (m4.length === 9)
                return m4;
+            // JSON-encoded objects may arrive this way: {"0":{"x": ...
+            if (0 in m4 && 1 in m4 && 2 in m4  &&
+                !(3 in m4) && typeof m4[2] === 'object' )
+               return [
+                  m4[0],m4[1],m4[2]
+               ].map(GLM.vec3.$.object1)
+                .reduce(function(a,b) { return a.concat(b); });
          }
          throw new GLM.GLMJSError('unrecognized object passed to GLM.mat3: '+o);
       },
@@ -1377,7 +1435,15 @@ GLM.mat4 = GLM.$template.GLMType(
             }
             if (m4.length === 16)
                return m4;
-         }
+
+            // JSON-encoded objects may arrive this way: {"0":{"x": ...
+            if (0 in m4 && 1 in m4 && 2 in m4 && 3 in m4 &&
+                !(4 in m4) && typeof m4[3] === 'object' )
+               return [
+                  m4[0],m4[1],m4[2],m4[3]
+               ].map(GLM.vec4.$.object1)
+                .reduce(function(a,b) { return a.concat(b); });
+      }
          throw new GLM.GLMJSError('unrecognized object passed to GLM.mat4: '+[o,m4&&m4.length]);
       },
       'object4': function(c1,c2,c3,c4) {
@@ -1415,8 +1481,11 @@ GLM.quat = GLM.$template.GLMType(
             if (o instanceof GLM.vec3)
                return GLM.$outer.quat_array_from_zyx(o);
 
-            if ("w" in o && "x" in o)
+            if ("w" in o && "x" in o) {
+               if (typeof o.x === 'string') // coerce into numbers
+                  return [o.x*1, o.y*1, o.z*1, o.w*1];
                return [o.x, o.y, o.z, o.w];
+            }
          }
          throw new GLM.GLMJSError('unrecognized object passed to GLM.quat.object1: '+[o,o&&o.$type, typeof o, o&&o.constructor]);
       }
@@ -1526,7 +1595,7 @@ GLM.quat = GLM.$template.GLMType(
     // legacy THREE.js interop detection
     Object.defineProperty(GLM.quat.prototype, '_x', { get: function() { throw new Error('erroneous quat._x access'); } });
 
-    var szfloat = Float32Array.BYTES_PER_ELEMENT;
+    var szfloat = GLM.$outer.Float32Array.BYTES_PER_ELEMENT;
     GLM.$partition = function cols(mat_prototype, vec, nrows, cache_prefix) {
        if (nrows === undefined) throw new GLM.GLMJSError('nrows is undefined');
        // mat column accessors -- eg: mat[0] as a read/write vec
@@ -1536,7 +1605,7 @@ GLM.quat = GLM.$template.GLMType(
        nrows = nrows || vec_length;
 
        //GLM.$outer.console.info("GLM.$partition", [vec_length,nrows].join("x"));
-       var CACHEDBG = function(x) { GLM.$DEBUG && GLM.$outer.console.debug('CACHEDBG: '+x); };
+       var CACHEDBG = function(x) { GLM.$DEBUG > 3 && GLM.$outer.console.debug('CACHEDBG: '+x); };
        //var elements = mat_prototype.elements;
        var bytesper = szfloat * vec_length;
        for(var i=0; i < nrows; i++) {
