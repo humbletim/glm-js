@@ -131,7 +131,18 @@ DLL.operations = {
          this._mulVecMat4(a.elements, new Float32Array(a.elements), m4.elements);
          return a;
       }
-
+   },
+   cross: {
+      _cross: tdl.fast.cross,
+      'vec3,vec3': function(a,b) {
+         return new glm.vec3(this._cross( new Float32Array(3), a, b));
+      }
+   },
+   dot: {
+      _dot: tdl.fast.dot,
+      'vec3,vec3': function(a,b) {
+         return this._dot(a,b);
+      }
    }
 }; //operations
 

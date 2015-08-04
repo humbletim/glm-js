@@ -93,7 +93,7 @@ $GLM_extern = function(func, local) {
  });
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
-   version: "0.0.4b",
+   version: "0.0.4c",
    GLM_VERSION: 96,
 
    $outer: {

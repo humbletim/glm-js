@@ -151,6 +151,18 @@ DLL.operations =
          'inplace:vec4,mat4': function(b,a) {
             return this.$vec4.applyMatrix4.call(b, glm.inverse(a));
          }
+      },
+      cross: {
+         $vec3_cross: THREE.Vector3.prototype.crossVectors,
+         'vec3,vec3': function(a,b) {
+            return this.$vec3_cross.call(glm.vec3(), a, b);
+         }
+      },
+      dot: {
+         $vec3_dot: THREE.Vector3.prototype.dot,
+         'vec3,vec3': function(a,b) {
+            return this.$vec3_dot.call(a, b);
+         }
       }
    };//operations
 

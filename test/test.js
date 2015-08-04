@@ -983,6 +983,22 @@ describe('glm', function(){
                               glm.length(glm.normalize(glm.vec3(2,2,2))).should.be.approximately(1,glm.epsilon());
                               glm.$to_array(glm.normalize(glm.vec3(0,2,0))).should.eql([0,1,0]);
                            });
+			it('cross', function(){ 
+			      var v1 = glm.vec3(1.0, 2.0, 3.0);
+			      var v2 = glm.vec3(4.0, 5.0, 6.0);
+			      expect(glm.cross(v1, v2)).to.glm_eq([-3.0, 6.0, -3.0]);
+
+                              expect(glm.cross(glm.vec3(1,0,0), glm.vec3(0,1,0))).to.glm_eq([0,0,1]);
+                           });
+                        it('dot', function(){ 
+			      var v1 = glm.vec3(1.0, 2.0, 3.0);
+			      var v3 = glm.vec3(0.0, 3.0, 4.0);
+			      expect(glm.dot(v1, v3)).to.equal(18.0);
+
+                              expect(glm.dot(glm.vec3(1,2,3), glm.vec3(3,2,1))).to.equal(10);
+                              expect(glm.dot(glm.vec3(1), glm.vec3(2))).to.equal(6);
+                              expect(glm.dot(glm.vec3(-1,1,1), glm.vec3(1,-1,1))).to.equal(-1);
+                           });
                         it('spin about a quat', function() {
                               var qspin = glm.quat([ 0, 1, 0, 6.123031769111886e-17 ]);
                               expect(

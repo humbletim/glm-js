@@ -141,7 +141,19 @@ DLL.operations = {
          GLMAT.vec4.transformMat4(a.elements, a.elements, M);
          return a;
       }
-
+   },
+   cross: {
+      'vec2,vec2': function(a,b) {
+         return new glm.vec2(GLMAT.vec2.cross( new Float32Array(2), a, b));
+      },
+      'vec3,vec3': function(a,b) {
+         return new glm.vec3(GLMAT.vec3.cross( new Float32Array(3), a, b));
+      }
+   },
+   dot: {
+      'vec<N>,vec<N>': function(a,b) {
+         return GLMAT.vecN.dot(a, b);
+      }
    }
 }; //operations
 
