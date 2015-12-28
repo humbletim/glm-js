@@ -112,7 +112,7 @@ GLM.$make_primitive = function(type, typearray) {
 };
 
 GLM.$make_primitive("$bool", GLM.$outer.Int32Array);
-GLM.$template.jstypes['boolean'] = 'float'; // internal representation
+//GLM.$template.jstypes['$boolean'] = 'float'; // internal representation
 GLM.$make_primitive("$int32", GLM.$outer.Int32Array);
 GLM.$make_primitive("$uint32", GLM.$outer.Uint32Array);
 GLM.$make_primitive("$uint16", GLM.$outer.Uint16Array);
@@ -288,10 +288,11 @@ GLM.$make_componentized_vector = function(type, glmtype, typearray) {
     GLM.$b64 = (function(d){
                    var A=GLM.$outer.ArrayBuffer, U=GLM.$outer.Uint8Array, D=d.indexOf.bind(d);
                    return {
-                      b64_to_utf8: function(s){return decodeURIComponent(escape(atob(s)));},
+                      _trim: function(s) { return (s+'').replace(/\s/g,''); },
+                      b64_to_utf8: function(s){return decodeURIComponent(escape(atob(this._trim(s))));},
                       utf8_to_b64: function(s){return btoa(unescape(encodeURIComponent(s)));},
                       encode: function(b,off,len){b=new U(b,off,len);var a,e=b.length,c="";for(a=0;a<e;a+=3)c+=d[b[a]>>2],c+=d[(b[a]&3)<<4|b[a+1]>>4],c+=d[(b[a+1]&15)<<2|b[a+2]>>6],c+=d[b[a+2]&63];2===e%3?c=c.substring(0,c.length-1)+"=":1===e%3&&(c=c.substring(0,c.length-2)+"==");return c},
-                      decode: function(b){var _=b.length,a=0.75*_,e=_,c=0,i,f,g,j;"="===b[_-1]&&(a--,"="===b[_-2]&&a--);for(var k=new A(a),h=new U(k),a=0;a<e;a+=4)i=D(b[a]),f=D(b[a+1]),g=D(b[a+2]),j=D(b[a+3]),h[c++]=i<<2|f>>4,h[c++]=(f&15)<<4|g>>2,h[c++]=(g&3)<<6|j&63;return k}
+                      decode: function(b){b=this._trim(b);var _=b.length,a=0.75*_,e=_,c=0,i,f,g,j;"="===b[_-1]&&(a--,"="===b[_-2]&&a--);for(var k=new A(a),h=new U(k),a=0;a<e;a+=4)i=D(b[a]),f=D(b[a+1]),g=D(b[a+2]),j=D(b[a+3]),h[c++]=i<<2|f>>4,h[c++]=(f&15)<<4|g>>2,h[c++]=(g&3)<<6|j&63;return k}
                    };
                 })("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 
@@ -303,7 +304,7 @@ GLM.$make_componentized_vector = function(type, glmtype, typearray) {
        );
     };
 
-    "vec2,vec3,vec4,mat3,mat4,uvec2,uvec3,uvec4,quat".split(",")
+    "vec2,vec3,vec4,mat3,mat4,uvec2,uvec3,uvec4,ivec2,ivec3,ivec4,bvec2,bvec3,bvec4,quat".split(",")
        .map(GLM.$getGLMType)
        .forEach(
           function(o) {

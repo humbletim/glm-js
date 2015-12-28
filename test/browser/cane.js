@@ -75,21 +75,24 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
       sugar: function(_chai, utils) {
          var self = cane;
          self.flag = utils.flag;
-         for(var p in self.properties)
-            _chai.Assertion.addProperty(p, self.properties[p]);
-         for(var p in self.methods) {
-            //console.debug("addMethod", p);
-            if (p in self.properties) // chainableMethod
-            _chai.Assertion.addChainableMethod(p, self.methods[p], self.properties[p]);
-            else
-            _chai.Assertion.addMethod(p, self.methods[p]);
-         }
+         if (typeof glm === 'object') {
+            for(var p in self.properties)
+               _chai.Assertion.addProperty(p, self.properties[p]);
+            for(var p in self.methods) {
+               //console.debug("addMethod", p);
+               if (p in self.properties) // chainableMethod
+                  _chai.Assertion.addChainableMethod(p, self.methods[p], self.properties[p]);
+               else
+                  _chai.Assertion.addMethod(p, self.methods[p]);
+            }
+         } // glm
          self.checkForDirectInvocation();
          return self.patchChai(_chai);
       },
       patchMochaUtils: function(utils) {
          // mocha patches to make exception reports prettier
-         
+         if (typeof glm !== 'object')
+            return utils;
          // tested with Mocha version 2.1.0
          return (function(utils) {
                     utils.stringify = (
@@ -117,7 +120,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
          chai.config.toDisplayObject = function(obj) {
             if (obj instanceof Array)
                return obj+'';
-            if (glm.$isGLMObject(obj))
+            if (typeof glm === 'object' && glm.$isGLMObject(obj))
                return glm.to_string(obj);
             return obj;
          };

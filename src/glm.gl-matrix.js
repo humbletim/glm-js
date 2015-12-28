@@ -10,7 +10,7 @@ GLMAT.mat4.exists;
 glm = GLM;
 
 var DLL = {
-   _version: '0.0.1',
+   _version: '0.0.2',
    _name: 'glm.gl-matrix.js',
    _glm_version: glm.version,
    prefix: 'glm-js[glMatrix]: ',
@@ -19,7 +19,7 @@ var DLL = {
    vendor_name: "glMatrix"
 };
    
-DLL.statics = {
+DLL['statics'] = {
    mat4_perspective: function(fov, aspect, near, far) {
       return new glm.mat4(
          GLMAT.mat4.perspective(new Float32Array(16), fov, aspect, near, far)
@@ -73,7 +73,7 @@ DLL.statics = {
    }
 }; //statics
 
-DLL.operations = {
+DLL['declare<T,V,...>'] = {
    'mul': {
       $op: '*',
       'quat,vec3': function(a,b) {
@@ -144,7 +144,7 @@ DLL.operations = {
    },
    cross: {
       'vec2,vec2': function(a,b) {
-         return new glm.vec2(GLMAT.vec2.cross( new Float32Array(2), a, b));
+         return new glm.vec3(GLMAT.vec2.cross( new Float32Array(3), a, b));
       },
       'vec3,vec3': function(a,b) {
          return new glm.vec3(GLMAT.vec3.cross( new Float32Array(3), a, b));
@@ -154,10 +154,19 @@ DLL.operations = {
       'vec<N>,vec<N>': function(a,b) {
          return GLMAT.vecN.dot(a, b);
       }
+   },
+   lookAt: {
+      'vec3,vec3': function(eye,target,up) {
+	 return glm.quat(new glm.mat4(
+	    GLMAT.mat4.lookAt(
+	       new Float32Array(16),
+	       eye.elements, target.elements, up.elements
+	    )));
+      }
    }
 }; //operations
 
-DLL.functions = {
+DLL['declare<T,V,number>'] = {
    mix: {
       "quat,quat": function(a,b,rt) {
          return new glm.quat(GLMAT.quat.slerp(new Float32Array(4), a.elements,b.elements,rt));
@@ -165,7 +174,7 @@ DLL.functions = {
    }
 }; //function
 
-DLL.calculators = {
+DLL['declare<T>'] = {
    normalize: {
       'vec<N>': function(q) { 
          return new glm.vecN(
@@ -194,23 +203,26 @@ DLL.calculators = {
             GLMAT.quat.invert(new Float32Array(4), q.elements)
          );
       },
-      xmat4: function(m) { 
+      /*xmat4: function(m) { 
          return glm.mat4(
             GLMAT.mat4.invert(new Float32Array(16), m.elements)
          );
-      },
+      },*/
       mat4: function(m) { 
          m=m.clone();
-         GLMAT.mat4.invert(m.elements, m.elements);
+	 // what should happen if no determinant?
+	 // (note: THREE, tdl-fast and gl-matrix all behave differently)
+         if (null === GLMAT.mat4.invert(m.elements, m.elements))
+	    return m['='](glm.mat4()); // identity
          return m;
       }
    },
    transpose: {
-      xmat4: function(m) { 
+      /*xmat4: function(m) { 
          return glm.mat4(
             GLMAT.mat4.transpose(new Float32Array(16), m.elements)
          );
-      },
+      },*/
       mat4: function(m) { 
          m=m.clone();
          GLMAT.mat4.transpose(m.elements, m.elements);

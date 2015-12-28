@@ -17,12 +17,12 @@ var DLL = {
    vendor_version: THREE.REVISION,
    
    _name: 'glm.three.js',
-   _version: '0.0.1',
+   _version: '0.0.2',
 
    prefix: 'glm-js[three]: '
 };
    
-DLL.statics = {
+DLL['statics'] = {
    $mat4: new THREE.Matrix4(),
    mat4_perspective: function(fov, aspect, near, far) {
       fov = glm.degrees(fov);
@@ -72,7 +72,7 @@ DLL.statics = {
    }
 };
 
-DLL.operations = 
+DLL['declare<T,V,...>'] = 
    {
       'mul': {
          $op: '*',
@@ -163,10 +163,16 @@ DLL.operations =
          'vec3,vec3': function(a,b) {
             return this.$vec3_dot.call(a, b);
          }
+      },
+      lookAt: {
+	 $mat4_lookAt: THREE.Matrix4.prototype.lookAt,
+	 'vec3,vec3': function(eye,target,up) {
+	    return glm.inverse(glm.quat(this.$mat4_lookAt.call(glm.mat4(), eye, target, up)));
+	 }
       }
    };//operations
 
-DLL.functions = {
+DLL['declare<T,V,number>'] = {
    mix: {
       $quat: THREE.Quaternion.prototype.fromArray.bind(new THREE.Quaternion()),
       $quat2: THREE.Quaternion.prototype.fromArray.bind(new THREE.Quaternion()),
@@ -179,7 +185,7 @@ DLL.functions = {
    }
 }; // functions
 
-DLL.calculators = {
+DLL['declare<T>'] = {
    normalize: {
       '$vec<N>': 'new THREE.VectorN()',
       'vec<N>': function(q) { 
@@ -209,7 +215,7 @@ DLL.calculators = {
          //return new glm.quat(this.$quat.set(q.x,q.y,q.z,q.w).inverse());
          return new glm.quat(this.$quat(q.elements).inverse());
       },
-      slowmat4: function(m) { return new glm.mat4(this.$mat4.getInverse(m)); },
+      //slowmat4: function(m) { return new glm.mat4(this.$mat4.getInverse(m)); },
       _pm: { identity:function(){this.elements.set(glm.mat4.$.identity);return this;},
              multiplyScalar: function(n) { for(var i=0;i<16; i++)this.elements[i]*=n;}},
       mat4: function(m) { m=m.clone(); this._pm.elements=m.elements; this.$mat4.getInverse.call(this._pm,m); return m;},

@@ -10,95 +10,19 @@ try { glm.exists && alert("glm.common.js loaded over exist glm instance: "+glm);
 
 glm = null;
 
-// var EVAL = function(x) {
-//    return new Function("", "return "+x)();
-// };
-
 GLMJS_PREFIX = 'glm-js: ';
 
-//http://stackoverflow.com/a/27925672/1684079
-var GLMJSError = (
-   function createErrorType(name, init) {
-      function E(message) {
-         this.name = name;
-         if (!Error.captureStackTrace)
-            this.stack = (new Error()).stack;
-         else
-            Error.captureStackTrace(this, this.constructor);
-         this.message = message;
-         init && init.apply(this, arguments);
-      }
-      E.prototype = new Error();
-      E.prototype.name = name;
-      E.prototype.constructor = E;
-      return E;
-   })('GLMJSError');
+!function() {
 
-$GLM_extern = function(func, local) {
-   //try { console.debug("extern "+func, local||""); } catch(e){}
-   local = local || func;
-   return function() {
-      GLM[local] = GLM.$outer.functions[func] || GLM.$outer[func];
-      if (!GLM[local]) throw new GLM.GLMJSError('$GLM_extern: unresolved external symbol: '+func);
-      GLM.$DEBUG && GLM.$outer.console.debug('$GLM_extern: resolved external symbol '+func+' '+typeof GLM[local]);
-      return GLM[local].apply(this, arguments);
-   };
-};
-
-($GLM_reset_logging = function(force) {
-    // support glm.$log being injected for easier testing
-    if (force || 'undefined' === typeof $GLM_log)
-       $GLM_log = function(x,y) {
-          GLM.$outer.console.log.apply(
-             GLM.$outer.console,
-             [].slice.call(arguments).map(
-                function(x){
-                   var jstype = typeof x;
-                   if (jstype === 'boolean' || jstype === 'string')
-                      return x+'';
-                   if (GLM.$isGLMObject(x) || !isNaN(x))
-                      return  GLM.to_string(x);
-                   return x+'';
-                })
-          );
-       };
-
-   // ditto for consolidated console writes
-    if (force || 'undefined' === typeof $GLM_console_log) {
-       $GLM_console_log = function(prefix, args) {
-          (console[prefix]||function(){}).apply(
-             console,
-            [].slice.call(arguments,1)
-          );
-       };
-    }
-    if (force || 'undefined' === typeof $GLM_console_logger) {
-       $GLM_console_logger = function(prefix) { return $GLM_console_log.bind($GLM_console_log, prefix); };
-    }
-
-    var con = (
-       function(mklogger) {
-          var ret = {};
-          "debug,warn,info,error,log,write"
-          .replace(/\w+/g,
-                   function(prop) {
-                      ret[prop] = mklogger(prop);
-                   });
-          return ret;
-       })($GLM_console_logger);
-    if ('object' === typeof GLM && GLM.$outer) {
-       GLM.$outer.console = con;
-    }
-    return con;
- });
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
-   version: "0.0.4c",
+   version: "0.0.4e",
    GLM_VERSION: 96,
 
    $outer: {
       functions: {},
       intern: function(k,v) {
+         if (!k) return;
          //console.warn("$GLM_intern", k,v);
          if (v === undefined && typeof k === 'object') {
             for(var p in k) GLM.$outer.intern(p, k[p]);
@@ -108,11 +32,13 @@ GLM = {
          return GLM.$outer[k] = v;
       },
       $import: function(DLL) {
+         GLM.$outer.$import = function() { throw new Error('glm.$outer.$import already called...'); };
          GLM.$outer.intern(DLL.statics);
          GLM.$template.extend(GLM,
-            GLM.$template.functions(DLL.functions),
-            GLM.$template.operations(DLL.operations),
-            GLM.$template.calculators(DLL.calculators)
+            GLM.$template['declare<T,V,number>'](DLL['declare<T,V,number>']),
+            GLM.$template['declare<T,V,...>'](DLL['declare<T,V,...>']),
+            GLM.$template['declare<T,...>'](DLL['declare<T,...>']),
+            GLM.$template['declare<T>'](DLL['declare<T>'])
          );
          GLM.$init(DLL);
       },
@@ -135,20 +61,20 @@ GLM = {
       _vec3_eulerAngles: function(q) {
          // adapted from three.js
          var te = this.mat4_array_from_quat(q);
-		 var m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
-		 m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
-		 m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ];
+         var m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
+         m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
+         m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ];
 
-		 var thiz = new glm.vec3();
+         var thiz = new glm.vec3();
          thiz.y = Math.asin( - glm._clamp( m31, - 1, 1 ) );
-
-		 if ( Math.abs( m31 ) < 0.99999 ) {
-			thiz.x = Math.atan2( m32, m33 );
-			thiz.z = Math.atan2( m21, m11 );
-		 } else {
-			thiz.x = 0;
-			thiz.z = Math.atan2( - m12, m22 );
-		 }
+	 
+         if ( Math.abs( m31 ) < 0.99999 ) {
+            thiz.x = Math.atan2( m32, m33 );
+            thiz.z = Math.atan2( m21, m11 );
+         } else {
+            thiz.x = 0;
+            thiz.z = Math.atan2( - m12, m22 );
+         }
          return thiz;
       },
 
@@ -157,9 +83,10 @@ GLM = {
       Float32Array: Float32Array, Float64Array: Float64Array,
       Uint8Array:Uint8Array, Uint16Array: Uint16Array, Uint32Array: Uint32Array,
       Int8Array: Int8Array, Int16Array: Int16Array, Int32Array: Int32Array,
+      DataView: DataView,
       $rebindTypedArrays: function(alternator) {
          var ret = Object.keys(GLM.$outer)
-            .filter(RegExp.prototype.test.bind(/Array/))
+            .filter(RegExp.prototype.test.bind(/Array$|^ArrayBuffer$|^DataView$/))
             .map(
                function(p) {
                   var rep = alternator.call(this, p, GLM.$outer[p]);
@@ -177,7 +104,7 @@ GLM = {
 
    $log: $GLM_log,
 
-   GLMJSError: GLMJSError,
+   GLMJSError: $GLM_GLMJSError('GLMJSError'),
 
    _radians: function(n) { return n * Math.PI / 180; },
    _degrees: function(n) { return n * 180 / Math.PI; },
@@ -196,6 +123,9 @@ GLM = {
    rotate: $GLM_extern('rotate'),
    scale: $GLM_extern('scale'),
    translate: $GLM_extern('translate'),
+   lookAt: $GLM_extern('lookAt'),
+   cross: $GLM_extern('cross'),
+   dot: $GLM_extern('dot'),
 
    perspective: function(fov, aspect, near, far) {
       return GLM.$outer.mat4_perspective(fov, aspect, near, far);
@@ -282,12 +212,58 @@ GLM = {
    },
 
    _clamp: function (a,b,c) { return a<b?b:(a>c?c:a); },
-   max: function(a,b) { return Math.max(a,b); },
-   min: function(a,b) { return Math.min(a,b); },
-   _sign: function(x) {
+   _abs: function(a) { return Math.abs(a); },
+   _equal: function(a,b) { return a === b; },
+   _epsilonEqual: function(x,y,e) { return Math.abs(x - y) < e; },
+   _fract: function(a) { return a - Math.floor(a) },
+
+   // adapted from Squeak.js (see ../lib/squeak.js)
+   _frexp: function(value, arrptr) {
+      // frexp separates a float into its mantissa and exponent
+      if (value == 0.0) { // zero is special
+         if (arrptr && Array.isArray(arrptr)) {
+            arrptr[0] = arrptr[1] = 0;
+            return 0;
+         }
+         return [0,0];
+      }
+      var data = new GLM.$outer.DataView(new GLM.$outer.ArrayBuffer(8));
+      data.setFloat64(0, value);      // for accessing IEEE-754 exponent bits
+      var bits = (data.getUint32(0) >>> 20) & 0x7FF;
+      if (bits === 0) { // we have a subnormal float (actual zero was handled above)
+         // make it normal by multiplying a large number
+         data.setFloat64(0, value * Math.pow(2, 64));
+         // access its exponent bits, and subtract the large number's exponent
+         bits = ((data.getUint32(0) >>> 20) & 0x7FF) - 64;
+      }
+      var exponent = bits - 1022;                 // apply bias
+      var mantissa = GLM.ldexp(value, -exponent)
+
+      // no C pointers available; not sure which strategy is best yet...
+      if (arrptr && Array.isArray(arrptr)) {
+         arrptr[0] = exponent; // glm-ish behavior
+         arrptr[1] = mantissa; // extra return value
+         return mantissa;
+      }
+      return [mantissa, exponent]; // both values at once
+   },
+   _ldexp: function(mantissa, exponent) {
+      // construct a float from mantissa and exponent
+      return exponent > 1023 // avoid multiplying by infinity
+         ? mantissa * Math.pow(2, 1023) * Math.pow(2, exponent - 1023)
+         : exponent < -1074 // avoid multiplying by zero
+         ? mantissa * Math.pow(2, -1074) * Math.pow(2, exponent + 1074)
+         : mantissa * Math.pow(2, exponent);
+   }, /// Squeak.js
+
+   _max: Math.max,
+   _min: Math.min,
+   sqrt: Math.sqrt,
+   __sign: function(x) {
       return x > 0 ? 1 : x < 0 ? -1 : +x;
    },
    epsilon: function() { return 1e-6; },
+   pi: function() { return Math.PI; },
    FIXEDPRECISION: 6,
    $toFixedString: function(prefix, what, props, precision) {
       if (precision === undefined)
@@ -296,7 +272,7 @@ GLM = {
       try {
          // pre-check .toFixed conversion would work
          var lp = "";
-         props.map(function(p) { var w=what[lp=p]; if (!w.toFixed)throw new Error('!toFixed in w'); return w.toFixed(0); });
+         props.map(function(p) { var w=what[lp=p]; if (!w.toFixed)throw new Error('!toFixed in w'+[w,prefix,JSON.stringify(what)]); return w.toFixed(0); });
       } catch(e) {
          GLM.$DEBUG && GLM.$outer.console.error(
             "$toFixedString error", prefix, typeof what, Object.prototype.toString.call(what), lp
@@ -310,7 +286,7 @@ GLM = {
    }
 };
 
-GLM.sign = Math.sign || GLM._sign;
+GLM._sign = Math.sign || GLM.__sign;
 
 // ----------------------------------------------------------------------------
 
@@ -379,10 +355,10 @@ GLM.$GLMBaseType = (
           (b-a));
     }
 
-    var ab = new ArrayBuffer(16*4);
-    var fb = new Float32Array(ab);
-    if (fb.length === ab.byteLength)
-       GLM.$outer.console.error("BROKEN TypedArrays detected");
+    //var ab = new ArrayBuffer(16*4);
+    //var fb = new Float32Array(ab);
+    //if (fb.length === ab.byteLength)
+    //   GLM.$outer.console.error("BROKEN TypedArrays detected");
        
     Object.defineProperty(
        GLM, 'patch_subarray',
@@ -395,9 +371,12 @@ GLM.$GLMBaseType = (
                 f[1] !== 1 || // SpiderMonkey
                 4 !== new GLM.$outer.Float32Array(16).subarray(12,16).length; // QtScript
 
-             return busted ?
+             var patch_subarray = busted ?
                 workaround_broken_spidermonkey_subarray :
                 native_subarray;
+             patch_subarray.workaround_broken_spidermonkey_subarray = workaround_broken_spidermonkey_subarray;
+             patch_subarray.native_subarray = native_subarray;
+             return patch_subarray;
           }
        });
  })();
@@ -407,11 +386,12 @@ GLM.$subarray = GLM.patch_subarray();
 
 var GLM_template = GLM.$template = {
    _genArgError: function(F, dbg, TV, args) {
-      if (~args.indexOf(undefined))
+      if (~args.indexOf(undefined)) {
          args = args.slice(0,args.indexOf(undefined));
+      }
       var no_dollars = RegExp.prototype.test.bind(/^[^$_]/);
       return new GLM.GLMJSError(
-         'unsupported argtype to '+dbg+''+F.$sig+': [typ='+TV+"] :: "+
+         'unsupported argtype to '+dbg+' '+F.$sig+': [typ='+TV+"] :: "+
             'got arg types: '+args.map(GLM.$template.jstypes.get)+
             " // supported types: "+Object.keys(F).filter(no_dollars).join("||"));
    },
@@ -422,16 +402,17 @@ var GLM_template = GLM.$template = {
             (x.$type ||
              GLM.$template.jstypes[typeof x] ||
              GLM.$template.jstypes[x+''] ||
-             auxiliary(x) );
-         function auxiliary(x) {
-            if ('object' === typeof x) { // older versions of node
-               if (x instanceof GLM.$outer.Float32Array) return "Float32Array";
-               if (x instanceof GLM.$outer.ArrayBuffer) return "ArrayBuffer";
-            }
-            return "<unknown "+[typeof x, x]+">";
-         }
+             (function auxiliary(x) {
+                 if ('object' === typeof x) { // older versions of node
+                    if (x instanceof GLM.$outer.Float32Array) return "Float32Array";
+                    if (x instanceof GLM.$outer.ArrayBuffer) return "ArrayBuffer";
+                    if (Array.isArray(x)) return 'array';
+                 }
+                 return "<unknown "+[typeof x, x]+">";
+              })(x));
       },
       0: "float",
+      "boolean": "bool",
       "number": "float",
       "string": "string",
       "[object Float32Array]": "Float32Array",
@@ -465,8 +446,8 @@ var GLM_template = GLM.$template = {
          }
       };
    },
-   "<T>": function(F, dbg) {
-      F.$sig = "<T>";
+   "template<T>": function(F, dbg) {
+      F.$sig = "template<T>";
       var types = GLM.$template.jstypes;
       /*TRACING*/ return this.slingshot(
          this._inline_helpers(F,dbg),
@@ -474,14 +455,14 @@ var GLM_template = GLM.$template = {
          function(o) {
             //var F = arguments.callee.F;
             if (this instanceof GLM.$GLMBaseType) { o=this; }
-            var T = [(o&&o.$type) || GLM.$template.jstypes[typeof o] || "null"];
+            var T = [(o&&o.$type) || types[typeof o] || types.get(o) || "null"];
             if (!F[T])
                throw GLM.$template._genArgError(F, arguments.callee.dbg, T, [o]);
             return F[T](o);
          }))());
    },
-   "<T,...>": function(F, dbg) {
-      F.$sig = "<T,...>";
+   "template<T,...>": function(F, dbg) {
+      F.$sig = "template<T,...>";
       var types = GLM.$template.jstypes;
       /*TRACING*/ return this.slingshot(
          this._inline_helpers(F,dbg),
@@ -497,15 +478,13 @@ var GLM_template = GLM.$template = {
             return F[T].apply(F, args);
          }))());
    },
-   "<T,V,n>": function(F, dbg) {
-      F.$sig = "<T,V,n>";
+   "template<T,V,number>": function(F, dbg) {
+      F.$sig = "template<T,V,number>";
       var types = GLM.$template.jstypes;
       /*TRACING*/ return this.slingshot(
          this._inline_helpers(F,dbg),
          /*EVAL*/eval(this._traceable("TVnglm_"+dbg,
          function () {
-            //var F = arguments.callee.F;
-            //var types = GLM.$template.jstypes;
             var args = __VA_ARGS__;
             if (this instanceof GLM.$GLMBaseType) { args.unshift(this); }
             var o=args[0], p=args[1], v=args[2];
@@ -519,8 +498,8 @@ var GLM_template = GLM.$template = {
             return F[TV](o,p,v);
          }))());
    },
-   "<T,V>": function(F, dbg) {
-      F.$sig = '<T,V>';
+   "template<T,V,...>": function(F, dbg) {
+      F.$sig = 'template<T,V,...>';
       var types = GLM.$template.jstypes;
       var $GLMBaseType = GLM.$GLMBaseType;
       var _genArgError = GLM.$template._genArgError;
@@ -529,8 +508,6 @@ var GLM_template = GLM.$template = {
          this._inline_helpers(F,dbg),
          /*EVAL*/eval(this._traceable("TVglm_"+dbg,
          function(/*o,p,a,b,c*/) {
-            //var F = arguments.callee.F;
-            //var dbg = arguments.callee.dbg;
             var args = __VA_ARGS__;
             if (this instanceof $GLMBaseType) { args.unshift(this); }
             //            if (this instanceof GLM.$GLMBaseType) { c=b, b=a, a=p, p=o, o=this; }
@@ -544,7 +521,7 @@ var GLM_template = GLM.$template = {
          }))());
    },
 
-   override: function(TV, p, TSP, ret) {
+   override: function(TV, p, TSP, ret, force) {
       GLM.$DEBUG && GLM.$outer.console.debug('glm.$template.override: ', TV, p, TSP.$op?'$op: ["'+TSP.$op+'"]':"");
       if (!ret) throw new Error('unspecified target group '+ret+' (expected override(<TV>, "p", {TSP}, ret={GROUP}))');
       var merge = ret[p];
@@ -555,38 +532,50 @@ var GLM_template = GLM.$template = {
                                 "||"+Object.keys(merge.$template).join("||")]);
       }
       var overlay = GLM.$template[TV](GLM.$template.deNify(TSP, p), p);
+
+      if (merge && merge.F.$sig !== overlay.F.$sig) {
+         throw new Error('glm.$template.override: mismatch merging existing override: .$sig "'+
+                         [merge && merge.F.$sig,'!=',overlay.F.$sig].join(" ")+'" '+
+                         ' p='+[p,merge && merge.F.$sig,overlay.F.$sig,
+                                "||"+Object.keys(merge && merge.$template || {}).join("||")]);
+      }
       overlay.$op = TSP.$op;
       if (!merge) {
          ret[p] = overlay;
-         GLM.$DEBUG && GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+
-                                  (Object.keys(ret[p].$template)
-                                   .filter(function(x){return !~x.indexOf('$')})
-                                   .map(function(x){ return "*"+x+"*"; })
-                                   .join(" | ")));
+         GLM.$DEBUG && log_override(ret[p], []);
       } else {
-         var oldsigs = [];
          for(var P in overlay.$template) {
-            if (!(P in merge.$template)) {
-               GLM.$DEBUG && GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+P+" overlayed");
+            if (P === '$op' || P === '$sig') continue;
+            var existing = P in merge.$template;
+            if (!existing || force === true) {
+               GLM.$DEBUG && GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+P+" merged");
                merge.$template[P] = overlay.$template[P];
+            } else if (existing) {
+               GLM.$DEBUG && GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+P+" skipped");
             }
          }
 
-         Object.keys(merge.$template).forEach(
-            function(P) {
-               if (!(P in overlay.$template)) {
-                  GLM.$DEBUG && GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+P+" carried-forward");
-                  oldsigs.push(P);
+         if (GLM.$DEBUG) {
+            var oldsigs = [];
+            Object.keys(merge.$template).forEach(
+               function(P) {
+                  if (!(P in overlay.$template)) {
+                     GLM.$DEBUG && GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+P+" carried-forward");
+                     oldsigs.push(P);
+                  }
                }
-            }
-         );
-         GLM.$DEBUG && GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+
-                                  (Object.keys(ret[p].$template)
+            );
+            log_override(ret[p], oldsigs);
+         }
+      }
+
+      function log_override(retp, oldsigs) {
+         GLM.$outer.console.debug("glm.$template.override: "+p+" ... "+
+                                  (Object.keys(retp.$template)
                                    .filter(function(x){return !~x.indexOf('$')})
                                    .map(function(x){ return !~oldsigs.indexOf(x) ? "*"+x+"*" : x; })
                                    .join(" | ")));
       }
-
 //       if (TSP.$op)
 //          ret[TSP.$op] = ret[p];
       return ret;
@@ -595,7 +584,7 @@ var GLM_template = GLM.$template = {
    _override: function(TV, TS, ret) {
       for(var p in TS) {
          //console.warn("_override", p);
-         this.override(TV, p, TS[p], ret);
+         this.override(TV, p, TS[p], ret, true /*force / replace existing*/);
       }
       return ret;
    },
@@ -605,28 +594,32 @@ var GLM_template = GLM.$template = {
    extend: function(dest, sources) {
       [].slice.call(arguments,1)
          .forEach(function(source) {
+                     if (!source) return;
                      for(var p in source)
                         if (source.hasOwnProperty(p))
                         dest[p] = source[p];
                   });
       return dest;
    },
-   operations: function(TS) {
+   'declare<T,V,...>': function operations(TS) {
       //console.warn("operations", TS);
-      return this._override("<T,V>",TS,GLM.$outer.functions);
+      if (!TS) return {};
+      return this._override("template<T,V,...>",TS,GLM.$outer.functions);
    },
-
-   calculators: function(TS) {
+   'declare<T>': function calculators(TS) {
       //console.warn("FUNCTION_SOURCES", TS);
-      return this._override("<T>",TS,GLM.$outer.functions);
+      if (!TS) return {};
+      return this._override("template<T>",TS,GLM.$outer.functions);
    },
-   varargs_functions: function(TS) {
+   'declare<T,...>': function varargs_functions(TS) {
+      if (!TS) return {};
       //console.warn("FUNCTION_SOURCES", TS);
-      return this._override("<T,...>",TS,GLM.$outer.functions);
+      return this._override("template<T,...>",TS,GLM.$outer.functions);
    },
-   functions: function(TS) {
+   'declare<T,V,number>': function functions(TS) {
+      if (!TS) return {};
       //console.warn("FUNCTION_SOURCES", TS);
-      return this._override("<T,V,n>",TS,GLM.$outer.functions);
+      return this._override("template<T,V,number>",TS,GLM.$outer.functions);
    },
    _tojsname: function(hint) {
       return (hint || "_").replace(/[^$a-zA-Z0-9_]/g,'_');
@@ -634,7 +627,7 @@ var GLM_template = GLM.$template = {
    _traceable: function(hint, _src) {
       var src = _src;
       if ('function' !== typeof src)
-         throw new GLM.GLMJSError("_traceable expects tidy function as first arg "+src);
+         throw new GLM.GLMJSError("_traceable expects tidy function as second arg "+src);
       if (!hint) throw new GLM.GLMJSError("_traceable expects hint or what's the point" + [src,hint]);
       hint = this._tojsname(hint||"_traceable");
       src = (src+'').replace(/^(\s*var\s*(\w+)\s*=\s*)__VA_ARGS__;/mg,
@@ -644,12 +637,14 @@ var GLM_template = GLM.$template = {
                              })
          .replace(/\barguments[.]callee\b/g, hint);
       //if (/callee/.test(src))throw new Error(src);
-      if (src.split(/^\s*function\b/).length === 2) {
+      if (!/"_traceable"/.test(src)) { //src.split(/^\s*function\b/).length === 2) {
          // not already a factory; wrap it
-         src = (function(){ "use strict"; SRC ;return HINT;  }+'')
+         src = ('function (){ "use strict"; SRC; return HINT; "_traceable"; }')
             .replace("HINT", hint.replace(/[$]/g,'$$$$'))
             .replace("SRC", src.replace(/[$]/g,'$$$$').replace(/^function\s*\(/,'function '+hint+'('));
-      } else throw new GLM.GLMJSError("expected singular anonymous function: "+[src,hint]);
+      } else {
+         throw new GLM.GLMJSError("already wrapped in a _traceable: "+[src,hint]);
+      }
       src = "1,"+src;
       if (GLM.$DEBUG) {
          try {
@@ -794,7 +789,15 @@ var GLM_template = GLM.$template = {
    }
 };
 
-GLM.$template.functions(
+GLM.$template['declare<T,V,...>'](
+   {
+      cross: {
+         'vec2,vec2': function(a, b) {
+            return glm.vec3(0,0,a.x * b.y - a.y * b.x);
+         }
+      }
+   });
+GLM.$template['declare<T,V,number>'](
    {
       mix: {
          "float,float": function(v,n,rt) {
@@ -818,12 +821,35 @@ GLM.$template.functions(
          "vec<N>,float": function(v,a,b) {
             return new GLM.vecN(GLM.$to_array(v).map(function(n){ return GLM._clamp(n,a,b); }));
          }
+      },
+      epsilonEqual: {
+         'float,float': GLM._epsilonEqual,
+         'vec<N>,vec<N>': function(a,b,ep) {
+            var eq = this['float,float'];
+            var ret = glm.bvecN();
+            for(var i=0; i < N; i++)
+               ret[i] = eq(a[i],b[i],ep);
+            return ret;
+         },
+         //'bvec<N>,bvec<N>': function(a,b,ep) { return this['vecN,vecN'](a,b,ep); },
+         'ivec<N>,ivec<N>': function(a,b,ep) { return this['vecN,vecN'](a,b,ep); },
+         'uvec<N>,uvec<N>': function(a,b,ep) { return this['vecN,vecN'](a,b,ep); },
+         'quat,quat': function(a,b,ep) {
+            var eq = this['float,float'];
+            var ret = glm.bvec4();
+            for(var i=0; i < 4; i++)
+               ret[i] = eq(a[i],b[i],ep);
+            return ret;
+         },
+         'mat<N>,mat<N>': function(a,b,ep) {
+            throw new GLM.GLMJSError("error: 'epsilonEqual' only accept floating-point and integer scalar or vector inputs");
+         }
       }
 
    });
 
 GLM.$template.extend(
-   GLM, GLM.$template.calculators(
+   GLM, GLM.$template['declare<T>'](
    {
       degrees: {
          "float": function(n) { return GLM._degrees(n); },
@@ -837,6 +863,38 @@ GLM.$template.extend(
             return new GLM.vecN(GLM.$to_array(o).map(GLM._radians));
          }
       },
+      sign: {
+         "null":function() { return 0; },
+         "undefined": function() { return NaN; },
+         "string": function() { return NaN; },
+         "float": function(n) { return GLM._sign(n); },
+         "vec<N>": function(o) {
+            return new GLM.vecN(GLM.$to_array(o).map(GLM._sign));
+         },
+         "ivec<N>": function(o) {
+            return new GLM.ivecN(GLM.$to_array(o).map(GLM._sign));
+         }
+      },
+      abs: {
+         "float": function(n) { return GLM._abs(n); },
+         "vec<N>": function(o) {
+            return new GLM.vecN(GLM.$to_array(o).map(GLM._abs));
+         }
+      },
+      fract: {
+         "float": function(n) { return GLM._fract(n); },
+         "vec<N>": function(o) {
+            return new GLM.vecN(GLM.$to_array(o).map(GLM._fract));
+         }
+      },
+      all: {
+         "vec<N>": function(o) { return N === GLM.$to_array(o).filter(Boolean).length; },
+         "bvec<N>": function(o) { return N === GLM.$to_array(o).filter(Boolean).length; },
+         "ivec<N>": function(o) { return N === GLM.$to_array(o).filter(Boolean).length; },
+         "uvec<N>": function(o) { return N === GLM.$to_array(o).filter(Boolean).length; },
+         "quat": function(o) { return 4 === GLM.$to_array(o).filter(Boolean).length; }
+
+      },
 
       $to_object: {
          "vec2": function(v) { return {x:v.x, y:v.y}; },
@@ -845,6 +903,12 @@ GLM.$template.extend(
          "uvec2":function(v) { return {x:v.x, y:v.y}; },
          "uvec3":function(v) { return {x:v.x, y:v.y, z:v.z}; },
          "uvec4":function(v) { return {x:v.x, y:v.y, z:v.z, w:v.w}; },
+         "ivec2":function(v) { return {x:v.x, y:v.y}; },
+         "ivec3":function(v) { return {x:v.x, y:v.y, z:v.z}; },
+         "ivec4":function(v) { return {x:v.x, y:v.y, z:v.z, w:v.w}; },
+         "bvec2":function(v) { return {x:!!v.x, y:!!v.y}; },
+         "bvec3":function(v) { return {x:!!v.x, y:!!v.y, z:!!v.z}; },
+         "bvec4":function(v) { return {x:!!v.x, y:!!v.y, z:!!v.z, w:!!v.w}; },
          "quat": function(v) { return {w:v.w, x:v.x, y:v.y, z:v.z}; },
          "mat3": function(v) { return {0:this.vec3(v[0]),
                                        1:this.vec3(v[1]),
@@ -855,7 +919,7 @@ GLM.$template.extend(
                                        3:this.vec4(v[3])}; }
       }
    }),
-   GLM.$template.varargs_functions(
+   GLM.$template['declare<T,...>'](
       {
          $from_glsl: {
             'string': function(v, returnArray) {
@@ -888,6 +952,8 @@ GLM.$template.extend(
                return v.$type+"("+arr+")";
             },
             "uvec<N>": function(v, opts) { return this.vecN(v, opts); },// will pick up "uvecN" from $type
+            "ivec<N>": function(v, opts) { return this.vecN(v, opts); },// will pick up "ivecN" from $type
+            "bvec<N>": function(v, opts) { return this.vecN(v, opts); },// will pick up "bvecN" from $type
             quat: function(q, opts) { // note: quat()s aren't actually available in GLSL yet
                var precision;
                if (opts && typeof opts === 'object' && "precision" in opts) precision = opts.precision;
@@ -903,16 +969,54 @@ GLM.$template.extend(
                var m=GLM.$to_array(M);
                if (precision !== undefined)
                   m = m.map(function(_) { return _.toFixed(precision); });
-               var ss=m.reduce(function(s,e){return s+e; },0);
+               var ss=m.reduce(function(s,e){return s+1*e; },0);
                if (ss === m[0]*N) return "matN("+m[0]+")";
                return "matN("+m+")";
+            }
+         },
+
+         frexp: {
+            "float": function(val,arrptr) {
+               return arguments.length === 1 ?
+                  this['float,undefined'](val) :
+                  this['float,array'](val, arrptr);
+            },
+            "vec<N>": function(fvec, ivec) {
+               if (arguments.length < 2)
+                  throw new GLM.GLMJSError('frexp(vecN, ivecN) expected ivecN as second parameter');
+               return GLM.vecN(
+                  GLM.$to_array(fvec).map(
+                     function(x,_) {
+                        var mantissa_exp = GLM._frexp(x);
+                        ivec[_] = mantissa_exp[1];
+                        return mantissa_exp[0];
+                     })
+               );
+            },
+            // referenced here only (from float/vec<N>)
+            "float,undefined": function(val) {
+               return GLM._frexp(val);
+            },
+            "float,array": function(val,arr) {
+               return GLM._frexp(val, arr);
+            }
+         },
+         ldexp: {
+            "float": GLM._ldexp,
+            "vec<N>": function(fvec, ivec) {
+               return GLM.vecN(
+                  GLM.$to_array(fvec).map(
+                     function(x,_) {
+                        return GLM._ldexp(x,ivec[_]);
+                     })
+               );
             }
          }
       }
    )
 );
 
-GLM.$template.operations(
+GLM.$template['declare<T,V,...>'](
    {
       rotate: {
          'float,vec3': function(theta, axis) {
@@ -937,16 +1041,49 @@ GLM.$template.operations(
       angleAxis: {
          'float,vec3': function(angle, axis) {
             return GLM.$outer.quat_angleAxis(angle, axis);
-         },
+         }
          // GLM 0.9.5 supported this signature, but 0.9.6 dropped it
          //'float,float':  function(angle,x,y,z) {
          //   return GLM.$outer.quat_angleAxis(angle, glm.vec3(x,y,z));
          //}
+      },
+      min: {
+         "float,float": function(a,b) { return GLM._min(a,b); },
+         "vec<N>,float": function(o,b) {
+            return new GLM.vecN(GLM.$to_array(o).map(function(v){ return GLM._min(v,b); }));
+         }
+      },
+      max: {
+         "float,float": function(a,b) { return GLM._max(a,b); },
+         "vec<N>,float": function(o,b) {
+            return new GLM.vecN(GLM.$to_array(o).map(function(v){ return GLM._max(v,b); }));
+         }
+      },
+      equal: {
+         'float,float': GLM._equal,
+         'vec<N>,vec<N>': function(a,b) {
+            var eq = this['float,float'];
+            var ret = glm.bvecN();
+            for(var i=0; i < N; i++)
+               ret[i] = eq(a[i],b[i]);
+            return ret;
+         },
+         'bvec<N>,bvec<N>': function(a,b) { return this['vecN,vecN'](a,b); },
+         'ivec<N>,ivec<N>': function(a,b) { return this['vecN,vecN'](a,b); },
+         'uvec<N>,uvec<N>': function(a,b) { return this['vecN,vecN'](a,b); },
+         'quat,quat': function(a,b) {
+            var eq = this['float,float'];
+            var ret = glm.bvec4();
+            for(var i=0; i < 4; i++)
+               ret[i] = eq(a[i],b[i]);
+            return ret;
+         }
       }
+
    });
 
 // like glm.to_string; tho this also supports rounding to a precision
-GLM.$to_string = GLM.$template.varargs_functions(
+GLM.$to_string = GLM.$template['declare<T,...>'](
    {
       $to_string: {
          "function": function(func) {
@@ -962,6 +1099,7 @@ GLM.$to_string = GLM.$template.varargs_functions(
             return GLM.$toFixedString("float", { value: what }, ['value'], opts && opts.precision);
          },
          string: function(what) { return what; },
+         bool: function(what) { return 'bool('+what+')'; },
          'vec<N>': function(what, opts) {
             return GLM.$toFixedString(what.$type_name, what, what.$components, opts && opts.precision);
          },
@@ -969,6 +1107,13 @@ GLM.$to_string = GLM.$template.varargs_functions(
             var prec = (opts && typeof opts === 'object' && opts.precision) || 0;
             return GLM.$toFixedString(what.$type_name, what, what.$components, prec);
             //return what.$type_name+"("+glm.$to_array(what)+")";
+         },
+         'ivec<N>': function(what, opts) {
+            var prec = (opts && typeof opts === 'object' && opts.precision) || 0;
+            return GLM.$toFixedString(what.$type_name, what, what.$components, prec);
+         },
+         'bvec<N>': function(what, opts) {
+            return what.$type_name+'('+GLM.$to_array(what).map(Boolean).join(', ')+')';
          },
          'mat<N>': function(what, opts) {
             var ret = [0,1,2,3].slice(0,N)
@@ -985,16 +1130,34 @@ GLM.$to_string = GLM.$template.varargs_functions(
       }
    }).$to_string;
 
-GLM.$template.operations(
+GLM.$template['declare<T,V,...>'](
    {
       copy: {
          $op: '=',
          'vec<N>,vec<N>': function(me,you) { me.elements.set(you.elements); return me; },
          'vec<N>,array<N>': function(me,you) { me.elements.set(you); return me; },
+         'vec<N>,uvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'vec<N>,ivec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'vec<N>,bvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+
          'uvec<N>,uvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
          'uvec<N>,array<N>': function(me,you) { me.elements.set(you); return me; },
          'uvec<N>,vec<N>': function(me,you) { me.elements.set(you.elements); return me; },
-         'vec<N>,uvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'uvec<N>,ivec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'uvec<N>,bvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+
+         'ivec<N>,ivec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'ivec<N>,array<N>': function(me,you) { me.elements.set(you); return me; },
+         'ivec<N>,vec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'ivec<N>,uvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'ivec<N>,bvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+
+         'bvec<N>,ivec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'bvec<N>,array<N>': function(me,you) { me.elements.set(you); return me; },
+         'bvec<N>,vec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'bvec<N>,uvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+         'bvec<N>,bvec<N>': function(me,you) { me.elements.set(you.elements); return me; },
+
          'quat,quat': function(me,you) { me.elements.set(you.elements); return me; },
          'mat<N>,mat<N>': function(me,you) { me.elements.set(you.elements); return me; },
          'mat<N>,array<N>': function(me,you) {
@@ -1006,39 +1169,65 @@ GLM.$template.operations(
             return me['='](you);
          },
          'mat<N>,array<N*N>': function(me,you) { me.elements.set(you); return me; },
-         'mat4,array9': function(me,you) { me.elements.set(new glm.mat4(you).elements); return me; }
+         'mat4,array9': function(me,you) { me.elements.set(new GLM.mat4(you).elements); return me; }
       },
       sub: {
          $op: '-',
-         'vec<N>,vec<N>': function(me,you) {
-            return new glm.vecN(glm.$to_array(me).map(function(v,_) { return v - you[_]; }));
-         }
+         _sub: function(me,you) {
+            return (GLM.$to_array(me).map(function(v,_) { return v - you[_]; }));
+         },
+         'vec<N>,vec<N>': function(me,you) { return new GLM.vecN(this._sub(me,you)); },
+         'vec<N>,uvec<N>': function(me,you) { return new GLM.vecN(this._sub(me,you)); },
+         'uvec<N>,uvec<N>': function(me,you) { return new GLM.uvecN(this._sub(me,you)); },
+         'uvec<N>,ivec<N>': function(me,you) { return new GLM.uvecN(this._sub(me,you)); },
+         'vec<N>,ivec<N>': function(me,you) { return new GLM.vecN(this._sub(me,you)); },
+         'ivec<N>,uvec<N>': function(me,you) { return new GLM.ivecN(this._sub(me,you)); },
+         'ivec<N>,ivec<N>': function(me,you) { return new GLM.ivecN(this._sub(me,you)); }
       },
       sub_eq: {
          $op: '-=',
          'vec<N>,vec<N>': function(me,you) {
-            glm.$to_array(me).map(function(v,_) { return me.elements[_] = v - you[_]; });
+            GLM.$to_array(me).map(function(v,_) { return me.elements[_] = v - you[_]; });
             return me;
-         }
+         },
+         'vec<N>,uvec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'uvec<N>,uvec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'uvec<N>,ivec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'vec<N>,ivec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'ivec<N>,ivec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'ivec<N>,uvec<N>': function(me,you) { return this['vecN,vecN'](me,you); }
       },
       add: {
          $op: '+',
-         'vec<N>,vec<N>': function(me,you) {
-            return new glm.vecN(glm.$to_array(me).map(function(v,_) { return v + you[_]; }));
-         }
+         _add: function(me,you) {
+            return (GLM.$to_array(me).map(function(v,_) { return v + you[_]; }));
+         },
+         'vec<N>,vec<N>': function(me,you) { return new GLM.vecN(this._add(me,you)); },
+         'vec<N>,uvec<N>': function(me,you) { return new GLM.vecN(this._add(me,you)); },
+         'uvec<N>,uvec<N>': function(me,you) { return new GLM.uvecN(this._add(me,you)); },
+         'uvec<N>,ivec<N>': function(me,you) { return new GLM.uvecN(this._add(me,you)); },
+         'vec<N>,ivec<N>': function(me,you) { return new GLM.vecN(this._add(me,you)); },
+         'ivec<N>,ivec<N>': function(me,you) { return new GLM.ivecN(this._add(me,you)); },
+         'ivec<N>,uvec<N>': function(me,you) { return new GLM.ivecN(this._add(me,you)); }
       },
       add_eq: {
          $op: '+=',
          'vec<N>,vec<N>': function(me,you) {
-            glm.$to_array(me).map(function(v,_) { return me.elements[_] = v + you[_]; });
+            GLM.$to_array(me).map(function(v,_) { return me.elements[_] = v + you[_]; });
             return me;
-         }
+         },
+         'vec<N>,uvec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'uvec<N>,uvec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'uvec<N>,ivec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'vec<N>,ivec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'ivec<N>,ivec<N>': function(me,you) { return this['vecN,vecN'](me,you); },
+         'ivec<N>,uvec<N>': function(me,you) { return this['vecN,vecN'](me,you); }
       },
       div: {
          $op: '/',
          'vec<N>,float': function(me, k) {
-            return new glm.vecN(
-               glm.$to_array(me).map(function(v,_) { return v / k; })
+            return new GLM.vecN(
+               GLM.$to_array(me).map(function(v,_) { return v / k; })
             );
          }
       },
@@ -1050,17 +1239,34 @@ GLM.$template.operations(
             return me;
          }
       },
-      eql: {
-         $op: '==',
-         $eq: function(me,you) {
-            return you.elements.length === glm.$to_array(me)
-               .filter(function(v,_) { return v === you.elements[_]; }).length;
-         },
-         'vec<N>,vec<N>': function(me,you) { return this.$eq(me,you); },
-         'mat<N>,mat<N>': function(me,you) { return this.$eq(me,you); },
-         'quat,quat': function(me,you) { return this.$eq(me,you); },
-         'uvec<N>,uvec<N>': function(me,you) { return this.$eq(me,you); }
-      }
+      eql_epsilon: (
+         function(epsilonEqual) {
+            return {
+               $op: '~=',
+               'vec<N>,vec<N>': epsilonEqual,
+               'mat<N>,mat<N>': epsilonEqual,
+               'quat,quat': epsilonEqual,
+               'uvec<N>,uvec<N>': epsilonEqual,
+               'ivec<N>,ivec<N>': epsilonEqual
+            };
+         }
+      )(function epsilonEqualAB(a,b) { return GLM.all(GLM.epsilonEqual(a,b,GLM.epsilon())); }),
+      eql: (
+         function(equal) {
+            return {
+               $op: '==',
+               'mat<N>,mat<N>': function(me,you) {
+                  return you.elements.length === glm.$to_array(me)
+                     .filter(function(v,_) { return v === you.elements[_]; }).length;
+               },
+               'vec<N>,vec<N>': equal,
+               'quat,quat': equal,
+               'uvec<N>,uvec<N>': equal,
+               'ivec<N>,ivec<N>': equal,
+               'bvec<N>,bvec<N>': equal
+            };
+         }
+      )(function equalAB(a,b) { return GLM.all(GLM.equal(a,b)); })
    });
 
 // ----------------------------------------------------------------------------
@@ -1070,6 +1276,9 @@ GLM['string'] = {
 };
 GLM['number'] = {
    $type_name: "float", $: {  }
+};
+GLM['boolean'] = {
+   $type: 'bool', $type_name: "bool", $: {  }
 };
 
 // ----------------------------------------------------------------------------
@@ -1129,13 +1338,14 @@ GLM.uvec2 = GLM.$template.GLMType(
          case 2: return [o[0], o[1]].map(this._clamp);
          default:
                if ("y" in o && "x" in o) {
-                  if (typeof o.x !== typeof o.y) throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.uvec2: '+o);
+                  if (typeof o.x !== typeof o.y) throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.'+this.name+': '+o);
                   return [o.x, o.y].map(this._clamp);
                }
          }
-         throw new GLM.GLMJSError('unrecognized object passed to GLM.uvec2: '+o);
+         throw new GLM.GLMJSError('unrecognized object passed to GLM.'+this.name+': '+o);
       }
    }); // GLM.uvec2.$
+
 // ----------------------------------------------------------------------------
 GLM.vec3 = GLM.$template.GLMType(
    'vec3',
@@ -1172,7 +1382,7 @@ GLM.vec3 = GLM.$template.GLMType(
          throw new GLM.GLMJSError('unrecognized object passed to GLM.vec3: '+o);
       },
       'object2': function(o,z) {
-         if (o instanceof GLM.vec2 || o instanceof GLM.uvec2)
+         if (o instanceof GLM.vec2 || o instanceof GLM.uvec2 || o instanceof GLM.ivec2 || o instanceof GLM.bvec2)
             return [o.x, o.y, z];
          throw new GLM.GLMJSError('unrecognized object passed to GLM.vec3(o,z): '+[o,z]);
       }
@@ -1211,20 +1421,20 @@ GLM.uvec3 = GLM.$template.GLMType(
             default:
                   if ("z" in o /*&& "y" in o*/ && "x" in o) {
                      if (typeof o.x !== typeof o.y)
-                        throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.uvec3: '+o);
+                        throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.'+this.name+': '+o);
                      return [o.x, o.y, o.z].map(this._clamp);
                   }
             }
          }
-         throw new GLM.GLMJSError('unrecognized object passed to GLM.uvec3: '+o);
+         throw new GLM.GLMJSError('unrecognized object passed to GLM.'+this.name+': '+o);
       },
       'object2': function(o,z) {
          if (o instanceof GLM.vec2)
             return [o.x, o.y, z].map(this._clamp);
-         if (o instanceof GLM.uvec2)
+         if (o instanceof GLM.uvec2 || o instanceof GLM.ivec2 || o instanceof GLM.bvec2)
             return [o.x, o.y, this._clamp(z)];
 
-         throw new GLM.GLMJSError('unrecognized object passed to GLM.uvec3(o,z): '+[o,z]);
+         throw new GLM.GLMJSError('unrecognized object passed to GLM.'+this.name+'(o,z): '+[o,z]);
       }
    }); // GLM.uvec3.$
 
@@ -1268,12 +1478,12 @@ GLM.vec4 = GLM.$template.GLMType(
          throw new GLM.GLMJSError('unrecognized object passed to GLM.vec4: '+[o,o&&o.$type]);
       },
       'object2': function(o,w) {
-         if (o instanceof GLM.vec3 || o instanceof GLM.uvec3)
+         if (o instanceof GLM.vec3 || o instanceof GLM.uvec3 || o instanceof GLM.ivec3 || o instanceof GLM.bvec3)
             return [o.x, o.y, o.z, w];
          throw new GLM.GLMJSError('unrecognized object passed to GLM.vec4(o,w): '+[o,w]);
       },
       'object3': function(o,z,w) {
-         if (o instanceof GLM.vec2 || o instanceof GLM.uvec2)
+         if (o instanceof GLM.vec2 || o instanceof GLM.uvec2 || o instanceof GLM.ivec2 || o instanceof GLM.bvec2)
             return [o.x, o.y, z, w];
          throw new GLM.GLMJSError('unrecognized object passed to GLM.vec4(o,z,w): '+[o,z,w]);
       }
@@ -1315,29 +1525,70 @@ GLM.uvec4 = GLM.$template.GLMType(
             case 3: return [o[0], o[1], o[2], o[2]].map(this._clamp);
             case 2: return [o[0], o[1], o[1], o[1]].map(this._clamp);
             default:
-                  if ("w" in o /*&& "z" in o && "y" in o*/ && "x" in o)
-                  return [o.x, o.y, o.z, o.w].map(this._clamp);
+                  if ("w" in o /*&& "z" in o && "y" in o*/ && "x" in o) {
+                     if (typeof o.x !== typeof o.y)
+                        throw new GLM.GLMJSError('unrecognized .x-ish object passed to GLM.'+this.name+': '+o);
+                     return [o.x, o.y, o.z, o.w].map(this._clamp);
+                  }
             }
          }
-         throw new GLM.GLMJSError('unrecognized object passed to GLM.uvec4: '+[o,o&&o.$type]);
+         throw new GLM.GLMJSError('unrecognized object passed to GLM.'+this.name+': '+[o,o&&o.$type]);
       },
       'object2': function(o,w) {
          if (o instanceof GLM.vec3)
             return [o.x, o.y, o.z, w].map(this._clamp);
-         if (o instanceof GLM.uvec3)
+         if (o instanceof GLM.uvec3 || o instanceof GLM.ivec3 || o instanceof GLM.bvec3)
             return [o.x, o.y, o.z, this._clamp(w)];
-         throw new GLM.GLMJSError('unrecognized object passed to GLM.uvec4(o,w): '+[o,w]);
+         throw new GLM.GLMJSError('unrecognized object passed to GLM.'+this.name+'(o,w): '+[o,w]);
       },
       'object3': function(o,z,w) {
          if (o instanceof GLM.vec2)
             return [o.x, o.y, z, w].map(this._clamp);
-         if (o instanceof GLM.uvec2)
+         if (o instanceof GLM.uvec2 || o instanceof GLM.ivec2 || o instanceof GLM.bvec2)
             return [o.x, o.y, this._clamp(z), this._clamp(w)];
-         throw new GLM.GLMJSError('unrecognized object passed to GLM.uvec4(o,z,w): '+[o,z,w]);
+         throw new GLM.GLMJSError('unrecognized object passed to GLM.'+this.name+'(o,z,w): '+[o,z,w]);
       }
    }
 ); // GLM.uvec4.$
 
+// ----------------------------------------------------------------------------
+// observed GLM behavior is that ivec2 and uvec2 seem to behave identically
+GLM.ivec2 = GLM.$template.GLMType(
+   'ivec2', GLM.$template.extend({}, GLM.uvec2.$, { name: 'ivec2' })
+);
+GLM.ivec3 = GLM.$template.GLMType(
+   'ivec3', GLM.$template.extend({}, GLM.uvec3.$, { name: 'ivec3' })
+);
+GLM.ivec4 = GLM.$template.GLMType(
+   'ivec4', GLM.$template.extend({}, GLM.uvec4.$, { name: 'ivec4' })
+);
+// first-pass at bvec emulation
+GLM.bvec2 = GLM.$template.GLMType(
+   'bvec2', GLM.$template.extend(
+      {}, GLM.uvec2.$, { name: 'bvec2',
+                         'boolean1': GLM.uvec2.$.number1,
+                         'boolean2': GLM.uvec2.$.number2
+                       })
+);
+GLM.bvec3 = GLM.$template.GLMType(
+   'bvec3', GLM.$template.extend(
+      {}, GLM.uvec3.$, { name: 'bvec3',
+                         'boolean1': GLM.uvec3.$.number1,
+                         'boolean2': GLM.uvec3.$.number2,
+                         'boolean3': GLM.uvec3.$.number3
+                       })
+);
+GLM.bvec4 = GLM.$template.GLMType(
+   'bvec4', GLM.$template.extend(
+      {}, GLM.uvec4.$, { name: 'bvec4',
+                         'boolean1': GLM.uvec4.$.number1,
+                         'boolean2': GLM.uvec4.$.number2,
+                         'boolean3': GLM.uvec4.$.number3,
+                         'boolean4': GLM.uvec4.$.number4
+                       })
+);
+GLM.bvec2.$._clamp = GLM.bvec3.$._clamp = GLM.bvec4.$._clamp =
+    function _bclamp(x) { return !!x; };
 // ----------------------------------------------------------------------------
 GLM.mat3 = GLM.$template.GLMType(
    'mat3',
@@ -1585,12 +1836,18 @@ GLM.quat = GLM.$template.GLMType(
               set: function(v) { v=GLM.vec4(v); return this['='](GLM.quat(v.x,v.y,v.z,v.w)); }
            });
 
-    rigswizzle(GLM.uvec2, GLM.uvec2.$.components[0] /*xy*/, true);
-    rigswizzle(GLM.uvec2, GLM.uvec2.$.components[1] /*01*/);
-    rigswizzle(GLM.uvec3, GLM.uvec3.$.components[0] /*xyz*/, true);
-    rigswizzle(GLM.uvec3, GLM.uvec3.$.components[1] /*012*/);
-    rigswizzle(GLM.uvec4, GLM.uvec4.$.components[0] /*xyzw*/, true);
-    rigswizzle(GLM.uvec4, GLM.uvec4.$.components[1] /*0123*/);
+    ['uvec2','uvec3','uvec4','ivec2','ivec3','ivec4','bvec2','bvec3','bvec4'].forEach(
+       function(_vecN) {
+          rigswizzle(GLM[_vecN], GLM[_vecN].$.components[0] /*xy[z][w]*/, true);
+          rigswizzle(GLM[_vecN], GLM[_vecN].$.components[1] /*01[2][3]*/);
+       });
+
+    // rigswizzle(GLM.uvec2, GLM.uvec2.$.components[0] /*xy*/, true);
+    // rigswizzle(GLM.uvec2, GLM.uvec2.$.components[1] /*01*/);
+    // rigswizzle(GLM.uvec3, GLM.uvec3.$.components[0] /*xyz*/, true);
+    // rigswizzle(GLM.uvec3, GLM.uvec3.$.components[1] /*012*/);
+    // rigswizzle(GLM.uvec4, GLM.uvec4.$.components[0] /*xyzw*/, true);
+    // rigswizzle(GLM.uvec4, GLM.uvec4.$.components[1] /*0123*/);
 
     // legacy THREE.js interop detection
     Object.defineProperty(GLM.quat.prototype, '_x', { get: function() { throw new Error('erroneous quat._x access'); } });
@@ -1738,11 +1995,11 @@ GLM.using_namespace = function(tpl) {
                 var cme = "GLM.using_namespace['"+x+"']=undefined;"+
                    "delete GLM.using_namespace['"+x+"'];";
 
-                try {
+                //try {
                    restore.push(x+"=GLM.using_namespace['"+x+"'];"+cme);
-                } catch(e) {
-                   restore.push(x+"=undefined;delete "+x+";"+cme);
-                }
+                //} catch(e) {
+                //   restore.push(x+"=undefined;delete "+x+";"+cme);
+                //}
                 evals.push(x+"=GLM."+x+";");
              });
    eval(evals.join("\n"));
@@ -1752,13 +2009,106 @@ GLM.using_namespace = function(tpl) {
    eval(restore.join("\n"));
    eval(names.map(function(x,_) { return "GLM.using_namespace.after["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
    GLM.$DEBUG && console.warn("GLM.using_namespace after #globals: "+after.length);
-//    if ((before.length+after.length) !== 0) {
-//       throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
-//    }
-   if (before.length !== after.length) {
-      throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
-   }
+   // if ((before.length+after.length) !== 0) {
+   //    throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
+   // }
+   // if (before.length !== after.length) {
+   //    throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
+   // }
    return ret;
 };
 
+function $GLM_extern(func, local) {
+   //try { console.debug("extern "+func, local||""); } catch(e){}
+   local = local || func;
+   return function() {
+      GLM[local] = GLM.$outer.functions[func] || GLM.$outer[func];
+      if (!GLM[local]) throw new GLM.GLMJSError('$GLM_extern: unresolved external symbol: '+func);
+      GLM.$DEBUG && GLM.$outer.console.debug('$GLM_extern: resolved external symbol '+func+' '+typeof GLM[local]);
+      return GLM[local].apply(this, arguments);
+   };
+}
+
+$GLM_reset_logging.current = function() {
+   return {
+      $GLM_log: typeof $GLM_log !== 'undefined' && $GLM_log,
+      $GLM_console_log: typeof $GLM_console_log !== 'undefined' && $GLM_console_log,
+      $GLM_console_prefixed: typeof $GLM_console_prefixed !== 'undefined' && $GLM_console_prefixed,
+      console: GLM.$outer.console
+   };
+};
+
+function $GLM_reset_logging(force) {
+   if (force && typeof force === 'object') {
+      $GLM_log = force.$GLM_log;
+      $GLM_console_log = force.$GLM_console_log;
+      $GLM_console_factory = force.$GLM_console_factory;
+      GLM.$outer.console = force.console;
+      force = false; // fall-thru for any missing values
+   }
+   // support glm.$log being injected for easier testing
+   if (force || 'undefined' === typeof $GLM_log)
+      $GLM_log = function(x,y) {
+         GLM.$outer.console.log.apply(
+            GLM.$outer.console,
+            [].slice.call(arguments).map(
+               function(x){
+                  var jstype = typeof x;
+                  if (jstype === 'xboolean' || jstype === 'string')
+                     return x+'';
+                  if (GLM.$isGLMObject(x) || !isNaN(x))
+                     return GLM.to_string(x);
+                  return x+'';
+               })
+         );
+      };
+
+   // ditto for consolidated console writes
+   if (force || 'undefined' === typeof $GLM_console_log) {
+      $GLM_console_log = function(prefix, args) {
+         (console[prefix]||function(){}).apply(
+            console,
+            [].slice.call(arguments,1)
+         );
+      };
+   }
+   if (force || 'undefined' === typeof $GLM_console_factory) {
+      $GLM_console_factory = function(prefix) { return $GLM_console_log.bind($GLM_console_log, prefix); };
+   }
+
+   var con = (
+      function(factory) {
+         var ret = {};
+         "debug,warn,info,error,log,write"
+         .replace(/\w+/g,
+                  function(prop) {
+                     ret[prop] = factory(prop);
+                  });
+         return ret;
+      })($GLM_console_factory);
+   if ('object' === typeof GLM && GLM.$outer) {
+      GLM.$outer.console = con;
+   }
+   return con;
+}//$GLM_reset_logging
+try{ window.$GLM_reset_logging = this.$GLM_reset_logging = $GLM_reset_logging; }catch(e){}
+GLM.$reset_logging = $GLM_reset_logging;
+//http://stackoverflow.com/a/27925672/1684079
+function $GLM_GLMJSError(name, init) {
+   function E(message) {
+      this.name = name;
+      this.stack = (new Error()).stack;
+      if (Error.captureStackTrace)
+         Error.captureStackTrace(this, this.constructor);
+      this.message = message;
+      init && init.apply(this, arguments);
+   }
+   E.prototype = new Error();
+   E.prototype.name = name;
+   E.prototype.constructor = E;
+   return E;
+}
+
 try { module.exports = GLM; } catch(e) {}
+
+}();

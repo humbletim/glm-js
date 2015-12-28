@@ -14,12 +14,12 @@ var DLL = {
    vendor_version: "2009?",
    
    _name: 'glm.tdl-fast.js',
-   _version: '0.0.1',
+   _version: '0.0.2',
 
    prefix: 'glm-js[tdl-fast]: '
 };
 
-DLL.statics = {
+DLL['statics'] = {
    mat4_perspective: function(fov, aspect, near, far) {
       return glm.mat4(
          tdl.fast.matrix4.perspective(new Float32Array(16),
@@ -61,7 +61,7 @@ DLL.statics = {
    }
 }; //statics
       
-DLL.operations = {
+DLL['declare<T,V,...>'] = {
    mul: {
       $op: '*',
       //note: tdl.fast has no mulQuaternionQuaternion(dst,a,b) yet
@@ -143,10 +143,20 @@ DLL.operations = {
       'vec3,vec3': function(a,b) {
          return this._dot(a,b);
       }
+   },
+   lookAt: {
+      _lookAt: tdl.fast.matrix4.lookAt,
+      'vec3,vec3': function(eye,target,up) {
+	 return glm.quat(new glm.mat4(
+	    this._lookAt(
+	       new Float32Array(16),
+	       eye.elements, target.elements, up.elements
+	    )));
+      }
    }
 }; //operations
 
-DLL.functions = {
+DLL['declare<T,V,number>'] = {
    mix: {
       "quat,quat": function(a,b,t) {
          //var _a=a,_b=b;
@@ -200,7 +210,7 @@ DLL.functions = {
    }
 };//functions
 
-DLL.calculators = {
+DLL['declare<T>'] = {
    normalize: {
       'vec<N>': function(v) { 
          return glm.vecN(tdl.fast.normalize(new Float32Array(N), v.elements));
@@ -219,11 +229,16 @@ DLL.calculators = {
    },
    inverse: {
       quat: function(q) { return new glm.quat(tdl.quaternions.inverse(q.elements)); },
-      xmat4: function(m) { return glm.mat4(tdl.fast.inverse4(new Float32Array(16), m.elements)); },
-      mat4: function(m) { m=m.clone(); tdl.fast.inverse4(m.elements, m.elements); return m; }
+      //xmat4: function(m) { return glm.mat4(tdl.fast.inverse4(new Float32Array(16), m.elements)); },
+      mat4: function(m) {
+	 m=m.clone();
+	 if (isNaN(tdl.fast.inverse4(m.elements, m.elements)[0]))
+	    m['='](glm.mat4()); // no determinant; reset to identity 
+	 return m;
+      }
    },
    transpose: {
-      xmat4: function(m) { return glm.mat4(tdl.fast.transpose4(new Float32Array(16), m.elements)); },
+      //xmat4: function(m) { return glm.mat4(tdl.fast.transpose4(new Float32Array(16), m.elements)); },
       mat4: function(m) { m=m.clone(); tdl.fast.transpose4(m.elements, m.elements); return m; }
    }
 };//calculators

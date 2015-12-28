@@ -1,10 +1,5 @@
 #include "_glm.hpp"
 
-
-
-
-
-
 int main() {
     printf("GLM C++: %d.%d.%d\n", GLM_VERSION_MAJOR, GLM_VERSION_MINOR, GLM_VERSION_PATCH);
     auto t = glm::vec4(1,2,3,4);
@@ -87,8 +82,38 @@ int main() {
     log("uvec2(2.99,3.99)", glm::uvec2(2.99,3.99));
     log("uvec2(-2.1,0.01)", glm::uvec2(-2.1,0.01));
     log("uvec2(-2.5,0).x", glm::uvec2(-2.5,0).x);
+    log("ivec2(2.99,3.99)", glm::ivec2(2.99,3.99));
+    log("ivec2(-2.1,0.01)", glm::ivec2(-2.1,0.01));
+    log("ivec2(-2.5,0).x", glm::ivec2(-2.5,0).x);
     log("vec3(200,300,400)", glm::vec3(200,300,400));
     log("vec3(vec4(5))", glm::vec3(glm::vec4(5)));
+    log("vec3(bvec4(true))", glm::vec3(glm::bvec4(true)));
+    log("bvec3(vec4(1,1,0,1))", glm::bvec3(glm::vec4(1,1,0,1)));
+    log("ivec3(uvec4(-5.5,4.6,-3.7,2))", glm::ivec3(glm::uvec4(-5.5,4.6,-3.7,2)));
+    log("uvec4(ivec3(-5.5,4.6,-3.7),.5)", glm::uvec4(glm::ivec3(-5.5,4.6,-3.7),.5));
+    {
+       auto v3 = glm::ivec3();
+       v3 = (glm::uvec3(-5.5,4.6,-3.7));
+       log("ivec3 = uvec3", v3);
+       v3 = (glm::bvec3(1,0,1));
+       log("ivec3 = bvec3", v3);
+    }
+    {
+       auto v2 = glm::uvec2();
+       v2 = (glm::ivec2(-5.5,4.6));
+       log("uvec2 = ivec2", v2);
+       v2 = (glm::bvec2(true,false));
+       log("uvec2 = bvec2", v2);
+    }
+    {
+       auto v4 = glm::bvec4();
+       v4 = (glm::ivec4(-5.5,4.6,-3.7,0.0));
+       log("bvec4 = ivec4", v4);
+       v4 = (glm::bvec4(true,false,true,false));
+       log("bvec4 = bvec4", v4);
+       v4 = (glm::uvec4(0,1,2,3));
+       log("bvec4 = uvec4", v4);
+    }
 
     log("translate(1,2,3)", glm::translate(glm::mat4(), glm::vec3(1,2,3)));
 
@@ -138,5 +163,60 @@ int main() {
 
     }
 
+    {
+	log("glm.fract(3.14)", glm::fract(3.14f));
+	log("glm.abs(-3.14)", glm::abs(-3.14f));
+	auto v = glm::vec3(-1.5f,2,3);
+	log("glm.radians(v)", glm::radians(v));
+	log("glm.fract(v)", glm::fract(v));
+	log("glm.abs(v)", glm::abs(v));
+	log("glm.sign(v)", glm::sign(v));
+	log("glm.max(v,2.5)", glm::max(v,2.5f));
+	log("glm.min(v,2.5)", glm::min(v,2.5f));
+	log("glm.clamp(v,-1.0,1.0)", glm::clamp(v,-1.0f,1.0f));
+    }
+    
+    {
+       float x, m;
+       int n;
+       x = 16.4f;
+       m = glm::frexp(x, n);
+       log("glm.frexp(x,n[]) fraction:", m);
+       log("glm.frexp(x,n[]) exponent:", n);
+       x = -16.4;
+       m = glm::frexp(x, n);
+       log("glm.frexp(x,n[]) fraction:", m);
+       log("glm.frexp(x,n[]) exponent:", n);
+
+       {
+           glm::vec3 x(1024.0f, 0.24f, glm::epsilon<float>());
+           glm::ivec3 exp;
+           glm::vec3 A = glm::frexp(x, exp);
+           log("A = glm.frexp(vec3,ivec3); A == ", A);
+           log("A = glm.frexp(vec3,ivec3); ivec3 == ",  exp);
+	   log("glm.ldexp(A,ivec3) == ", glm::ldexp(A,exp));
+       }
+    }
+
+    {
+	float ep = glm::epsilon<float>();
+	auto v = glm::equal(glm::vec3(1+ep), glm::vec3(1));
+	log("glm.equal(glm.vec3(1+ep),glm.vec3(1))",v);
+	log("glm.all(v)", glm::all(v));
+
+	v = glm::epsilonEqual(glm::vec3(1+ep/2.0), glm::vec3(1), ep);
+	log("glm.epsilonEqual(glm.vec3(1+ep),glm.vec3(1),ep)",v);
+	log("glm.all(v+-ep)", glm::all(v));
+
+	glm::quat q = glm::angleAxis(glm::radians(45.0f), glm::vec3(0.0f,1,0));
+	glm::quat q2 = glm::angleAxis(glm::radians(45.0f+ep), glm::vec3(0.0f,1,0));
+        auto v2 = glm::epsilonEqual(q,q2,ep);
+        log("glm.epsilonEqual(glm.q(45+ep),glm.quat(45),ep)",v2);
+	log("glm.all(v2+-ep)", glm::all(v2));
+
+	glm::mat4 m = glm::toMat4(glm::angleAxis(glm::radians(45.0f), glm::vec3(0.0f,1,0)));
+	glm::mat4 m2 = glm::toMat4(glm::angleAxis(glm::radians(45.0f+1.0f), glm::vec3(0.0f,1,0)));
+        log("m == m2", m == m2);
+    }
     return 0;
 }

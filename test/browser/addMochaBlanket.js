@@ -74,6 +74,7 @@ addMochaBlanket = function() {
 tim_run_blanket = function(failed) {
    if (failed&&failed.length) return;
    mocha._reporter = function() { console.warn("eating second mocha reporting run; (blanket-mocha kludge)");}
+   mocha._in_blanket_run = true;
    mocha.noHighlighting();
    blanket.defaultReporter = (
       function(old) {
