@@ -80,11 +80,17 @@ $LQ = $LAB
    function() {
       var l = location+'';      
       
-      if(/gl-matrix-min/i.test(l))
+      if(/glm-js-min/i.test(l))
+         libs = ['../build/glm-js.min.js'];
+
+      else if(/gl-matrix-min/i.test(l))
          libs = ['../build/glm-gl-matrix.min.js'];
 
       else if(/tdl-fast-min/i.test(l))
          libs = ['../build/glm-tdl-fast.min.js'];
+
+      else if (/glm-js/i.test(l)) 
+         libs = ['../build/glm-js.js'];
 
       else if (/gl-matrix/i.test(l)) 
          libs = ['../src/glm.common.js', '../lib/gl-matrix.js', '../src/glm.gl-matrix.js'];
@@ -102,7 +108,7 @@ $LQ = $LAB
 
       document.title += '['+$glm_lib+']';
 
-      if (true) {
+      if (!~libs[0].indexOf('../build/glm-js')) {
          libs.push('../src/glm.buffers.js');
          libs.push('../src/glm.experimental.js');
       }         
@@ -151,7 +157,10 @@ $LQ = $LAB
                    // tim_run_blanket();
                 });
       (function(li, stats) {
-          li.innerHTML = "<a title='"+window.$glm_lib+"'>vendor:</a><em>"+glm.vendor.vendor_name+"</em>";
+   li.innerHTML = "<a title='"+window.$glm_lib+"'>vendor:</a><em>"+glm.vendor.vendor_name + [
+       ~libs[0].indexOf('../build/glm-js') && ' (kitchen sink)',
+       ~libs[0].indexOf('.min.js') && ' (minified)'
+       ].filter(Boolean).join(' ') + "</em>";
           stats.insertBefore(li, stats.firstChild);
        })(document.createElement("li"),document.getElementById('mocha-stats')); 
    });

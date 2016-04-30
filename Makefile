@@ -56,10 +56,10 @@ test-tdl-fast:
 test-tdl-fast-min:
 	GLM=tdl-fast-min ../node_modules/.bin/mocha -b
 
-test: test-three test-gl-matrix test-tdl-fast
+test: test-three test-gl-matrix test-tdl-fast test-glm-js
 	@echo OK
 
-test-min: test-three-min test-gl-matrix-min test-tdl-fast-min
+test-min: test-three-min test-gl-matrix-min test-tdl-fast-min test-glm-js-min
 	@echo OK
 
 coverage-three:
