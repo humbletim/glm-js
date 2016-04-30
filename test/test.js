@@ -849,7 +849,8 @@ describe('glm', function(){
                               
                               var bv = glm.bvec3(true);
                               bv['='](glm.vec3(1,0,0));
-                              expect(bv.json).to.equal('{"x":true,"y":false,"z":false}');
+                              if (bv.json)
+                                expect(bv.json).to.equal('{"x":true,"y":false,"z":false}');
                               expect(glm.$to_array(glm.vec4(2.5,-.5,Math.PI,0).add(glm.vec4(-2.5,.5,-Math.PI,-0)))).to.eql([0,0,0,0]);
                               expect(glm.vec3(1)['=='](glm.vec3(2))).to.be.equal(false);
                               expect(glm.vec2(1)['=='](glm.vec2(2))).to.be.equal(false);
