@@ -12,14 +12,13 @@ glm = null;
 
 GLMJS_PREFIX = 'glm-js: ';
 
-!function() {
-
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
    version: "0.0.5",
    GLM_VERSION: 96,
 
    $outer: {
+      polyfills: GLM_polyfills(),
       functions: {},
       intern: function(k,v) {
          if (!k) return;
@@ -731,9 +730,11 @@ var GLM_template = GLM.$template = {
                      if (!( kn in TSP )) {
                         var fname = _tojsname("glm_"+hint+"_"+kn);
                         //GLM.$outer.console.warn("implicit "+kn);
-                        TSP[kn] = new Function("", "'use strict'; return "+(tpl+'')
-                                               .replace(/^function\s*\(/,'function '+fname+'(')
-                                               .replace(/N[*]N/g,N*N).replace(/N/g,N))();
+                         TSP[kn] = /*EVAL*/eval(
+                             "'use strict'; 1,"+(tpl+'')
+                                 .replace(/^function\s*\(/,'function '+fname+'(')
+                                 .replace(/N[*]N/g,N*N).replace(/N/g,N)
+                         );
                         //console.error('TN:',TN,kn,TSP[kn]);
                      }
                   }
@@ -1849,15 +1850,15 @@ GLM.quat = GLM.$template.GLMType(
 (function() {
 
     var rigswizzle = function(o, arr, visible, noswizzles) {
-       o.$properties = o.$properties || {
-          def: function(k,v) {
+       var default_properties = {
+           def: function(k,v) {
              //console.warn("okv", o.prototype, k, v);
              this[k] = v;
              Object.defineProperty(o.prototype, k, v);
           }
        };
-       var dprops = o.$properties;
-       var def = dprops.def.bind(dprops);
+       o.$properties = o.$properties || default_properties;
+       var def = o.$properties.def.bind(o.$properties);
 
        //console.warn("rigswizzle", o.prototype.$type_name, arr);
 
@@ -1890,7 +1891,7 @@ GLM.quat = GLM.$template.GLMType(
               })(_arr.join(""), o.prototype.$type.replace(/[1-9]$/, _arr.length), _arr.length);
           } while(_arr[1] != _arr.pop());
 
-          if (noswizzles) return dprops;
+          if (noswizzles) return o.$properties;
 
           _arr = arr.slice();//clone
 
@@ -1912,7 +1913,7 @@ GLM.quat = GLM.$template.GLMType(
              }
           }
        };
-       return dprops;
+       return o.$properties;
     };
 
     rigswizzle(GLM.vec2, GLM.vec2.$.components[0] /*xy*/, true);
@@ -2139,33 +2140,42 @@ GLM.$init = function(hints) {
 // (... currently only used for testing parity with C++ GLM...)
 GLM.using_namespace = function(tpl) {
    GLM.$DEBUG && GLM.$outer.console.debug("GLM.using_namespace munges globals; it should probably not be used!");
-   var names = GLM.$symbols;
-   var evals = [],
-   restore = [],
-   before = GLM.using_namespace.before = [],
-   after = GLM.using_namespace.after = [];
+    GLM.using_namespace.$tmp = {
+        ret: undefined,
+        tpl: tpl,
+        names: GLM.$symbols,
+        saved: {},
+        evals: [],
+        restore: [],
+        before: [],
+        after: []
+    };
 
-   eval(names.map(function(x,_) { return "GLM.using_namespace['"+x+"'] = GLM.using_namespace.before["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
-   GLM.$DEBUG && console.warn("GLM.using_namespace before #globals: "+before.length);
+    eval(GLM.using_namespace.$tmp.names
+         .map(function(x,_) { return "GLM.using_namespace.$tmp.saved['"+x+"'] = GLM.using_namespace.$tmp.before["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n")
+        );
+   GLM.$DEBUG && console.warn("GLM.using_namespace before #globals: "+GLM.using_namespace.$tmp.before.length);
 
-   names.map(function(x) {
-                var cme = "GLM.using_namespace['"+x+"']=undefined;"+
-                   "delete GLM.using_namespace['"+x+"'];";
+   GLM.using_namespace.$tmp.names.map(function(x) {
+                var cme = "GLM.using_namespace.$tmp.saved['"+x+"']=undefined;"+
+                   "delete GLM.using_namespace.$tmp.saved['"+x+"'];";
 
                 //try {
-                   restore.push(x+"=GLM.using_namespace['"+x+"'];"+cme);
+                   GLM.using_namespace.$tmp.restore.push(x+"=GLM.using_namespace.$tmp.saved['"+x+"'];"+cme);
                 //} catch(e) {
                 //   restore.push(x+"=undefined;delete "+x+";"+cme);
                 //}
-                evals.push(x+"=GLM."+x+";");
+                GLM.using_namespace.$tmp.evals.push(x+"=GLM."+x+";");
              });
-   eval(evals.join("\n"));
+   eval(GLM.using_namespace.$tmp.evals.join("\n"));
 
-   var ret = tpl();
+   GLM.using_namespace.$tmp.ret = tpl();
 
-   eval(restore.join("\n"));
-   eval(names.map(function(x,_) { return "GLM.using_namespace.after["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
-   GLM.$DEBUG && console.warn("GLM.using_namespace after #globals: "+after.length);
+   eval(GLM.using_namespace.$tmp.restore.join("\n"));
+   eval(GLM.using_namespace.$tmp.names.map(function(x,_) { return "GLM.using_namespace.$tmp.after["+_+"] = 'undefined' !== typeof "+x+";" }).join("\n"));
+    GLM.$DEBUG && console.warn("GLM.using_namespace after #globals: "+GLM.using_namespace.$tmp.after.length);
+    var ret = GLM.using_namespace.$tmp.ret;
+    delete GLM.using_namespace.$tmp;
    // if ((before.length+after.length) !== 0) {
    //    throw new Error(JSON.stringify({before:before,after:after, usn: Object.keys(GLM.using_namespace)}));
    // }
@@ -2184,6 +2194,21 @@ function $GLM_extern(func, local) {
       GLM.$DEBUG && GLM.$outer.console.debug('$GLM_extern: resolved external symbol '+func+' '+typeof GLM[local]);
       return GLM[local].apply(this, arguments);
    };
+}
+
+function GLM_polyfills() {
+    var filled = {};
+    if (!( "bind" in Function.prototype )) {
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind#Polyfill
+        filled.bind = Function.prototype.bind = function(b){
+            if(typeof this!=="function"){throw new TypeError("not callable");}
+            function c(){}var a=[].slice,f=a.call(arguments,1),e=this,
+            d=function(){
+                return e.apply(this instanceof c?this:b||global,f.concat(a.call(arguments)));
+            };
+            c.prototype=this.prototype||c.prototype;d.prototype=new c();return d;};
+    }
+    return filled;
 }
 
 $GLM_reset_logging.current = function() {
@@ -2243,13 +2268,16 @@ function $GLM_reset_logging(force) {
                   });
          return ret;
       })($GLM_console_factory);
-   if ('object' === typeof GLM && GLM.$outer) {
-      GLM.$outer.console = con;
-   }
+     if ('object' === typeof GLM) {
+         if (GLM.$outer)
+             GLM.$outer.console = con;
+         GLM.$log = $GLM_log;
+     }
    return con;
 }//$GLM_reset_logging
 try{ window.$GLM_reset_logging = this.$GLM_reset_logging = $GLM_reset_logging; }catch(e){}
 GLM.$reset_logging = $GLM_reset_logging;
+GLM.$log = GLM.$log || $GLM_log;
 //http://stackoverflow.com/a/27925672/1684079
 function $GLM_GLMJSError(name, init) {
    function E(message) {
@@ -2266,6 +2294,4 @@ function $GLM_GLMJSError(name, init) {
    return E;
 }
 
-try { module.exports = GLM; } catch(e) {}
-
-}();
+//try { module.exports = GLM; } catch(e) {}

@@ -40,8 +40,8 @@ try {
    describe.exists;
    var _main = main;
    main = function(log) {
-      if (log !== $GLM_log) alert(["log !== $GLM_log", "log:"+log, "$GLM_log:"+$GLM_log].join("\r\n"))
-      $GLM_log('testing');
+      if (typeof $GLM_log !== 'undefined' && log !== $GLM_log) alert(["log !== $GLM_log", "log:"+log, "$GLM_log:"+$GLM_log].join("\r\n"))
+      (typeof $GLM_log !== 'undefined' ? $GLM_log : glm.$log)('testing');
       log('ex-g-truc');
       describe('ex-g-truc', function() {
                   it('main:ex-g-truc should run without errors',function() {

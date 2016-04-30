@@ -110,14 +110,14 @@ describe('glm', function(){
                                           if (f[1] !== 1) glm.$log("spidermonkey broken subarray detected...");
                                           
                                           f.set([0,1]);
-                                          expect([].slice.call(GLM.$subarray(f,0))).to.eql([0,1]);
-                                          expect([].slice.call(GLM.$subarray(f,0,1))).to.eql([0]);
-                                          expect([].slice.call(GLM.$subarray(f,0,2))).to.eql([0,1]);
-                                          var g = GLM.$subarray(f,1);
-                                          expect([].slice.call(GLM.$subarray(g,0))).to.eql([1]);
+                                          expect([].slice.call(glm.$subarray(f,0))).to.eql([0,1]);
+                                          expect([].slice.call(glm.$subarray(f,0,1))).to.eql([0]);
+                                          expect([].slice.call(glm.$subarray(f,0,2))).to.eql([0,1]);
+                                          var g = glm.$subarray(f,1);
+                                          expect([].slice.call(glm.$subarray(g,0))).to.eql([1]);
                                           expect([].slice.call(
                                                     new Float32Array(
-                                                       GLM.$subarray(GLM.$subarray(f,1),0)
+                                                       glm.$subarray(glm.$subarray(f,1),0)
                                                     )
                                                  ))
                                              .to.eql([1]);
@@ -126,7 +126,7 @@ describe('glm', function(){
                                           f.set([1,2,3]);
                                           expect([].slice.call(f)).to.eql([1,2,3]);
                                           expect([].slice.call(new Float32Array(buf))).to.eql([0,1,2,3]);
-                                          var sa = GLM.$subarray(GLM.$subarray(f,1,3),0);
+                                          var sa = glm.$subarray(glm.$subarray(f,1,3),0);
                                           sa[0] = 5; sa[1] = 6;
                                           var v = new glm.vec3(new Float32Array(buf,4));
                                           v.xy['=']([55,66]);
@@ -152,10 +152,12 @@ describe('glm', function(){
                                           var current = glm.$reset_logging.current();
                                           glm.$reset_logging(true);
                                           glm.$log('test after reset', glm.vec3(), 1, NaN, true, {});
-                                          $GLM_log('test after reset', glm.vec3(), 1, NaN, true, {});
+                                          if (typeof $GLM_log !== 'undefined')
+                                              $GLM_log('test after reset', glm.vec3(), 1, NaN, true, {});
                                           glm.$outer.console.info('info after reset');
                                           glm.$reset_logging(current);
-                                          $GLM_log('test after restore');
+                                          if (typeof $GLM_log !== 'undefined')
+                                              $GLM_log('test after restore');
                                           glm.$outer.console.debug('debug after restore');
                                           glm.$outer.console.warn('warn after restore');
                                        });
@@ -414,8 +416,8 @@ describe('glm', function(){
                               expect(
                                  glm.to_string(glm.mat4())
                               ).to.equal('mat4x4((1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.000000, 0.000000, 1.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-                              var old = GLM.FAITHFUL;
-                              GLM.FAITHFUL = !GLM.FAITHFUL;
+                              var old = glm.FAITHFUL;
+                              glm.FAITHFUL = !glm.FAITHFUL;
                               expect(
                                  glm.to_string(glm.vec3())
                               ).to.equal('fvec3(0.000000, 0.000000, 0.000000)');
@@ -425,7 +427,7 @@ describe('glm', function(){
                               expect(
                                  glm.to_string(glm.vec3(), {precision: 0})
                               ).to.equal('fvec3(0, 0, 0)');
-                              GLM.FAITHFUL = old;
+                              glm.FAITHFUL = old;
 
                               expect(glm.to_string(5)).to.equal("float(5.000000)");
                               expect(glm.to_string(5,{precision:1})).to.equal("float(5.0)");
@@ -611,7 +613,7 @@ describe('glm', function(){
                            });
                         it('.all', function() {
                               expect(glm.all(glm.bvec4(1)),
-                                     GLM.$to_array(glm.bvec4(1)).filter(Boolean).length).to.equal(true);
+                                     glm.$to_array(glm.bvec4(1)).filter(Boolean).length).to.equal(true);
                               expect(glm.all(glm.bvec4(1,false))).to.equal(false);
                               expect(glm.all(glm.vec2(0,.5))).to.equal(false);
                               expect(glm.all(glm.quat(1))).to.equal(false);
@@ -738,7 +740,7 @@ describe('glm', function(){
                                           'template<T>', 'gettype',
                                           {
                                              'vec<N>': function(thing) { return glm.$isGLMObject(thing) && 'xx'+thing.$type; }
-                                          }, GLM.$outer.functions, replace /* skip existing? */
+                                          }, glm.$outer.functions, replace /* skip existing? */
                                        )
                                     );
                                  }
@@ -1607,7 +1609,7 @@ describe('glm', function(){
                          b[0] = glm.vec2(-1);
                          b[1] = glm.vec2(-2);
                          
-                         function _(m) { return m.map(GLM.$to_glsl).join("|"); }
+                         function _(m) { return m.map(glm.$to_glsl).join("|"); }
 
                          expect(_( a )).to.equal('vec2(1,2)|vec2(3,4)');
                          expect(_( b )).to.equal('vec2(-1)|vec2(-2)');

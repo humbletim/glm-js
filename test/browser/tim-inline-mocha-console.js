@@ -71,8 +71,8 @@ tim_inline_mocha_console_patch = function(old, onend) {
                 }
              })
          .on('end', function() {
-                $GLM_reset_logging(true);
-                $GLM_log('okee');
+                glm.$reset_logging(true);
+                glm.$log('okee');
                 onend&&onend(failed);
              })
    };

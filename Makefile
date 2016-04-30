@@ -22,7 +22,12 @@ build/__VA_ARGS__.js: src/glm.common.js
 	echo test | node $@
 
 build/glm-js.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
-	( echo $(PREAMBLE); echo 'try { ArrayBuffer.exists;' ; cat $^ | node build/__VA_ARGS__.js ; echo ' } catch(e) { glm=e.message; console.error("glm-js.js: "+e); }' ) > $@
+	( echo $(PREAMBLE); echo '(function(globals, $$GLM_log, $$GLM_console_log) { var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm; ArrayBuffer.exists;' ; cat $^ | node build/__VA_ARGS__.js ; echo ' try { module.exports = glm; } catch(e) {}; return glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
+
+build/glm-js.min.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
+	( echo $(PREAMBLE); echo '(function declare_glmjs_glmatrix(globals, $$GLM_log, $$GLM_console_log) { var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm; ArrayBuffer.exists;' ; \
+	cat $^ | node build/__VA_ARGS__.js  | $(MINIFIER) ; \
+	echo 'globals.glm = glm; try { module.exports = glm; } catch(e) { }; try { window.glm = glm; } catch(e) {} ; try { declare.amd && declare(function() { return glm; }); } catch(e) {}; return this.glm = glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
 
 build/%.min.js: build/%.js
 	( echo $(PREAMBLE); echo "glm = (function glmjs_scope(g) { var GLMJS_PREFIX, \$$GLM_console_factory, \$$GLM_reset_logging;" ; \
