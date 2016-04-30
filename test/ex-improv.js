@@ -2,8 +2,8 @@ try{ require.exists;}catch(e){require=function(x){load("./src/"+x+'.js');};}
 try{
    glm.exists;
 } catch(e) {
-   try { glm = require("../src/glm-js") || glm; }
-   catch(e) { require("../src/glm-js"); }
+   try { glm = require("../test/glm-js") || glm; }
+   catch(e) { require("../test/glm-js"); }
 }
 (function(){
  function main(log) {
@@ -49,6 +49,7 @@ try{
     log("axis(q)", glm.axis(q));
 
     log("diagonal4x4(vec4(1,2,3,4)): ", glm.diagonal4x4(glm.vec4(1,2,3,4)));
+    log("diagonal3x3(vec3(1,2,3)): ", glm.diagonal3x3(glm.vec3(1,2,3)));
     log("mat3(2): ", glm.mat3(2));
     log("mat4(2): ", glm.mat4(2));
     var m4a = glm.mat4(  glm.vec4(1),
@@ -131,6 +132,7 @@ try{
     log("q(e(q))", glm.quat(glm.eulerAngles(q)));
     log("q * v3: ", q ['*'] (v3));
     
+    log("glm.length2(q * v3): ", glm.length2(q ['*'] (v3)));
     log("glm.length(q * v3): ", glm.length(q ['*'] (v3)));
 
     log("glm.inverse(q)", glm.inverse(q));
@@ -148,6 +150,9 @@ try{
     log("qqq", qqq);
     log("qqq * v4: ", qqq ['*'] (glm.vec4(1.0)));
     log("v4 * qqq: ", glm.vec4(1.0) ['*'] (qqq));
+
+    var u = glm.vec3(1,0,0);
+    log("glm.rotation(u * qqq, u): ", glm.rotation(u['*'](qqq),u));
 
     m4 = glm.toMat4(qqq);
     var v4 = glm.vec4(1.0);

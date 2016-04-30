@@ -2,8 +2,8 @@ try{ require.exists;}catch(e){require=function(x){load("./src/"+x+'.js');};}
 try{
    glm.exists;
 } catch(e) {
-   try { glm = require("../src/glm-js") || glm; }
-   catch(e) { try { load("src/glm-js.js"); } catch(E) { console.error('!load',e+'',E+''); throw e;} }
+   try { glm = require("../test/glm-js") || glm; }
+   catch(e) { try { load("test/glm-js.js"); } catch(E) { console.error('!load',e+'',E+''); throw e;} }
 }
 (function() {
 function transform( 

@@ -13,7 +13,7 @@ function $GLMVector(typ, sz, typearray) {
       throw new GLM.GLMJSError('expecting typ to be GLM.$isGLMConstructor: '+
                                [typeof typ, (typ?typ.$type:typ)]+" // "+
                                GLM.$isGLMConstructor(typ));
-   if (typ.componentLength === 1 && glm[typ.prototype.$type.replace("$","$$v")])
+   if (typ.componentLength === 1 && GLM[typ.prototype.$type.replace("$","$$v")])
       throw new GLM.GLMJSError("unsupported argtype to glm.$vectorType - for single-value types use glm."+typ.prototype.$type.replace("$","$$v")+"..."+typ.prototype.$type);
    this.glmtype = typ;
    if (!this.glmtype.componentLength) throw new Error('need .componentLength '+[typ, sz, typearray]);
@@ -193,7 +193,7 @@ $GLMVector.prototype = GLM.$template.extend(
          var thiz = this;
          for(var i=0; i < n; i++) {
             var off = offset + i*stride;
-            var next = offset + (i+1)*stride;
+            var next = off + this.glmtype.BYTES_PER_ELEMENT;//offset + (i+1)*stride;
             function dbg() {
                kv.i = i; kv.next = next; kv.last = last; kv.offset = kv.offset || offset; kv.stride = kv.stride || stride;
                return JSON.stringify(kv);//{i:i, eleO: ele.byteOffset, stride: stride, offset:offset, next:next, last:last});

@@ -20,6 +20,9 @@
 #error MY_GLM_WANTED_GTE
 #else
 
+#if GLM_VERSION < 97
+#include <glm/gtx/quaternion.hpp>
+#endif
 #include <glm/ext.hpp>
 #define log(x,y) printf(x"%s%s\n", (x[0]?" ":""), (glm::to_string(y).c_str()))
 

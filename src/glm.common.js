@@ -16,7 +16,7 @@ GLMJS_PREFIX = 'glm-js: ';
 
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
-   version: "0.0.4e",
+   version: "0.0.5",
    GLM_VERSION: 96,
 
    $outer: {
@@ -67,7 +67,7 @@ GLM = {
 
          var thiz = new glm.vec3();
          thiz.y = Math.asin( - glm._clamp( m31, - 1, 1 ) );
-	 
+
          if ( Math.abs( m31 ) < 0.99999 ) {
             thiz.x = Math.atan2( m32, m33 );
             thiz.z = Math.atan2( m21, m11 );
@@ -83,7 +83,7 @@ GLM = {
       Float32Array: Float32Array, Float64Array: Float64Array,
       Uint8Array:Uint8Array, Uint16Array: Uint16Array, Uint32Array: Uint32Array,
       Int8Array: Int8Array, Int16Array: Int16Array, Int32Array: Int32Array,
-      DataView: DataView,
+      DataView: typeof DataView !== 'undefined' && DataView,
       $rebindTypedArrays: function(alternator) {
          var ret = Object.keys(GLM.$outer)
             .filter(RegExp.prototype.test.bind(/Array$|^ArrayBuffer$|^DataView$/))
@@ -159,13 +159,23 @@ GLM = {
    make_mat4: function(ptr,byteOffset) { return GLM.$from_ptr.call(this, GLM.mat4, ptr, arguments.length === 2 ? byteOffset : ptr.byteOffset); },
 
    diagonal4x4: function(v) {
-      if (v.$type !== 'vec4') throw new GLM.GLMJSError('unsupported argtype to GLM.diagonal4x4: '+['type:'+type.o]);
+      if (GLM.$typeof(v) !== 'vec4') throw new GLM.GLMJSError('unsupported argtype to GLM.diagonal4x4: '+['type:' + GLM.$typeof(v)]);
       v = v.elements;
       return new GLM.mat4(
          [v[0], 0, 0, 0,
           0, v[1], 0, 0,
           0, 0, v[2], 0,
           0, 0, 0, v[3]]
+      );
+   },
+
+   diagonal3x3: function(v) {
+      if (GLM.$typeof(v) !== 'vec3') throw new GLM.GLMJSError('unsupported argtype to GLM.diagonal3x3: '+['type:' + GLM.$typeof(v)]);
+      v = v.elements;
+      return new GLM.mat3(
+         [v[0], 0, 0,
+          0, v[1], 0,
+          0, 0, v[2]]
       );
    },
 
@@ -194,7 +204,8 @@ GLM = {
    $types: [],
    $isGLMConstructor: function(o) { return !!(o&&o.prototype instanceof GLM.$GLMBaseType); },
    $getGLMType: function(o) { return o instanceof GLM.$GLMBaseType && o.constructor || 'string' === typeof o && GLM[o] ; },
-   $isGLMObject: function(o) { return o instanceof GLM.$GLMBaseType && o.$type; },
+   $isGLMObject: function(o) { return !!(o instanceof GLM.$GLMBaseType && o.$type); },
+   $typeof: function(o) { return o instanceof GLM.$GLMBaseType ? o.$type : 'undefined'; },
 
    $to_array: function(o) {
       return [].slice.call(o.elements);
@@ -218,35 +229,54 @@ GLM = {
    _fract: function(a) { return a - Math.floor(a) },
 
    // adapted from Squeak.js (see ../lib/squeak.js)
-   _frexp: function(value, arrptr) {
-      // frexp separates a float into its mantissa and exponent
-      if (value == 0.0) { // zero is special
-         if (arrptr && Array.isArray(arrptr)) {
-            arrptr[0] = arrptr[1] = 0;
-            return 0;
-         }
-         return [0,0];
-      }
-      var data = new GLM.$outer.DataView(new GLM.$outer.ArrayBuffer(8));
-      data.setFloat64(0, value);      // for accessing IEEE-754 exponent bits
-      var bits = (data.getUint32(0) >>> 20) & 0x7FF;
-      if (bits === 0) { // we have a subnormal float (actual zero was handled above)
-         // make it normal by multiplying a large number
-         data.setFloat64(0, value * Math.pow(2, 64));
-         // access its exponent bits, and subtract the large number's exponent
-         bits = ((data.getUint32(0) >>> 20) & 0x7FF) - 64;
-      }
-      var exponent = bits - 1022;                 // apply bias
-      var mantissa = GLM.ldexp(value, -exponent)
+    _frexp: (function define_frexp() {
+        // mini-DataView emulator (polyfills _frexp's specific need)
+        function _DataView(ab) {
+            this.buffer = ab;
+            this.setFloat64 = function(offset, value) {
+                if (offset !== 0) throw new Error('...this is a very limited DataView emulator');
+                // effectively writes the bigEndian encoding of the float...
+                new Uint8Array(this.buffer).set([].reverse.call(new Uint8Array(new Float64Array([value]).buffer)), offset);
+            };
+            this.getUint32 = function(offset) {
+                if (offset !== 0) throw new Error('...this is a very limited DataView emulator');
+                return new Uint32Array(new Uint8Array([].slice.call(new Uint8Array(this.buffer)).reverse()).buffer)[1];
+            };
+        };
+        _frexp._DataView = _DataView; // expose for unit testing
+        function _frexp(value, arrptr) {
+            // frexp separates a float into its mantissa and exponent
+            var DV = GLM.$outer.DataView || _frexp._DataView;
 
-      // no C pointers available; not sure which strategy is best yet...
-      if (arrptr && Array.isArray(arrptr)) {
-         arrptr[0] = exponent; // glm-ish behavior
-         arrptr[1] = mantissa; // extra return value
-         return mantissa;
-      }
-      return [mantissa, exponent]; // both values at once
-   },
+            if (value == 0.0) { // zero is special
+                if (arrptr && Array.isArray(arrptr)) {
+                    arrptr[0] = arrptr[1] = 0;
+                    return 0;
+                }
+                return [0,0];
+            }
+            var data = new DV(new GLM.$outer.ArrayBuffer(8));
+            data.setFloat64(0, value);      // for accessing IEEE-754 exponent bits
+            var bits = (data.getUint32(0) >>> 20) & 0x7FF;
+            if (bits === 0) { // we have a subnormal float (actual zero was handled above)
+                // make it normal by multiplying a large number
+                data.setFloat64(0, value * Math.pow(2, 64));
+                // access its exponent bits, and subtract the large number's exponent
+                bits = ((data.getUint32(0) >>> 20) & 0x7FF) - 64;
+            }
+            var exponent = bits - 1022;                 // apply bias
+            var mantissa = GLM.ldexp(value, -exponent)
+
+            // no C pointers available; not sure which strategy is best yet...
+            if (arrptr && Array.isArray(arrptr)) {
+                arrptr[0] = exponent; // glm-ish behavior
+                arrptr[1] = mantissa; // extra return value
+                return mantissa;
+            }
+            return [mantissa, exponent]; // both values at once
+        }
+        return _frexp;
+    })(),
    _ldexp: function(mantissa, exponent) {
       // construct a float from mantissa and exponent
       return exponent > 1023 // avoid multiplying by infinity
@@ -262,8 +292,28 @@ GLM = {
    __sign: function(x) {
       return x > 0 ? 1 : x < 0 ? -1 : +x;
    },
-   epsilon: function() { return 1e-6; },
-   pi: function() { return Math.PI; },
+
+    $constants: {
+        epsilon: 1e-6,
+        euler: 0.577215664901532860606,
+        e: Math.E,
+        ln_ten: Math.LN10,
+        ln_two: Math.LN2,
+        //Math.LOG10E,
+        //Math.LOG2E,
+        pi: Math.PI,
+        half_pi: Math.PI/2,
+        quarter_pi: Math.PI/4,
+        one_over_pi: 1/Math.PI,
+        two_over_pi: 2/Math.PI,
+        root_pi: Math.sqrt(Math.PI),
+        root_two: Math.sqrt(2),
+        root_three: Math.sqrt(3),
+        two_over_root_pi: 2/Math.sqrt(Math.PI),
+        one_over_root_two: Math.SQRT1_2,
+        root_two: Math.SQRT2
+    },
+
    FIXEDPRECISION: 6,
    $toFixedString: function(prefix, what, props, precision) {
       if (precision === undefined)
@@ -288,6 +338,12 @@ GLM = {
 
 GLM._sign = Math.sign || GLM.__sign;
 
+for(var p in GLM.$constants) {
+    (function(v,k) {
+        GLM[k] = function() { return v; };
+        GLM[k].valueOf = GLM[k];
+    })(GLM.$constants[p], p);
+}
 // ----------------------------------------------------------------------------
 
 GLM.$GLMBaseType = (
@@ -597,7 +653,7 @@ var GLM_template = GLM.$template = {
                      if (!source) return;
                      for(var p in source)
                         if (source.hasOwnProperty(p))
-                        dest[p] = source[p];
+                            dest[p] = source[p];
                   });
       return dest;
    },
@@ -630,16 +686,16 @@ var GLM_template = GLM.$template = {
          throw new GLM.GLMJSError("_traceable expects tidy function as second arg "+src);
       if (!hint) throw new GLM.GLMJSError("_traceable expects hint or what's the point" + [src,hint]);
       hint = this._tojsname(hint||"_traceable");
-      src = (src+'').replace(/^(\s*var\s*(\w+)\s*=\s*)__VA_ARGS__;/mg,
+      src = (src.toString()).replace(/^(\s*var\s*(\w+)\s*=\s*)__VA_ARGS__;/mg,
                              function(_,rep,varname) {
                                 return rep+
                                    'new Array(arguments.length);for(var I=0;I<varname.length;I++)varname[I]=arguments[I];'.replace(/I/g,'__VA_ARGS__I').replace(/varname/g,varname);
                              })
          .replace(/\barguments[.]callee\b/g, hint);
-      //if (/callee/.test(src))throw new Error(src);
-      if (!/"_traceable"/.test(src)) { //src.split(/^\s*function\b/).length === 2) {
+       //if (/callee/.test(src))throw new Error(src);
+      if (!/^function _traceable/.test(src)) { //src.split(/^\s*function\b/).length === 2) {
          // not already a factory; wrap it
-         src = ('function (){ "use strict"; SRC; return HINT; "_traceable"; }')
+         src = ('function _traceable(){ "use strict"; SRC; return HINT; }')
             .replace("HINT", hint.replace(/[$]/g,'$$$$'))
             .replace("SRC", src.replace(/[$]/g,'$$$$').replace(/^function\s*\(/,'function '+hint+'('));
       } else {
@@ -650,7 +706,7 @@ var GLM_template = GLM.$template = {
          try {
             eval(src);
          } catch(e) {
-            console.error(hint, src, _src,e);
+            console.error('_traceable error', hint, src, _src,e);
             throw e;
          }
       }
@@ -746,7 +802,13 @@ var GLM_template = GLM.$template = {
 
          if (!(this instanceof $class)) {
             // if we're called as a regular function, redirect to "new $class()"
-            return new $class(builder.apply($, args));
+            // new $class(<Float32Array>) will use <Float32Array> by reference
+            // $class(<Float32Array>) will use <Float32Array> by copy
+             if (n instanceof GLM.$outer.Float32Array && n.length === $class.componentLength)
+                 (elements = new GLM.$outer.Float32Array($class.componentLength)).set(n);
+             else
+                 elements = builder.apply($, args);
+             return new $class(elements);
          } else {
             // called as "new $class()"
             if (n instanceof GLM.$outer.Float32Array) {
@@ -767,7 +829,6 @@ var GLM_template = GLM.$template = {
                 }
                elements = n;
             } else {
-               // new $class(<Float32Array>) will make new copy of the buffer
                (elements = new GLM.$outer.Float32Array( $class.componentLength ))
                   .set(builder.apply($, args));
             }
@@ -785,6 +846,8 @@ var GLM_template = GLM.$template = {
       $class.componentLength = $len;
       $class.BYTES_PER_ELEMENT = $len * GLM.$outer.Float32Array.BYTES_PER_ELEMENT,
       $class.prototype = new GLM.$GLMBaseType($class, $type);
+      $class.toJSON = function() { var ob={ glm$type: $type, glm$class: $class.prototype.$type_name, glm$eg: new $class().object };for(var p in $class)if(!/function |^[$]/.test(p+$class[p]))ob[p]=$class[p]; return ob; return { glm$type_name: this.$type_name, glm$type: $type, BYTES_PER_ELEMENT: this.BYTES_PER_ELEMENT }; };
+
       return $class;
    }
 };
@@ -922,20 +985,20 @@ GLM.$template.extend(
    GLM.$template['declare<T,...>'](
       {
          $from_glsl: {
-            'string': function(v, returnArray) {
+            'string': function(v, returnType) {
                var ret;
                v.replace(/^([$\w]+)\(([-.0-9ef, ]+)\)$/,
                       function(_,what, dat) {
                          var type = glm[what] || glm['$'+what];
                          if (!type) throw new GLM.GLMJSError("glsl decoding issue: unknown type '"+what+"'");
                          ret = dat.split(',').map(parseFloat);
-                         if (!returnArray)
+                         if (!returnType || returnType === type)
                             ret = type.apply(glm, ret);
-                         else {
-                            while (ret.length < type.componentLength)
-                               ret.push(ret[ret.length-1]);
-                            return ret;
-                         }
+                         else if (returnType === true || returnType === Array) {
+                             while (ret.length < type.componentLength)
+                                 ret.push(ret[ret.length-1]);
+                             return ret;
+                         } else throw new GLM.GLMJSError("glsl decoding issue: second argument expected to be undefined|true|Array");
                       });
                return ret;
             }
@@ -1078,7 +1141,45 @@ GLM.$template['declare<T,V,...>'](
                ret[i] = eq(a[i],b[i]);
             return ret;
          }
-      }
+      },
+
+      // adapted from OpenGL Mathematics (glm.g-truc.net) glm/gtx/quaternion.inl
+      rotation: {
+         'vec3,vec3': function(orig, dest) {
+            var cosTheta = glm.dot(orig, dest);
+            var rotationAxis = glm.vec3();
+
+            if(cosTheta >= 1 - glm.epsilon())
+               return glm.quat();
+
+            if(cosTheta < -1 + glm.epsilon())
+               {
+                  // special case when vectors in opposite directions :
+                  // there is no "ideal" rotation axis
+                  // So guess one; any will do as long as it's perpendicular to start
+                  // This implementation favors a rotation around the Up axis (Y),
+                  // since it's often what you want to do.
+                  rotationAxis = glm.cross(glm.vec3(0, 0, 1), orig);
+                  if(glm.length2(rotationAxis) < glm.epsilon()) // bad luck, they were parallel, try again!
+                     rotationAxis = glm.cross(glm.vec3(1, 0, 0), orig);
+
+                  rotationAxis = glm.normalize(rotationAxis);
+                  return glm.angleAxis(glm.pi(), rotationAxis);
+               }
+
+            // Implementation from Stan Melax's Game Programming Gems 1 article
+            rotationAxis = glm.cross(orig, dest);
+
+            var s = glm.sqrt(((1) + cosTheta) * (2));
+            var invs = (1) / s;
+
+            return glm.quat(
+               s * (0.5),
+               rotationAxis.x * invs,
+               rotationAxis.y * invs,
+               rotationAxis.z * invs);
+         }
+      } /// glm/gtx/quaternion.inl
 
    });
 
@@ -1852,6 +1953,62 @@ GLM.quat = GLM.$template.GLMType(
     // legacy THREE.js interop detection
     Object.defineProperty(GLM.quat.prototype, '_x', { get: function() { throw new Error('erroneous quat._x access'); } });
 
+    // less common swizzle patterns
+    var lesscommon = {
+        2: {
+            yx: {
+                enumerable: false,
+                get: function() { return new GLM.vec2(this.y,this.x); },
+                set: function(v) { v=GLM.vec2(v); this.y = v[0]; this.x = v[1]; }
+            }
+        },
+        3: {
+            xz: {
+                enumerable: false,
+                get: function() { return new GLM.vec2(this.x,this.z); },
+                set: function(v) { v=GLM.vec2(v); this.x = v[0]; this.z = v[1]; }
+            },
+            zx: {
+                enumerable: false,
+                get: function() { return new GLM.vec2(this.z,this.x); },
+                set: function(v) { v=GLM.vec2(v); this.z = v[0]; this.x = v[1]; }
+            },
+            xzy: {
+                enumerable: false,
+                get: function() { return new GLM.vec3(this.x,this.z,this.y); },
+                set: function(v) { v=GLM.vec3(v); this.x = v[0]; this.z = v[1]; this.y = v[2]; }
+            }
+        },
+        4: {
+            xw: {
+                enumerable: false,
+                get: function() { return new GLM.vec2(this.x,this.w); },
+                set: function(v) { v=GLM.vec2(v); this.x = v[0]; this.w = v[1]; }
+            },
+            wz: {
+                enumerable: false,
+                get: function() { return new GLM.vec2(this.w,this.z); },
+                set: function(v) { v=GLM.vec2(v); this.w = v[0]; this.z = v[1]; }
+            },
+            xzw: {
+                enumerable: false,
+                get: function() { return new GLM.vec3(this.x,this.z,this.w); },
+                set: function(v) { v=GLM.vec3(v); this.x = v[0]; this.z = v[1]; this.w = v[2]; }
+            }
+        }
+    };
+    for(var N in lesscommon) {
+        for(var p in lesscommon[N]) {
+            if (N <= 2)
+                GLM.vec2.$properties.def(p, lesscommon[N][p])
+            if (N <= 3)
+                GLM.vec3.$properties.def(p, lesscommon[N][p])
+            if (N <= 4)
+                GLM.vec4.$properties.def(p, lesscommon[N][p])
+        }
+    }
+
+    // cached NxN matrix column accessors
     var szfloat = GLM.$outer.Float32Array.BYTES_PER_ELEMENT;
     GLM.$partition = function cols(mat_prototype, vec, nrows, cache_prefix) {
        if (nrows === undefined) throw new GLM.GLMJSError('nrows is undefined');

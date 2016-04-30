@@ -3,10 +3,13 @@ try { chai.exists; } catch(e) { chai = require('chai') ; }
 should = chai.should(),
   expect = chai.expect,
   cane = require('./browser/cane'),
-  glm = require("../src/glm-js");
+  glm = require("./glm-js");
 
-require("../src/glm.buffers");
-require("../src/glm.experimental");
+if (!glm.$vectorType)
+    require("../src/glm.buffers");
+
+if (!glm.$toTypedArray)
+    require("../src/glm.experimental");
 //glm.$log(glm.$vectorType.version);
 
 glm.$log('glm: '+glm);
@@ -129,9 +132,16 @@ describe('glm', function(){
                                           v.xy['=']([55,66]);
                                           expect([].slice.call(new Float32Array(buf))).to.eql([0,55,66,6]);
 
-                                          expect([].slice.call(glm.$subarray.workaround_broken_spidermonkey_subarray(sa,0,2))).to.eql([66,6]);
-                                          expect([].slice.call(glm.$subarray.native_subarray(sa,0,2))).to.eql([66,6]);
-                                       });
+                                        expect([].slice.call(glm.$subarray(sa,0,2)),
+                                               '$subarray').to.eql([66,6]);
+                                        expect([].slice.call(glm.$subarray.workaround_broken_spidermonkey_subarray(sa,0,2)),
+                                               'workaround_broken_spidermonkey_subarray').to.eql([66,6]);
+                                        var test = [].slice.call(glm.$subarray.native_subarray(sa,0,2));
+                                        if (glm.$subarray === glm.$subarray.native_subarray)
+                                            expect(test, 'native_subarray').to.eql([66,6]);
+                                        else
+                                            expect(test, '!native_subarray').to.not.eql([66,6]);
+                                    });
                                  });
                         describe('.$outer', function() {
                                     it('.console', function() {
@@ -194,7 +204,6 @@ describe('glm', function(){
                               expect("vec2,vec3,vec4,uvec4,ivec4,quat,mat3,mat4".split(',')
                                      .map(function(p){return glm[p]})
                                      .map(glm.$isGLMConstructor)
-                                     .map(Boolean)
                                      .join(",")
                                     ).to.equal( "true,true,true,true,true,true,true,true" );
                               expect([ Object, Array, [], 0, null, this, true, "" ]
@@ -206,7 +215,6 @@ describe('glm', function(){
                               expect("vec2,vec3,vec4,uvec4,ivec4,quat,mat3,mat4".split(',')
                                      .map(function(p){return glm[p]()})
                                      .map(glm.$isGLMObject)
-                                     .map(Boolean)
                                      .join(",")
                                     ).to.equal( "true,true,true,true,true,true,true,true" );
                               expect([ Object, Array, [], 0, null, this, true, "" ]
@@ -218,7 +226,7 @@ describe('glm', function(){
                               // or let it continue return the type like it does currently...
                               expect("vec2,vec3,vec4,quat,mat3,mat4".split(',')
                                      .map(function(p){return glm[p]()})
-                                     .map(glm.$isGLMObject)
+                                     .map(glm.$typeof)
                                      .join(",")
                                     ).to.equal( "vec2,vec3,vec4,quat,mat3,mat4" );
                            });
@@ -391,6 +399,7 @@ describe('glm', function(){
                                              .to.equal("mat3(1,2,3,4,5,6,7,8,9)");
                                           expect(glm.$to_glsl(glm.mat4("1234567890123456".split('').map(Number))))
                                              .to.equal("mat4(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6)");
+                                        expect(function() { glm.$from_glsl('vec3(1,2,3)', 3) }).to.throw('second argument expected to be undefined|true|Array');
                                           //glm.uvec4(-1).toString().should.equal("mat3(-1)");
                                        });
                                  });
@@ -436,9 +445,12 @@ describe('glm', function(){
 
             var qq;
             describe('...', function() {
-                        it('.epsilon', function() {
-                              glm.epsilon().should.be.lessThan(1e-5).and.greaterThan(-1e-5);
-                           });
+                        it('.constants', function() {
+                            expect(glm.epsilon()).to.be.lessThan(1e-5).and.greaterThan(-1e-5);
+                            expect(+glm.pi).to.equal(Math.PI);
+                            expect(+glm.root_two).to.equal(Math.sqrt(2));
+                            expect(+glm.epsilon, 'coercion via .valueOf').to.equal(glm.epsilon());
+                        });
                         it('.degrees', function() {
                               expect(Math.PI/6).to.be.degrees(30);
                               var v = glm.vec3([1,2,3].map(glm.radians));
@@ -462,6 +474,35 @@ describe('glm', function(){
                               expect(b+'').not.to.equal(str);
                            });
                         
+                        it('.rotation', function() {
+                              var angle = glm.radians(15);
+                              var q = glm.angleAxis(angle, glm.vec3(0,0,1));
+                              expect(
+                                 glm.rotation(glm.vec3(1,0,0), glm.vec3(1,0,0)['*'](q))
+                              ).euler.to.glm_eq([0,0,-15]);
+                              expect(
+                                 glm.rotation(glm.vec3(1,0,0)['*'](q),
+                                              glm.vec3(0,1,0)['*'](glm.inverse(q)))
+                              ).euler.to.glm_eq([0,0,120]);
+
+                            // this triggers the first cosTheta edge case
+                            expect(
+                                glm.rotation(glm.vec3(1,0,0), glm.vec3(1 + glm.epsilon(),0,0)),
+                                'cosTheta edge case #1'
+                            ).euler.to.glm_eq([0,0,0]);
+
+                            // this triggers the second cosTheta edge case
+                            expect(
+                                glm.rotation(glm.vec3(1,0,0), glm.vec3(-1,0,0)),
+                                'cosTheta edge case #2'
+                            ).euler.to.glm_eq([180,0,180]);
+
+                            // this triggers the second cosTheta edge case parallelism
+                            expect(
+                                glm.rotation(glm.vec3(0,0,1), glm.vec3(0,0,-1)),
+                                'cosTheta edge case #2 parallel'
+                            ).euler.to.glm_eq([180,0,180]);
+                           });
                         describe('.rotate', function() {
                                     var UP = glm.vec3(0,1,0);
                                     var angle = glm.radians(45);
@@ -531,9 +572,25 @@ describe('glm', function(){
                         it('.abs', function() {
                               expect(glm.abs(-1)).to.equal(1);
                               expect(glm.abs(glm.vec3(-1,2,-3))).to.glm_eq([1,2,3]);
-                           });
-                        it('.frexp', function() {
-                              expect(glm.frexp(Math.PI)).to.be.roughly([.78539816,2]);
+                        });
+                it('._frexp._DataView', function() {
+                    var a = new glm._frexp._DataView(new ArrayBuffer(8));
+                    a.setFloat64(0, -Math.PI/2*1000);
+                    expect(a.getUint32(0)).to.equal(3231222575);
+                    a.setFloat64(0, Math.PI);
+                    expect(a.getUint32(0)).to.equal(1074340347);
+                    if (typeof DataView === 'function') {
+                        var b = new glm.$outer.DataView(new ArrayBuffer(8));
+                        b.setFloat64(0, -Math.PI/2*1000);
+                        expect(b.getUint32(0)).to.equal(3231222575);
+                        b.setFloat64(0, Math.PI);
+                        expect(b.getUint32(0)).to.equal(1074340347);
+                        expect([].slice.call(new Uint8Array(a.buffer))).to.eql([].slice.call(new Uint8Array(b.buffer)));
+                    }
+                });
+                it('.frexp', function() {
+                              //expect(glm.$outer.DataView, 'DataView exists').to.be.an('function');
+                              expect(glm.frexp(Math.PI), 'glm.frexp(MATH.PI)').to.be.roughly([.78539816,2]);
                               expect(function(){
                                         glm.frexp(glm.vec2(0,.5))
                                      }).to.throw("expected ivec2");
@@ -703,20 +760,30 @@ describe('glm', function(){
                                  glm.$DEBUG = true;
                                  function t(){}
                                  t.toString = function() { return 'bogus/0*'; };
-                                 expect(function() { glm.$template._traceable('hint', t)}).to.throw();
+                                 var E; // workaround smjs not detecting this exception
+                                 try { glm.$template._traceable('hint', t); }catch(e) { E=e; }
+                                 expect(E).to.be.instanceOf(SyntaxError);
                                  glm.$DEBUG = old;
                               }
 
                            });
                         it('$template traceable function names', function() {
+                              function trimfunc(src) {
+                                 src = src.toString();
+                                 if(typeof mocha === 'object' && mocha && mocha._in_blanket_run)
+                                     src=src.replace(/window[.][_][$]blanket.*?;\n/g,'');
+                                 return src.replace(/[\n\t\s]+/g,' ').replace(/, /g,',')
+                                     .replace(/"use strict";? return/, 'return'); // older smjs adds "use strict" if outer scope has it
+                             }
                               expect(function() { glm.$template._traceable('nonfunc', 5) }).to.throw("_traceable expects tidy function");
                               var src = glm.$template._traceable('hint',function(a,b,c) { return [a,b,c]; });
-                              if(typeof mocha === 'object' && mocha && mocha._in_blanket_run)
-                                 src=src.replace(/window[.][_][$]blanket.*?;\n/g,'');
-                              expect(src).to.equal('1,function (){ "use strict"; function hint(a,b,c) { return [a,b,c]; }; return hint; "_traceable"; }');
-                              expect(function(){glm.$template._traceable('rehint', eval(src))}).to.throw('already wrapped');
+                              expect(trimfunc(src)).to.equal(
+                                '1,function _traceable(){ "use strict"; function hint(a,b,c) { return [a,b,c]; }; return hint; }');
+                              function rewrap(){glm.$template._traceable('rehint', eval(src))}
+                              expect(rewrap,'rewrap').to.throw('already wrapped');
                               var func = eval(src)();
-                              expect((func).toString().replace(/[\s\r\n;]/g,' ').replace(/\s+/g,' ')).to.equal('function hint(a,b,c) { return [a,b,c] }');
+                              expect(trimfunc(func.toString().replace(/[;]+/g,' '))).to.equal(
+                                  'function hint(a,b,c) { return [a,b,c] }');
                               expect(glm.$template._get_argnames(func).toString()).to.equal("a,b,c");
                               expect(func.name).to.equal("hint");
                            });
@@ -863,7 +930,28 @@ describe('glm', function(){
                               expect(glm.ivec4(1,2,-3,4).zw).to.eql(glm.ivec2(-3,4));
                               expect(glm.ivec3(-1,2,3).xyz).to.glm_eq([-1,2,3]);
                               expect(glm.ivec2(-2).xy).to.glm_eq([-2,-2]);
-                           });
+
+                            expect(glm.vec2(1,2).yx,'yx').to.glm_eq([2,1]);
+                            expect(glm.vec3(1,2,3).xz,'xz').to.glm_eq([1,3]);
+                            expect(glm.vec3(1,2,3).zx,'zx').to.glm_eq([3,1]);
+                            expect(glm.vec4(1,2,3,4).yzw,'yzw').to.glm_eq([2,3,4]);
+                            expect(glm.vec4(1,2,3,4).xzy,'xzy').to.glm_eq([1,3,2]);
+                            function tv4(swiz, val, expected) {
+                                v4.copy(glm.vec4(-1,-2,-3,-4));
+                                v4[swiz] = val;
+                                expect(v4, 'set .'+swiz).to.glm_eq(expected);
+                                expect(v4[swiz], 'get .'+swiz).to.glm_eq(val);
+                            }
+                            tv4('xzy', [1,2,3], [1,3,2,-4]);
+                            tv4('xz', [1,2], [1,-2,2,-4]);
+                            tv4('zx', [1,2], [2,-2,1,-4]);
+                            tv4('yx', [1,2], [2,1,-3,-4]);
+                            tv4('wz', [1,2], [-1,-2,2,1]);
+                            tv4('xw', [1,2], [1,-2,-3,2]);
+                            tv4('yzw', [1,2,3], [-1,1,2,3])
+                            tv4('xzw', [1,2,3], [1,-2,2,3])
+                            tv4('xzy', [1,2,3], [1,3,2,-4]);
+                        });
                      });
             
             describe('mat3', function() {
@@ -893,9 +981,11 @@ describe('glm', function(){
                               var b = a.clone();
                               expect(a).not.to.equal(b);
                               expect(a).to.eql(b);
-                           });
-                     });
-
+                        });
+                it('diagonal3x3', function() {
+                    expect(glm.diagonal3x3(glm.vec3(1,2,3))).to.flatten.into('100020003');
+                });
+            });
 
             describe('mat4', function() {
               describe('core operations', function() {
@@ -1026,6 +1116,12 @@ describe('glm', function(){
                      .to.equal( 'mat4x4((0.353553, 0.612372, -0.707107, 0.000000), (-0.866025, 0.500000, 0.000000, 0.000000), (0.353553, 0.612372, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
 
                    });
+                it('diagonalNxN', function() {
+                    expect(glm.diagonal4x4(glm.vec4(1,2,3,4))).to.flatten.into('1000020000300004');
+                    expect(glm.mat4(glm.diagonal3x3(glm.vec3(1,2,3)))).to.flatten.into('1000020000300001');
+                    expect(function() { glm.diagonal3x3(glm.vec4(1,2,3,4)); }).to.throw('unsupported argtype to GLM.diagonal3x3');
+                    expect(function() { glm.diagonal4x4(glm.vec3(1,2,3)); }).to.throw('unsupported argtype to GLM.diagonal4x4');
+                });
                });
 
             describe('quat', function() {
@@ -1425,6 +1521,14 @@ describe('glm', function(){
                                  .to.glm_eq([0,1,2]);
                               expect(glm.make_quat(floats))
                                  .to.glm_eq([0,1,2,3]);
+
+                              {
+                                 expect([].slice.call(floats,0,4)).to.eql([0,1,2,3]);
+                                 // glm.vec<N>(Float32Array) should copy
+                                 // (and will not therefore modify the underlying bytes)
+                                 glm.vec4(floats.subarray(0,4)).xyzw = [4,4,4,4];
+                                 expect([].slice.call(floats,0,4)).to.eql([0,1,2,3]);
+                              }
 
                               {
                                  expect([].slice.call(floats,0,4)).to.eql([0,1,2,3]);
@@ -2050,7 +2154,13 @@ describe('glm', function(){
                                  expect(glm.$uint16(2) * -2).to.equal(-4);
                               });
                            it('.base64', function() {
-                                 {
+                               {
+                                   expect(decodeURIComponent(escape(glm.$b64.$atob("4pyTIMOgIGxhIG1vZGU=")))).to.equal('✓ à la mode');
+                                   expect(glm.$b64.$btoa(glm.vec3(Math.PI).elements.buffer)).to.eql('2w9JQNsPSUDbD0lA');
+                                   expect(glm.$b64.toCharCodes(glm.$b64.$atob('2w9JQNsPSUDbD0lA')).buffer).to.eql(glm.vec3(Math.PI).elements.buffer);
+                                   expect(glm.$from_base64('2w9JQNsPSUDbD0lA')).to.be.instanceOf(Float32Array);
+                                   expect(glm.$from_base64('2w9JQNsPSUDbD0lA',true)).to.be.instanceOf(ArrayBuffer);
+                                   expect(function() { glm.$from_base64('2w9JQNsPSUDbD0lA',Uint8Array); }).to.throw('not yet supported second argument');
                                     var pipi = '2w9JQNsPSUA=';
                                     expect(glm.$to_base64(glm.vec2(Math.PI))).to.equal(pipi);
                                     expect(glm.vec2(Math.PI).base64).to.equal(pipi);
@@ -2059,10 +2169,10 @@ describe('glm', function(){
                                     expect(v.base64).to.equal(pipi);
                                     expect(v).to.glm_eq([Math.PI, Math.PI],glm.epsilon());
                                  }
-                                 if (typeof atob === 'function') {
+                                 if (1||typeof atob === 'function') {
                                     var pipi =  "4pyTIMOgIGxhIG1vZGU=";
-                                    expect(glm.$b64.b64_to_utf8(pipi)).to.equal('✓ à la mode');
                                     expect(glm.$b64.utf8_to_b64('✓ à la mode')).to.equal(pipi);
+                                    expect(glm.$b64.b64_to_utf8(pipi)).to.equal('✓ à la mode');
                                     expect(glm.$b64.b64_to_utf8('4pi74pyM\n4pi54pmh\n4pml4p2k\n4pqY4p2A\n4p2D4p2B\n')).to.equal('☻✌☹♡♥❤⚘❀❃❁');
                                  }
                                  
@@ -2102,7 +2212,28 @@ describe('glm', function(){
                                  v.glsl = glm.vec2(3,4).glsl;
                                  expect(v).to.glm_eq([3,4]);
                               });
-                        });
+                           it('.array', function() {
+                                 var v = glm.vec2(1,2);
+                                 expect(v.array).to.eql([1,2]);
+                                 v.array = [6,7];
+                                 expect(v).to.glm_eq([6,7]);
+                              });
+                           it('.object', function() {
+                                 var v = glm.vec2(1,2);
+                                 expect(v.object).to.eql({x:1,y:2});
+                                 v.object = {x:3,y:2};
+                                 expect(v).to.glm_eq([3,2]);
+                              });
+                           it('.buffer', function() {
+                                 var v = glm.vec2(1,2);
+                                 expect([].slice.call(new Uint8Array(v.buffer))).to.eql([0,0,128,63,0,0,0,64]);
+                                 var v2 = glm.vec2({x:3,y:2});
+                                 v.buffer = v2.buffer;
+                                 expect(v).to.glm_eq([3,2]);
+                                 v.x++;
+                                 expect(v2).to.glm_eq([3,2]);
+                              });
+                       });
 
             if(glm.$THREE) 
                describe('glm.$THREE', function() {

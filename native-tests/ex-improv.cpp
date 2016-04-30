@@ -44,6 +44,7 @@ int main() {
     log("axis(q)", glm::axis(q));
 
     log("diagonal4x4(vec4(1,2,3,4)): ", glm::diagonal4x4(glm::vec4(1,2,3,4)));
+    log("diagonal3x3(vec3(1,2,3)): ", glm::diagonal3x3(glm::vec3(1,2,3)));
     log("mat3(2): ", glm::mat3(2));
     log("mat4(2): ", glm::mat4(2));
     auto m4a = glm::mat4(glm::vec4(1),
@@ -126,6 +127,7 @@ int main() {
     log("q(e(q))", glm::quat(glm::eulerAngles(q)));
     log("q * v3: ", q * (v3));
 
+    log("glm.length2(q * v3): ", glm::length2(q * (v3)));
     log("glm.length(q * v3): ", glm::length(q * (v3)));
 
     log("glm.inverse(q)", glm::inverse(q));
@@ -143,6 +145,9 @@ int main() {
     log("qqq", qqq);
     log("qqq * v4: ", qqq * (glm::vec4(1.0)));
     log("v4 * qqq: ", glm::vec4(1.0) * (qqq));
+
+    glm::vec3 u = glm::vec3(1,0,0);
+    log("glm.rotation(u * qqq, u): ", glm::rotation(u*qqq,u));
 
     m4 = glm::toMat4(qqq);
     auto v4 = glm::vec4(1.0);

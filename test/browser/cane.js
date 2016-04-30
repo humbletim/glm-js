@@ -1,7 +1,7 @@
 // make chai a little sweeter (and smarter about glm-js objects)
 if(typeof chai === 'object' || typeof module.exports === 'object') {
    cane = {
-      version: '0.0.0',
+      version: '0.0.1',
       properties: {
          approximate: function() {
             cane.flag(this, 'glm_epsilon', glm.epsilon());
@@ -15,7 +15,9 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
       methods: {
          euler: function(g) { return new chai.Assertion(glm.degrees(glm.eulerAngles(cane.flag(this, 'object')))[g]); },
          approximately: function (value, delta) {
-            var obj = cane.flag(this,'object');
+             var obj = cane.flag(this,'object');
+             var message = cane.flag(this,'message') || "";
+
             if (typeof value === 'number') {
                value = [value];
                obj = [obj];
@@ -24,7 +26,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
             return value.map(
                function(value,_) { 
                   //glm.$log(this,Array.isArray(value), value, delta);
-                  return expect(this[_]).to.be.closeTo(value, delta);
+                  return expect(this[_],message).to.be.closeTo(value, delta);
                }.bind(obj)
             );
          },
@@ -40,7 +42,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
             var not = cane.flag(this,'negate');
             ep = ep || cane.flag(this, 'glm_epsilon');
 
-            expect(obj).to.have.property("$type");
+            if (!obj || !obj.$type) throw new Error('['+message+'] glm_eq: expected object with .$type ');
             if (cane.flag(this, "glm_eulers")) {
                obj = (glm.eulerAngles(obj));
                var ss = JSON.stringify(glm.$to_array(obj));
@@ -170,7 +172,7 @@ if(typeof chai === 'object' || typeof module.exports === 'object') {
             } catch(e) {
                console.warn("... direct invocation detected; rigging Mocha run");
                var _Mocha = typeof Mocha === 'function' ? Mocha : require('mocha');
-               var mocha = new Mocha();
+               var mocha = new _Mocha();
                mocha.ui('bdd').enableTimeouts(false).reporter("list").bail(true);
                var api={};
                mocha.suite.emit('pre-require', api);
