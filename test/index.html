@@ -78,7 +78,7 @@ $LQ = $LAB
    })
 .queueScript(
    function() {
-      var l = location+'';      
+      var l = location.hash+'';
       
       if(/glm-js-min/i.test(l))
          libs = ['../build/glm-js.min.js'];
