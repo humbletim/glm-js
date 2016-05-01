@@ -259,7 +259,7 @@ describe('glm', function(){
                               fb.set([1.5,2.1,3.999,4.0]);
                               var m = new glm.mat4(fb);
                               // glm won't recognize the patched Float32Array yet
-                              expect(m.elements === fb).to.be['false']();
+                              expect(m.elements === fb).to.equal(false);
                               m[0].xyzw = [9,8,7,6];
                               expect([].slice.call(fb)).to.eql([1.5,2.1,3.999,4,0,0,0,0,0,0,0,0,0,0,0,0].map(Math.floor));
 
@@ -287,13 +287,13 @@ describe('glm', function(){
                               var seq = [9.5, 8.1, 7.9, 6.6];
                               var m = new glm.mat4(fb);
                               // now glm should recognize the patched Float32Array
-                              expect(m.elements === fb,'m.elements === fb').to.be['true']();
+                              expect(m.elements === fb,'m.elements === fb').to.equal(true);
                               m[0].xyzw = seq;
                               expect(new glm.mat4(fb)).to.flatten.into("9876000000000000");
 
                               var fb = new Float32Array(16);
                               var m = new glm.mat4(fb);
-                              expect(m.elements === fb,'m.elements === fb').to.be['true']();
+                              expect(m.elements === fb,'m.elements === fb').to.equal(true);
 
                               m[0].xyzw = seq;
                               expect(new glm.mat4(fb)[0]).to.not.glm_eq(seq);
@@ -315,7 +315,7 @@ describe('glm', function(){
 
                               var fb = new Float32Array(16);
                               var m = new glm.mat4(fb);
-                              expect(m.elements === fb,'m.elements === fb').to.be['true']();
+                              expect(m.elements === fb,'m.elements === fb').to.equal(true);
                               m[0].xyzw = seq;
                               expect(new glm.mat4(fb)).to.glm_eq(seq.concat([0,0,0,0,0,0,0,0,0,0,0,0]),glm.epsilon());
                            });

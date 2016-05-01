@@ -38,28 +38,28 @@ build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.
 	echo OK
 
 test-glm-js:
-	GLM=glm-js ../node_modules/.bin/mocha -b
+	GLM=glm-js ./node_modules/.bin/mocha -b
 
 test-glm-js-min:
-	GLM=glm-js-min ../node_modules/.bin/mocha -b
+	GLM=glm-js-min ./node_modules/.bin/mocha -b
 
 test-three:
-	GLM=three ../node_modules/.bin/mocha -b
+	GLM=three ./node_modules/.bin/mocha -b
 
 test-three-min:
-	GLM=three-min ../node_modules/.bin/mocha -b
+	GLM=three-min ./node_modules/.bin/mocha -b
 
 test-gl-matrix:
-	GLM=gl-matrix ../node_modules/.bin/mocha -b
+	GLM=gl-matrix ./node_modules/.bin/mocha -b
 
 test-gl-matrix-min:
-	GLM=gl-matrix-min ../node_modules/.bin/mocha -b
+	GLM=gl-matrix-min ./node_modules/.bin/mocha -b
 
 test-tdl-fast:
-	GLM=tdl-fast ../node_modules/.bin/mocha -b
+	GLM=tdl-fast ./node_modules/.bin/mocha -b
 
 test-tdl-fast-min:
-	GLM=tdl-fast-min ../node_modules/.bin/mocha -b
+	GLM=tdl-fast-min ./node_modules/.bin/mocha -b
 
 test: test-three test-gl-matrix test-tdl-fast test-glm-js
 	@echo OK
@@ -80,7 +80,7 @@ coverage: coverage-three coverage-gl-matrix coverage-tdl-fast
 	@echo OK
 
 watch:
-	../node_modules/.bin/mocha --watch test/test.js
+	./node_modules/.bin/mocha --watch test/test.js
 
 .PHONY: test
 

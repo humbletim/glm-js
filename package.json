@@ -1,0 +1,37 @@
+{
+  "name": "glm-js",
+  "version": "0.0.5",
+  "description": "experimental JavaScript implementation of the OpenGL Mathematics (GLM) C++ Library",
+  "main": "build/glm-js.min.js",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "build/glm-js.min.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/humbletim/glm-js.git"
+  },
+  "keywords": [
+    "OpenGL",
+    "Mathematics",
+    "GLM",
+    "Vector",
+    "Matrix",
+    "vec3",
+    "mat4"
+  ],
+  "author": {
+    "name": "Tim Dedischew",
+    "email": "humbletim@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/humbletim/glm-js/issues"
+  },
+  "homepage": "https://humbletim.github.io/glm-js",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
+  }
+}
