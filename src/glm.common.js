@@ -14,7 +14,7 @@ GLMJS_PREFIX = 'glm-js: ';
 
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
-   version: "0.0.5",
+   version: "0.0.5a",
    GLM_VERSION: 96,
 
    $outer: {
