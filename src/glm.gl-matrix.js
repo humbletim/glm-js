@@ -157,11 +157,11 @@ DLL['declare<T,V,...>'] = {
    },
    lookAt: {
       'vec3,vec3': function(eye,target,up) {
-	 return glm.quat(new glm.mat4(
+	 return new glm.mat4(
 	    GLMAT.mat4.lookAt(
 	       new Float32Array(16),
 	       eye.elements, target.elements, up.elements
-	    )));
+	    ));
       }
    }
 }; //operations
