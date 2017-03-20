@@ -14,7 +14,7 @@ GLMJS_PREFIX = 'glm-js: ';
 
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
-   version: "0.0.6a",
+   version: "0.0.6b",
    GLM_VERSION: 96,
 
    $outer: {
@@ -123,6 +123,9 @@ GLM = {
 
    perspective: function(fov, aspect, near, far) {
       return GLM.$outer.mat4_perspective(fov, aspect, near, far);
+   },
+   ortho: function(left, right, bottom, top, near, far) {
+       return GLM.$outer.mat4_ortho(left, right, bottom, top, near, far);
    },
 
    _eulerAngles: function(q) {

@@ -30,6 +30,15 @@ DLL['statics'] = {
          new Float32Array(this.$mat4.makePerspective( fov, aspect, near, far ).elements)
       );
    },
+   mat4_ortho: function(left, right, bottom, top, near, far) {
+      near = near || -1;
+      far = far || 1;
+      // NOTE: "bottom, top" becomes "top, bottom" in the below call
+      //    (which then makes results match up with GLM 0.9.6 / 0.9.8 C++ results...)
+      return new glm.mat4(
+          new Float32Array(this.$mat4.makeOrthographic( left, right, top, bottom, near, far ).elements)
+      );
+   },
    mat4_angleAxis: function(theta, axis) {
       return new glm.mat4(
          this.$mat4.makeRotationAxis(axis,theta)

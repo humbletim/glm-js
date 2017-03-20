@@ -261,6 +261,17 @@ try{
 
     log("lookAt(vec(0), vec3(1), vec3(0,1,0))", glm.lookAt(glm.vec3(0), glm.vec3(1), glm.vec3(0,1,0)));
 
+    {
+        log("ortho(l,r,b,t,n,f)", glm.ortho(-16.0 * 2.0, 16.0 * 2.0, 9.0 * 2.0, -9.0 * 2.0, -2.0, 2.0));
+        var m = glm.ortho(-16.0 * 2.0, 16.0 * 2.0, 9.0 * 2.0, -9.0 * 2.0);
+        log("ortho(l,r,b,t):", "");
+        log("\t[0]", m[0]);
+        log("\t[1]", m[1]);
+        log("\t[2]", m[2]);
+        log("\t[3]", m[3]);
+        log("ortho(0,1,0,1)", glm.ortho(0.,1.0,0.,1.0));
+    }
+
      glm
      .using_namespace(function() { var acos = Math.acos;
         var x = normalize(vec3(0.0,1,0));
@@ -276,7 +287,7 @@ try{
         log("drcxy = dot(ref, cross(x, y)) < T(0)", 1.0*drcxy);
         log("mix(Angle, -Angle, drcxy)", mix(Angle, -Angle, 1.0*drcxy));
         log("glm.orientedAngle", orientedAngle(vec3(1,0,0), vec3(.5,.5,.5), vec3(0,1,0)));
-        log("glm.orientedAngle", orientedAngle(x,y,ref));
+        log("glm.orientedAngle", degrees(orientedAngle(x,y,ref)));
     });
 }
 
