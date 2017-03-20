@@ -195,11 +195,11 @@ DLL['declare<T,V,...>'] = {
     lookAt: {
       $mat4$lookAt: GLMAT.mat4.lookAt,
       'vec3,vec3': function(eye,target,up) {
-	      return this.GLM.quat(new this.GLM.mat4(
+             return new this.GLM.mat4(
 	          this.$mat4$lookAt(
 	              new this.GLM.$outer.Float32Array(16),
 	              eye.elements, target.elements, up.elements
-	          )));
+	          ));
       }
    }
 }; //operations
