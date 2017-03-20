@@ -26,6 +26,39 @@ DLL['statics'] = {
                                       fov, aspect, near, far)
       );
    },
+   // NOTE: the original tdl.fast.matrix4.ortho didn't match up with GLM C++ results
+   //    (not sure if an actual diff or just different way of expression same thing...
+   //     for now using patched version below that matches GLM)
+   _FIXME_mat4_ortho: function(left, right, bottom, top, near, far) {
+      near = near || -1;
+      far = far || 1;
+      var tmp = new glm.mat4(
+         tdl.fast.matrix4.ortho(new Float32Array(16),
+                                left, right, bottom, top, near, far)
+      );
+      return tmp;
+   },
+   mat4_ortho: function(left, right, bottom, top, near, far) {
+      near = near || -1;
+      far = far || 1;
+      var m = new glm.mat4(0),
+          dst = m.elements;
+
+       dst[0]  = 2 / (right - left);
+       dst[5]  = 2 / (top - bottom);
+
+       // was: dst[10] = -1 / (far - near);
+       dst[10] = -2 / (far - near);
+
+       dst[12] = (right + left) / (left - right);
+       dst[13] = (top + bottom) / (bottom - top);
+
+       // was: dst[14] = -near / (near - far);
+       dst[14] = (far + near) / (near - far);
+
+       dst[15] = 1;
+       return m;
+   },
    mat4_angleAxis: function(theta, axis) {
       return glm.mat4(
          tdl.fast.matrix4.axisRotation(new Float32Array(16), axis.elements, theta)

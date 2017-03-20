@@ -25,9 +25,17 @@ DLL['statics'] = {
    $mat4: GLM.mat4,
    $quat: GLM.quat,
    $mat4$perspective: GLMAT.mat4.perspective,
+   $mat4$ortho: GLMAT.mat4.ortho,
    mat4_perspective: function(fov, aspect, near, far) {
       return new this.$mat4(
          this.$mat4$perspective(this.$typeArray(16), fov, aspect, near, far)
+      );
+   },
+   mat4_ortho: function(left, right, bottom, top, near, far) {
+      near = near || -1;
+      far = far || 1;
+      return new this.$mat4(
+         this.$mat4$ortho(this.$typeArray(16), left, right, bottom, top, near, far)
       );
    },
    $quat$setAxisAngle: GLMAT.quat.setAxisAngle,
