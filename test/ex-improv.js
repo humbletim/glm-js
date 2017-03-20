@@ -12,6 +12,10 @@ try{
     log("t * 2.0", (t) ['*'] (2.0));
     log("t *= 2.0", (t) ['*='] (2.0));
     log("t.xy", t.xy);
+    log("t.wxz", t.wxz);
+    log("t.xyw", t.xyw);
+    log("t.xzw", t.xzw);
+    log("t.wxyz", t.wxyz);
     
     {
         var r = glm.rotate(glm.radians(30.0), glm.vec3(0.0,1,0));

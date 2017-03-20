@@ -14,7 +14,7 @@ GLMJS_PREFIX = 'glm-js: ';
 
 GLM = {
    $DEBUG: 'undefined' !== typeof $GLM_DEBUG && $GLM_DEBUG,
-   version: "0.0.6",
+   version: "0.0.6a",
    GLM_VERSION: 96,
 
    $outer: {
@@ -2216,10 +2216,25 @@ GLM.quat = GLM.$template.GLMType(
                 get: function() { return new GLM.vec2(this.w,this.z); },
                 set: function(v) { v=GLM.vec2(v); this.w = v[0]; this.z = v[1]; }
             },
+            wxz: {
+                enumerable: false,
+                get: function() { return new GLM.vec3(this.w,this.x,this.z); },
+                set: function(v) { v=GLM.vec3(v); this.w = v[0]; this.x = v[1]; this.z = v[2]; return this; }
+            },
+            xyw: {
+                enumerable: false,
+                get: function() { return new GLM.vec3(this.x,this.y,this.w); },
+                set: function(v) { v=GLM.vec3(v); this.x = v[0]; this.y = v[1]; this.w = v[2]; return this; }
+            },
             xzw: {
                 enumerable: false,
                 get: function() { return new GLM.vec3(this.x,this.z,this.w); },
                 set: function(v) { v=GLM.vec3(v); this.x = v[0]; this.z = v[1]; this.w = v[2]; }
+            },
+            wxyz: {
+                enumerable: false,
+                get: function() { return new GLM.vec4(this.w,this.x,this.y,this.z); },
+                set: function(v) { v=GLM.vec4(v); this.w = v[0]; this.x = v[1]; this.y = v[2]; this.z = v[3]; return this; }
             }
         }
     };

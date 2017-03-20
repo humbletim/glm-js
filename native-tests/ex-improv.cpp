@@ -7,6 +7,10 @@ int main() {
     log("t * 2.0", (t) * (2.0f));
     log("t *= 2.0", t *= (2.0f));
     log("t.xy", t.xy());
+    log("t.wxz", t.wxz());
+    log("t.xyw", t.xyw());
+    log("t.xzw", t.xzw());
+    log("t.wxyz", t.wxyz());
 
     {
         auto r = glm::rotate(glm::radians(30.0f), glm::vec3(0.0f,1,0));
