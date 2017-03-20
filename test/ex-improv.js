@@ -254,6 +254,9 @@ try{
         log("project", glm.project(H, G, F, E[3]));
     }
 
+
+    log("lookAt(vec(0), vec3(1), vec3(0,1,0))", glm.lookAt(glm.vec3(0), glm.vec3(1), glm.vec3(0,1,0)));
+
      glm
      .using_namespace(function() { var acos = Math.acos;
         var x = normalize(vec3(0.0,1,0));

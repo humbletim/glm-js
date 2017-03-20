@@ -1083,8 +1083,7 @@ describe('glm', function(){
                   expect( glm.mat4(glm.$to_object(glm.mat4())) ).to.be.glsl("mat4(1)");
                });
                it('lookAt', function() {
-                  expect(glm.lookAt(glm.vec3(0), glm.vec3(1), glm.vec3(0,1,0)))
-                        .euler.to.approximate.glm_eq([-135, 35.264389, -150]);
+                  expect(glm.to_string(glm.lookAt(glm.vec3(0), glm.vec3(1), glm.vec3(0,1,0)))).to.equal("mat4x4((-0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.816497, -0.577350, 0.000000), (0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))")
                });
              });
              it('exceptions', function() {

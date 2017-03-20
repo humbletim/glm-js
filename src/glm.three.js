@@ -172,7 +172,7 @@ DLL['declare<T,V,...>'] =
       lookAt: {
           $mat4_lookAt: THREE.Matrix4.prototype.lookAt,
           'vec3,vec3': function(eye,target,up) {
-              return glm.inverse(glm.quat(this.$mat4_lookAt.call(glm.mat4(), eye, target, up)));
+              return glm.inverse(this.$mat4_lookAt.call(glm.mat4(), eye, target, up));
           }
       }
    };//operations

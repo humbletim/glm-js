@@ -152,11 +152,11 @@ DLL['declare<T,V,...>'] = {
    lookAt: {
       _lookAt: tdl.fast.matrix4.lookAt,
       'vec3,vec3': function(eye,target,up) {
-	 return glm.quat(new glm.mat4(
+	 return new glm.mat4(
 	    this._lookAt(
 	       new Float32Array(16),
 	       eye.elements, target.elements, up.elements
-	    )));
+	    ));
       }
    }
 }; //operations
