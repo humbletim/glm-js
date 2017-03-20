@@ -26,7 +26,7 @@ To use the latest 'kitchen sink' build of **glm-js** (everything needed @ ~97k m
 
 * `http://humbletim.github.io/glm-js/code/build/glm-js.min.js` *&mdash; github pages*
 * `https://git.io/glm-js.min.js` *&mdash; same, but shortened with git.io*
-* `https://cdn.rawgit.com/humbletim/glm-js/31728cb4/build/glm-js.min.js` *&mdash; rawgit CDN*
+* `https://cdn.rawgit.com/humbletim/glm-js/31fd034b/build/glm-js.min.js` *&mdash; rawgit CDN*
 
 ```html
 <script src='https://git.io/glm-js.min.js'></script>
