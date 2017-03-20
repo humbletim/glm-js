@@ -142,6 +142,10 @@ try{
     log("qq", qq);
     log("qq * v3", qq ['*'] (v3));
     log("v3 * q: ", v3 ['*'] (q));
+    var qq2 = (qq ['*'] (2.0));
+    log("qq2 * 2.0: ", glm.make_vec4(qq2.elements));
+    log("qq2 * 2.0: ", glm.vec4(qq2.x, qq2.y, qq2.z, qq2.w));
+    log("qq2 * 2.0: ", glm.degrees(glm.eulerAngles(qq2)));
 
     v3 = v3 ['*'] (q);
     log("v3 = v3 * q: ", v3);
@@ -172,6 +176,15 @@ try{
              var qb = angleAxis(radians(-35.0), vec3(0,1,0));
              log("glm.mix(qa,qb,.5)", mix(qa,qb,.1));
           });
+    }
+
+    {
+        var qa = glm.angleAxis(glm.radians(45.0), glm.vec3(0,1,0));
+        var qb = glm.angleAxis(glm.radians(-35.0), glm.vec3(0,1,0));
+        var f = .1;
+        log("glm.slerp(qa,qb,.1)", glm.slerp(qa, qb, f));
+        log("glm.slerp(qa,qb,.9)", glm.slerp(qa, qb, .9));
+        log("glm.mix(qa,qb,.9)", glm.mix(qa, qb, .9));
     }
 
     {
@@ -229,6 +242,38 @@ try{
         var m2 = glm.toMat4(glm.angleAxis(glm.radians(45.0+1.0), glm.vec3(0.0,1,0)));
         log("m == m2", m['=='](m2));
     }
+
+    {
+        var i = glm.radians(45.);
+        var D = glm.mat4();
+        var E = glm.translate(D, glm.vec3(1.4, 1.2, 1.1));
+        var F = glm.perspective(i, 1.5, 0.1, 1000.);
+        var G = glm.inverse(F ['*']( E ));
+        var H = glm.unProject(glm.vec3(i), G, F, E[3]);
+        log("unProject", H);
+        log("project", glm.project(H, G, F, E[3]));
+    }
+
+
+    log("lookAt(vec(0), vec3(1), vec3(0,1,0))", glm.lookAt(glm.vec3(0), glm.vec3(1), glm.vec3(0,1,0)));
+
+     glm
+     .using_namespace(function() { var acos = Math.acos;
+        var x = normalize(vec3(0.0,1,0));
+        var y = normalize(vec3(-0.007486011367291212,-0.25215944647789,-5.470575332641602));
+        var ref = normalize(vec3(0.003699185326695442,-0.2452484667301178,-5.7250776290893555));
+        var Angle = acos(clamp(dot(x, y), 0.0, 1.0));
+        log("dot(x,y)", dot(x,y));
+        log("clamp(dot(x,y), 0, 1)", clamp(dot(x, y), 0.0, 1.0));
+        log("Angle = acos(clamp(dot(x,y), 0, 1))", Angle);
+        log("cross(x,y)", cross(x,y));
+        log("dot(ref, cross(x,y))", dot(ref, cross(x,y)));
+        var drcxy = dot(ref, cross(x, y)) < 0.0;
+        log("drcxy = dot(ref, cross(x, y)) < T(0)", 1.0*drcxy);
+        log("mix(Angle, -Angle, drcxy)", mix(Angle, -Angle, 1.0*drcxy));
+        log("glm.orientedAngle", orientedAngle(vec3(1,0,0), vec3(.5,.5,.5), vec3(0,1,0)));
+        log("glm.orientedAngle", orientedAngle(x,y,ref));
+    });
 }
 
 try {

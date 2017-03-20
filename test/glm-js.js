@@ -1,5 +1,5 @@
 // note: scaffolding for testing with node CLI
-if (typeof glm !== 'object') {
+if (typeof glm !== 'object' || !glm) {
    try { _ENV = require('../xjs._ENV') || _ENV; /* for cscript / old engine testing */ } catch(e) { }
    try { console.exists } catch(e) { console = _ENV.console; }
    IMPLEMENTATIONS = {
@@ -32,7 +32,15 @@ if (typeof glm !== 'object') {
       process.exit(-2);
    }
    console.warn('IMPLEMENTATIONS['+G+']()');
-   IMPLEMENTATIONS[G]();
+    try {
+        IMPLEMENTATIONS[G]();
+    } catch(e) {
+        console.error(e);
+    }
+   if (!glm) {
+       console.error('could not load implementation ' + G);
+       process.exit(-3);
+   }
    GLM = glm;
 }
 

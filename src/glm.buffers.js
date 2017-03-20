@@ -34,10 +34,11 @@ function $GLMVector(typ, sz, typearray) {
            if (this._kv && !this._kv.dynamic)
               GLM.$DEBUG && GLM.$outer.console.warn("WARNING: setting .elements on frozen (non-dynamic) GLMVector...");
            if (!elements) {
-              this.length = 0;
+              this.length = this.byteLength = 0;
            } else {
               var oldlength = this.length;
               this.length = elements.length / this.componentLength;
+              this.byteLength = elements.length * this.BYTES_PER_ELEMENT;
               if (this.length !== Math.round(this.length))
                  throw new GLM.GLMJSError(
                     '$vectorType.length alignment mismatch '+
@@ -55,16 +56,6 @@ function $GLMVector(typ, sz, typearray) {
 
    this.elements = sz && new typearray(sz * typ.componentLength);
 
-   Object.defineProperty(
-      this, 'base64',
-      {
-         get: function() {
-            return GLM.$to_base64(this);
-         },
-         set: function(a) {
-            return this.elements.set(new this.typearray(GLM.$b64.decode(a)));
-         }
-      });
 }
 
 GLM.$vectorType = $GLMVector;
@@ -287,6 +278,17 @@ $GLMVector.prototype = GLM.$template.extend(
          return this._set(new this.typearray(ptr));
       }
    });
+
+// Object.defineProperty(
+//     $GLMVector.prototype, 'base64',
+//     {
+//         get: function() {
+//             return GLM.$to_base64(this);
+//         },
+//         set: function(a) {
+//             return this.elements.set(new this.typearray(GLM.$b64.decode(a)));
+//         }
+//     });
 
 
 

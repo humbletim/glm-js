@@ -6,22 +6,39 @@
 #define GLM_SWIZZLE 1
 #include <glm/glm.hpp>
 
-#if GLM_VERSION < MY_GLM_WANTED_GTE
 #define __STR2__(x) #x
 #define __STR1__(x) __STR2__(x)
 #define glm_found "GLM_VERSION == "  __STR1__(GLM_VERSION) " [" \
     __STR1__(GLM_VERSION_MAJOR)"."\
     __STR1__(GLM_VERSION_MINOR)"."\
-    __STR1__(GLM_VERSION_PATCH)"]"
-#define glm_wanted "GLM_VERSION >= " __STR1__(MY_GLM_WANTED_GTE)
+    __STR1__(GLM_VERSION_PATCH)"."\
+    __STR1__(GLM_VERSION_REVISION)"]"
 #pragma message "[FOUND:  ] " glm_found
+#if GLM_VERSION < MY_GLM_WANTED_GTE
+#define glm_wanted "GLM_VERSION >= " __STR1__(MY_GLM_WANTED_GTE)
 #pragma message "[WANTED: ] " glm_wanted
 #pragma message "...erroring out"
 #error MY_GLM_WANTED_GTE
 #else
 
 #if GLM_VERSION < 97
-#include <glm/gtx/quaternion.hpp>
+
+#if GLM_VERSION_MAJOR == 0 && GLM_VERSION_MINOR == 9 && GLM_VERSION_PATCH == 6 && GLM_VERSION_REVISION < 1
+  #define slerp __slerp_quat__
+  #include <glm/gtc/quaternion.hpp>
+  #undef slerp
+  #include <glm/gtx/quaternion.hpp>
+#else
+  #include <glm/gtx/quaternion.hpp>
+#endif
+
+#if GLM_VERSION_MAJOR == 0 && GLM_VERSION_MINOR == 9 && GLM_VERSION_PATCH == 6 && GLM_VERSION_REVISION < 1
+namespace glm {
+	template <typename T, precision P> detail::tquat<T, P> slerp(detail::tquat<T, P> const & x, detail::tquat<T, P> const & y, const T & a){return __slerp_quat__(x, y, a);} //!< \brief Returns the slurp interpolation between two quaternions.
+	quat slerp(quat const & x, quat const & y, const float & a){return __slerp_quat__(x, y, a);} //!< \brief Returns the slurp interpolation between two quaternions.
+};
+#endif
+
 #endif
 #include <glm/ext.hpp>
 #define log(x,y) printf(x"%s%s\n", (x[0]?" ":""), (glm::to_string(y).c_str()))

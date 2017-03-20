@@ -22,22 +22,22 @@ build/__VA_ARGS__.js: src/glm.common.js
 	echo test | node $@
 
 build/glm-js.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
-	( echo $(PREAMBLE); echo '(function(globals, $$GLM_log, $$GLM_console_log) { var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm; ArrayBuffer.exists;' ; cat $^ | node build/__VA_ARGS__.js ; echo ' try { module.exports = glm; } catch(e) {}; return glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
+	( echo $(PREAMBLE); echo '(function(globals, $$GLM_log, $$GLM_console_log) { eval("var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm;"); ArrayBuffer.exists; var $$$$$$sqrt = Math.sqrt, $$$$$$random = Math.random, $$$$$$max = Math.max, $$$$$$min = Math.min, $$$$$$sin = Math.sin, $$$$$$cos = Math.cos, $$$$$$acos = Math.acos, $$$$$$floor = Math.floor, $$$$$$round = Math.round, $$$$$$pow = Math.pow, $$$$$$asin = Math.asin, $$$$$$atan = Math.atan, $$$$$$atan2 = Math.atan2, $$$$$$tan = Math.tan, $$$$$$abs = Math.abs, $$$$$$sign = Math.sign; ' ; cat $^ | perl -pe 's/Math\.([a-z]+)/\$$\$$\$$$$1/g' | node build/__VA_ARGS__.js ; echo ' glm.GLMAT = GLMAT; globals.glm = glm; try { module.exports = glm; } catch(e) {}; return glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
 
 build/glm-js.min.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
 	( echo $(PREAMBLE); echo '(function declare_glmjs_glmatrix(globals, $$GLM_log, $$GLM_console_log) { var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm; ArrayBuffer.exists;' ; \
 	cat $^ | node build/__VA_ARGS__.js  | $(MINIFIER) ; \
-	echo 'globals.glm = glm; try { module.exports = glm; } catch(e) { }; try { window.glm = glm; } catch(e) {} ; try { declare.amd && declare(function() { return glm; }); } catch(e) {}; return this.glm = glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
+	echo 'glm.GLMAT = GLMAT; globals.glm = glm; try { module.exports = glm; } catch(e) { }; try { window.glm = glm; } catch(e) {} ; try { declare.amd && declare(function() { return glm; }); } catch(e) {}; return this.glm = glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
 
 build/%.min.js: build/%.js
 	( echo $(PREAMBLE); echo "glm = (function glmjs_scope(g) { var GLMJS_PREFIX, \$$GLM_console_factory, \$$GLM_reset_logging;" ; \
 	cat $< | node build/__VA_ARGS__.js | $(MINIFIER) ; \
 	echo "return glm; })(this);" ) > $@
 
-build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.js build/glm-js.min.js
+build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.js build/glm-js.js build/glm-js.min.js
 	echo OK
 
-test-glm-js:
+test-glm-js: build/glm-js.js
 	GLM=glm-js ./node_modules/.bin/mocha -b
 
 test-glm-js-min:

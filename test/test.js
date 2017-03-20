@@ -140,7 +140,7 @@ describe('glm', function(){
                                         if (glm.$subarray === glm.$subarray.native_subarray)
                                             expect(test, 'native_subarray').to.eql([66,6]);
                                         else
-                                            expect(test, '!native_subarray').to.not.eql([66,6]);
+                                            expect(test, '!native_subarray'+[glm.$subarray, glm.$subarray.native_subarray]).to.not.eql([66,6]);
                                     });
                                  });
                         describe('.$outer', function() {
@@ -162,18 +162,18 @@ describe('glm', function(){
                                           glm.$outer.console.warn('warn after restore');
                                        });
                                     
-                                    it('._vec3_eulerAngles', function() {
-                                          var q = glm.quat(glm.radians(glm.vec3(15,-16,170)));
-                                          expect(glm.to_string(glm.degrees(glm.$outer._vec3_eulerAngles(q)),{precision:1}))
-                                             .to.equal('fvec3(15.0, -16.0, 170.0)');
+                                    // it('._vec3_eulerAngles', function() {
+                                    //       var q = glm.quat(glm.radians(glm.vec3(15,-16,170)));
+                                    //       expect(glm.to_string(glm.degrees(glm.$outer._vec3_eulerAngles(q)),{precision:1}))
+                                    //          .to.equal('fvec3(15.0, -16.0, 170.0)');
                                           
-                                          // this triggers the atan2 edge case
-                                          var B=glm.quat(glm.radians(glm.vec3(45,90,-45)));
-                                                B.y += glm.epsilon();
-                                          B = glm.normalize(B);
-                                          expect(glm.to_string(glm.degrees(glm.$outer._vec3_eulerAngles(B)),{precision:1}))
-                                             .to.equal('fvec3(0.0, 90.0, -90.0)');
-                                       });
+                                    //       // this triggers the atan2 edge case
+                                    //       var B=glm.quat(glm.radians(glm.vec3(45,90,-45)));
+                                    //             B.y += glm.epsilon();
+                                    //       B = glm.normalize(B);
+                                    //       expect(glm.to_string(glm.degrees(glm.$outer._vec3_eulerAngles(B)),{precision:1}))
+                                    //          .to.equal('fvec3(0.0, 90.0, -90.0)');
+                                    //    });
                                     it('.mat4_angleAxis', function() {
                                           expect(glm.$outer.mat4_angleAxis(glm.radians(45), glm.vec3(0,1,0)),
                                                  '$outer.mat4_angleAxis').to.be.instanceOf(glm.mat4);
@@ -673,6 +673,23 @@ describe('glm', function(){
                               B.y+=glm.epsilon();
                               B = glm.normalize(B);
                               expect(glm.mix(A,B,.5)).euler(1).to.be.approximately(90,.02);
+                           });
+                        it('.slerp<quat>', function() {
+                              var qa = glm.angleAxis(glm.radians(45), glm.vec3(0,1,0));
+                              var qb = glm.angleAxis(glm.radians(-35), glm.vec3(0,1,0));
+                              expect(glm.slerp(qa, qb, .5)).euler.to.be.glm_eq([0,(45-35)/2,0]);
+                              expect(glm.slerp(qa, qb, .1)).euler.to.be.glm_eq([0,(45*.9+-35*.1),0]);
+
+                              var qc = qa['*'](qb);
+                              expect(qa).euler.to.glm_eq([0,45,0]);
+                              expect(qb).euler.to.glm_eq([0,-35,0]);
+                              expect(qc).euler.to.glm_eq([0,10,0]);
+                              expect(qc['*'](qa)).euler.to.glm_eq([0,55,0]);
+                              A=glm.quat(glm.radians(glm.vec3(45,90,45)));
+                              B=glm.quat(glm.radians(glm.vec3(45,90,45)));
+                              B.y+=glm.epsilon();
+                              B = glm.normalize(B);
+                              expect(glm.slerp(A,B,.5)).euler(1).to.be.approximately(90,.02);
                            });
 
                         it('.using_namespace<func>', function() {
@@ -1353,6 +1370,8 @@ describe('glm', function(){
                               expect(glm.dot(glm.vec3(1,2,3), glm.vec3(3,2,1))).to.equal(10);
                               expect(glm.dot(glm.vec3(1), glm.vec3(2))).to.equal(6);
                               expect(glm.dot(glm.vec3(-1,1,1), glm.vec3(1,-1,1))).to.equal(-1);
+
+                              expect(glm.dot(glm.vec4(-1,1,1,-1), glm.vec4(1,-1,1,-1))).to.equal(0);
                            });
                         it('spin about a quat', function() {
                               var qspin = glm.quat([ 0, 1, 0, 6.123031769111886e-17 ]);
@@ -2162,7 +2181,9 @@ describe('glm', function(){
                                    expect(glm.$b64.toCharCodes(glm.$b64.$atob('2w9JQNsPSUDbD0lA')).buffer).to.eql(glm.vec3(Math.PI).elements.buffer);
                                    expect(glm.$from_base64('2w9JQNsPSUDbD0lA')).to.be.instanceOf(Float32Array);
                                    expect(glm.$from_base64('2w9JQNsPSUDbD0lA',true)).to.be.instanceOf(ArrayBuffer);
-                                   expect(function() { glm.$from_base64('2w9JQNsPSUDbD0lA',Uint8Array); }).to.throw('not yet supported second argument');
+                                   expect([].slice.call(glm.$from_base64('2w9JQNsPSUDbD0lA',Uint8Array))).to.eql(
+                                       [219,15,73,64,219,15,73,64,219,15,73,64]
+                                   );
                                     var pipi = '2w9JQNsPSUA=';
                                     expect(glm.$to_base64(glm.vec2(Math.PI))).to.equal(pipi);
                                     expect(glm.vec2(Math.PI).base64).to.equal(pipi);
