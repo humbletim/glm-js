@@ -12,7 +12,7 @@ glm = GLM;
 var DLL = {
    vendor_name: "tdl-fast.js",
    vendor_version: "2009?",
-   
+
    _name: 'glm.tdl-fast.js',
    _version: '0.0.2',
 
@@ -25,7 +25,7 @@ DLL['statics'] = {
          tdl.fast.matrix4.perspective(new Float32Array(16),
                                       fov, aspect, near, far)
       );
-   }, 
+   },
    mat4_angleAxis: function(theta, axis) {
       return glm.mat4(
          tdl.fast.matrix4.axisRotation(new Float32Array(16), axis.elements, theta)
@@ -44,7 +44,7 @@ DLL['statics'] = {
    //          _inverse_transpose: function(m) {
    //             return m;
    //             var m = tdl.fast.matrix4.transpose(
-   //                new Float32Array(16), 
+   //                new Float32Array(16),
    //                m
    //             );
    //             return tdl.fast.inverse4(new Float32Array(16),m);
@@ -60,7 +60,7 @@ DLL['statics'] = {
       return arr;
    }
 }; //statics
-      
+
 DLL['declare<T,V,...>'] = {
    mul: {
       $op: '*',
@@ -76,15 +76,16 @@ DLL['declare<T,V,...>'] = {
          return glm.vecN(
             this._mulVecSca(new Float32Array(N), a.elements, b));
       },
-      'mat4,vec3': function(a,b) { 
+      'quat,float': function(a,b) { return new (a.constructor)(this['vec4,float'](a,b).elements); },
+      'mat4,vec3': function(a,b) {
          b = new glm.vec4(b,1);
          var c = this['mat4,vec4'](a,b);
-         return new glm.vec3(c); 
+         return new glm.vec3(c);
       },
       _mulVecMat4: tdl.fast.rowMajor.mulVectorMatrix4,
       'mat4,vec4': function(a,b) {
          return glm.vec4(
-            this._mulVecMat4(new Float32Array(4), 
+            this._mulVecMat4(new Float32Array(4),
                              b.elements, a.elements)
          );
       },
@@ -92,7 +93,7 @@ DLL['declare<T,V,...>'] = {
       '_mulMatMat<N>': 'tdl.fast.columnMajor.mulMatrixMatrixN',
       'mat<N>,mat<N>': function(a,b) {
          return glm.matN(
-            this._mulMatMatN(new Float32Array(N*N), 
+            this._mulMatMatN(new Float32Array(N*N),
                             a.elements, b.elements)
          );
       }
@@ -142,6 +143,10 @@ DLL['declare<T,V,...>'] = {
       _dot: tdl.fast.dot,
       'vec3,vec3': function(a,b) {
          return this._dot(a,b);
+      },
+      _slowdot: tdl.math.dot,
+      'vec4,vec4': function(a,b) {
+         return this._slowdot(a,b);
       }
    },
    lookAt: {
@@ -164,7 +169,7 @@ DLL['declare<T,V,number>'] = {
          b = b.elements;
          var o = glm.quat(new Float32Array(4));
          var out = o.elements;
-         
+
          { //http://jsperf.com/quaternion-slerp-implementations
             var ax = a[0], ay = a[1], az = a[2], aw = a[3],
             bx = b[0], by = b[1], bz = b[2], bw = b[3];
@@ -188,7 +193,7 @@ DLL['declare<T,V,number>'] = {
 
             halfTheta = Math.acos(cosHalfTheta);
             sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
-            
+
             /*if (Math.abs(sinHalfTheta) < 0.001) {
                   out[0] = (ax * 0.5 + bx * 0.5);
                   out[1] = (ay * 0.5 + by * 0.5);
@@ -209,13 +214,14 @@ DLL['declare<T,V,number>'] = {
       }
    }
 };//functions
+DLL['declare<T,V,number>'].slerp = DLL['declare<T,V,number>'].mix;
 
 DLL['declare<T>'] = {
    normalize: {
-      'vec<N>': function(v) { 
+      'vec<N>': function(v) {
          return glm.vecN(tdl.fast.normalize(new Float32Array(N), v.elements));
       },
-      quat: function(q) { 
+      quat: function(q) {
          return new glm.quat(tdl.quaternions.normalize(q.elements));
       },
    },
@@ -233,7 +239,7 @@ DLL['declare<T>'] = {
       mat4: function(m) {
 	 m=m.clone();
 	 if (isNaN(tdl.fast.inverse4(m.elements, m.elements)[0]))
-	    m['='](glm.mat4()); // no determinant; reset to identity 
+	    m['='](glm.mat4()); // no determinant; reset to identity
 	 return m;
       }
    },

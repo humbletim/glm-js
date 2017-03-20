@@ -112,11 +112,15 @@ GLM.$make_primitive = function(type, typearray) {
 };
 
 GLM.$make_primitive("$bool", GLM.$outer.Int32Array);
+GLM.$template._add_overrides('$bool', {
+    $to_object: function(v) { return !!v; }
+});
 //GLM.$template.jstypes['$boolean'] = 'float'; // internal representation
 GLM.$make_primitive("$int32", GLM.$outer.Int32Array);
 GLM.$make_primitive("$uint32", GLM.$outer.Uint32Array);
 GLM.$make_primitive("$uint16", GLM.$outer.Uint16Array);
-GLM.$make_primitive("$float", GLM.$outer.Float32Array);
+GLM.$make_primitive("$uint8", GLM.$outer.Uint8Array);
+GLM.$float32 = GLM.$make_primitive("$float", GLM.$outer.Float32Array);
 
 GLM.$make_primitive_vector = function(type, glmtype, typearray) {
    typearray = typearray || new glmtype().elements.constructor;
@@ -202,7 +206,9 @@ GLM.$make_primitive_vector = function(type, glmtype, typearray) {
 };
 
 GLM.$vint32 = GLM.$make_primitive_vector('$vint32', GLM.$int32);
-GLM.$vfloat = GLM.$make_primitive_vector('$vfloat', GLM.$float);
+GLM.$vfloat = //GLM.$make_primitive_vector('$vfloat', GLM.$float);
+GLM.$vfloat32 = GLM.$make_primitive_vector('$vfloat32', GLM.$float32);
+GLM.$vuint8 = GLM.$make_primitive_vector('$vuint8', GLM.$uint8);
 GLM.$vuint16 = GLM.$make_primitive_vector('$vuint16', GLM.$uint16);
 GLM.$vuint32 = GLM.$make_primitive_vector('$vuint32', GLM.$uint32);
 
@@ -331,12 +337,15 @@ GLM.$make_componentized_vector = function(type, glmtype, typearray) {
             var buffer = GLM.$b64.decode(a);
             if (returnType === true || returnType == GLM.$outer.ArrayBuffer)
                 return buffer;
-            else if (returnType === undefined || returnType === GLM.$outer.Float32Array)
-                return new GLM.$outer.Float32Array(buffer);
+            else {
+                if (returnType === undefined)
+                    returnType = GLM.$outer.Float32Array;
+                return new returnType(buffer);
+            }
             throw new GLM.GLMJSError("TODO: $from_base64 not yet supported second argument type: ("+[typeof returnType, returnType]+")");
         }
     });
-})(typeof atob === 'function' && atob, typeof btoa === 'function' && btoa);
+})(typeof atob === 'function' && atob.bind(this), typeof btoa === 'function' && btoa.bind(this));
 
 // experimental support for transcoding swizzles:
 //  .array <=> <Array-encoded representation>
@@ -349,10 +358,14 @@ GLM.$make_componentized_vector = function(type, glmtype, typearray) {
     function mkdprop(serializer, parser) {
         return {
             get: function() { return serializer.call(this); },
-            set: function(nv) { return this.copy(new this.constructor(parser.call(this, nv))); }
+            set: function(nv) {
+                if (this.copy)
+                    return this.copy(new this.constructor(parser.call(this, nv)));
+                this.elements.set(parser.call(this, nv));
+            }
         };
     }
-    "vec2,vec3,vec4,mat3,mat4,uvec2,uvec3,uvec4,ivec2,ivec3,ivec4,bvec2,bvec3,bvec4,quat".split(",")
+    "$bool,$float32,$vfloat32,$vuint8,$vuint16,$vuint32,$vvec2,$vvec3,$vvec4,$vmat3,$vmat4,$vquat,vec2,vec3,vec4,mat3,mat4,uvec2,uvec3,uvec4,ivec2,ivec3,ivec4,bvec2,bvec3,bvec4,quat".split(",")
        .map(GLM.$getGLMType)
        .forEach(
           function(o) {
