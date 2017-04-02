@@ -1832,7 +1832,14 @@ describe('glm', function(){
                          expect(i['='](5)).to.equal(i);
                          expect(i['='](4)).to.glm_eq([4]);
                          expect(i['='](glm.$int32(3))).to.glm_eq([3]);
-                      });
+                   });
+                    it('byteLength', function() {
+                        var d = new ArrayBuffer((glm.$sizeof(glm.quat)+glm.$sizeof(glm.vec3))*10);
+                        var v = new glm.$vvec3(new Float32Array(d, 0, 10 * glm.vec3.componentLength));
+                        expect(v.byteLength).to.equal(10 * Float32Array.BYTES_PER_ELEMENT * 3);
+                        var q = new glm.$vquat(new Float32Array(d, v.byteLength, 10 * glm.quat.componentLength));
+                        expect(q.byteLength).to.equal(10 * Float32Array.BYTES_PER_ELEMENT * 4);
+                    });
                 });
           }//glm.$vectorType
                      });// buffers

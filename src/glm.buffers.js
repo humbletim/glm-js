@@ -38,7 +38,7 @@ function $GLMVector(typ, sz, typearray) {
            } else {
               var oldlength = this.length;
               this.length = elements.length / this.componentLength;
-              this.byteLength = elements.length * this.BYTES_PER_ELEMENT;
+              this.byteLength = this.length * this.BYTES_PER_ELEMENT;
               if (this.length !== Math.round(this.length))
                  throw new GLM.GLMJSError(
                     '$vectorType.length alignment mismatch '+

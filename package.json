@@ -1,6 +1,6 @@
 {
   "name": "glm-js",
-  "version": "0.0.5a",
+  "version": "0.0.6c",
   "description": "experimental JavaScript implementation of the OpenGL Mathematics (GLM) C++ Library",
   "main": "build/glm-js.min.js",
   "files": [
