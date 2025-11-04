@@ -1,91 +1,71 @@
-all:
-	echo TODO
+#
+# Makefile for glm-js
+# https://github.com/humbletim/glm-js
+#
+# copyright(c) 2015 humbletim
+# MIT LICENSE
+#
+# then, to select a default math backend provider:
+#    export GLM_JS_MATH_VENDOR=gl-matrix
+#    make
+#
+# vendors can be one of:
+#    * gl-matrix
+#    * three.js
+#    * tdl-fast
+#
 
-MINIFIER := java -jar /tmp/closure-compiler-read-only/build/compiler.jar --language_in ECMASCRIPT5 --js -
+GLM_JS_MATH_VENDOR ?= three.js
+JSHINT ?= jshint
 
-PREAMBLE := '/*! glm-js built '$(shell date --rfc-3339=seconds)' | (c) humbletim | http://humbletim.github.io/glm-js */'
+.PHONY: default all clean test jshint three.js gl-matrix tdl-fast glm-js test-three.js test-gl-matrix test-tdl-fast test-glm-js
 
-build/glm-three.js: lib/LICENSE.three.js lib/three.js LICENSE src/glm.common.js src/glm.three.js
-	( echo $(PREAMBLE); cat $^ ) > $@
+default: all
 
-build/glm-gl-matrix.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js
-	( echo $(PREAMBLE); cat $^ ) > $@
+all: jshint three.js gl-matrix tdl-fast glm-js
 
-build/glm-tdl-fast.js: lib/LICENSE.tdl-fast.js lib/tdl-fast.js LICENSE src/glm.common.js src/glm.tdl-fast.js
-	( echo $(PREAMBLE); cat $^ ) > $@
+build/glm-three.js: src/glm.common.js src/glm.three.js
+	cat $^ > $@
 
+build/glm-gl-matrix.js: src/glm.common.js src/glm.gl-matrix.js
+	cat $^ > $@
 
-build/glm-js.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
-	( echo $(PREAMBLE); cat $^ ) > $@
+build/glm-tdl-fast.js: src/glm.common.js src/glm.tdl-fast.js
+	cat $^ > $@
 
-build/glm-js.min.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
-	( echo $(PREAMBLE); echo '(function declare_glmjs_glmatrix(globals, $$GLM_log, $$GLM_console_log) { var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm; ArrayBuffer.exists;' ; \
-	cat $^ | node build/__VA_ARGS__.js  | $(MINIFIER) ; \
-	echo 'glm.GLMAT = GLMAT; globals.glm = glm; try { module.exports = glm; } catch(e) { }; try { window.glm = glm; } catch(e) {} ; try { declare.amd && declare(function() { return glm; }); } catch(e) {}; return this.glm = glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
+# see: scripts/build-glm-js.pl
+build/glm-js.js:
+	@echo to build the glm-js native javascript backend, see scripts/build-glm-js.pl
 
-build/%.min.js: build/%.js
-	( echo $(PREAMBLE); echo "glm = (function glmjs_scope(g) { var GLMJS_PREFIX, \$$GLM_console_factory, \$$GLM_reset_logging;" ; \
-	cat $< | node build/__VA_ARGS__.js | $(MINIFIER) ; \
-	echo "return glm; })(this);" ) > $@
+three.js: build/glm-three.js
+gl-matrix: build/glm-gl-matrix.js
+tdl-fast: build/glm-tdl-fast.js
+glm-js: build/glm-js.js
 
-build: build/glm-three.min.js build/glm-gl-matrix.min.js build/glm-tdl-fast.min.js build/glm-js.js build/glm-js.min.js
-	echo OK
+build/glm-wasm.js: src-wasm/glm-wasm.cpp src-wasm/glm-wasm-loader.js
+	emcc -Ilib/glm src-wasm/glm-wasm.cpp -o build/glm-wasm.js -lembind --pre-js src-wasm/glm-wasm-loader.js
 
-test-glm-js: build/glm-js.js
-	GLM=glm-js ./node_modules/.bin/mocha -b
+test: test-three.js test-gl-matrix test-tdl-fast
+	@echo "NOTE: skipping test-glm-js, as it requires manual intervention to run"
+	@echo "... to run it, see the top of test/test.glm-js.js"
 
-test-glm-js-min:
-	GLM=glm-js-min ./node_modules/.bin/mocha -b
-
-test-three:
-	GLM=three ./node_modules/.bin/mocha -b
-
-test-three-min:
-	GLM=three-min ./node_modules/.bin/mocha -b
+test-three.js:
+	@GLM_JS_MATH_VENDOR=three.js ./node_modules/mocha/bin/mocha test/test.js
 
 test-gl-matrix:
-	GLM=gl-matrix ./node_modules/.bin/mocha -b
-
-test-gl-matrix-min:
-	GLM=gl-matrix-min ./node_modules/.bin/mocha -b
+	@GLM_JS_MATH_VENDOR=gl-matrix ./node_modules/mocha/bin/mocha test/test.js
 
 test-tdl-fast:
-	GLM=tdl-fast ./node_modules/.bin/mocha -b
+	@GLM_JS_MATH_VENDOR=tdl-fast ./node_modules/mocha/bin/mocha test/test.js
 
-test-tdl-fast-min:
-	GLM=tdl-fast-min ./node_modules/.bin/mocha -b
+test-glm-js:
+	@GLM_JS_MATH_VENDOR=glm-js ./node_modules/mocha/bin/mocha test/test.glm-js.js
 
-test: test-three test-gl-matrix test-tdl-fast
-	@echo OK
+jshint:
+	@hash jshint >/dev/null 2>&1 && jshint src/glm.common.js || echo "skipping jshint"
 
-test-min: test-three-min test-gl-matrix-min test-tdl-fast-min test-glm-js-min
-	@echo OK
-
-coverage-three:
-	GLM=three npm test
-
-coverage-gl-matrix:
-	GLM=gl-matrix npm test
-
-coverage-tdl-fast:
-	GLM=tdl-fast npm test
-
-coverage: coverage-three coverage-gl-matrix coverage-tdl-fast
-	@echo OK
-
-watch:
-	./node_modules/.bin/mocha --watch test/test.js
-
-.PHONY: test
-
-j.js: lib/three.js src/glm.common.js src/glm.three.js src/glm-js.js
-	( cat xjs._ENV.js ; echo 'console=_ENV.console; ' ; cat $^ | sed -E 's/\bTHREE\b/THREEMATHS/g;s/var THREEMATHS/THREEMATHS/;' ; echo '_ENV.console.warn(glm);' ) > $@
-
-engine-test: j.js
-	for x in node node-0.6.6 smjs v8 d8 ; do which $$x && $$x j.js ; done
-
-smjs-test: lib/three.js \
-	src/glm.common.js src/glm.three.js src/glm.buffers.js src/glm.experimental.js \
-	test/browser/chai.js test/browser/mocha.js test/browser/cane.js \
-	 test/test.js
-	( cat  xjs._ENV.js ; cat smjs.js; echo 'PRE();' ; for x in $^ ; do echo "load('$$x');"; done ; echo ';POST();' )  | env DEBUG=1 GLM=three smjs
+clean:
+	-rm build/*.js
+	-rm -rf lib
+	-rm -rf src-wasm
+	-rm -rf test-wasm
