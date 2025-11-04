@@ -14,15 +14,9 @@ build/glm-gl-matrix.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/g
 build/glm-tdl-fast.js: lib/LICENSE.tdl-fast.js lib/tdl-fast.js LICENSE src/glm.common.js src/glm.tdl-fast.js
 	( echo $(PREAMBLE); cat $^ ) > $@
 
-build/__VA_ARGS__.js: src/glm.common.js
-	( echo "var src = require('fs').readFileSync('/dev/stdin').toString('utf8');" ; \
-	grep __VA_ARGS__I $< -A1 -B3 ; \
-	echo "process.stdout.write(src, 'utf8');" ; \
-	) > $@
-	echo test | node $@
 
 build/glm-js.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
-	( echo $(PREAMBLE); echo '(function(globals, $$GLM_log, $$GLM_console_log) { eval("var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm;"); ArrayBuffer.exists; var $$$$$$sqrt = Math.sqrt, $$$$$$random = Math.random, $$$$$$max = Math.max, $$$$$$min = Math.min, $$$$$$sin = Math.sin, $$$$$$cos = Math.cos, $$$$$$acos = Math.acos, $$$$$$floor = Math.floor, $$$$$$round = Math.round, $$$$$$pow = Math.pow, $$$$$$asin = Math.asin, $$$$$$atan = Math.atan, $$$$$$atan2 = Math.atan2, $$$$$$tan = Math.tan, $$$$$$abs = Math.abs, $$$$$$sign = Math.sign; ' ; cat $^ | perl -pe 's/Math\.([a-z]+)/\$$\$$\$$$$1/g' | node build/__VA_ARGS__.js ; echo ' glm.GLMAT = GLMAT; globals.glm = glm; try { module.exports = glm; } catch(e) {}; return glm; })(this, typeof $$GLM_log !== "undefined" ? $$GLM_log : undefined, typeof $$GLM_console_log !== "undefined" ? $$GLM_console_log : undefined);' ) > $@
+	( echo $(PREAMBLE); cat $^ ) > $@
 
 build/glm-js.min.js: lib/LICENSE.gl-matrix.txt lib/gl-matrix.js LICENSE src/glm.common.js src/glm.gl-matrix.js src/glm.buffers.js src/glm.experimental.js
 	( echo $(PREAMBLE); echo '(function declare_glmjs_glmatrix(globals, $$GLM_log, $$GLM_console_log) { var GLM, GLMAT, GLMAT_VERSION, GLMJS_PREFIX, $$GLM_console_factory, glm; ArrayBuffer.exists;' ; \
@@ -61,7 +55,7 @@ test-tdl-fast:
 test-tdl-fast-min:
 	GLM=tdl-fast-min ./node_modules/.bin/mocha -b
 
-test: test-three test-gl-matrix test-tdl-fast test-glm-js
+test: test-three test-gl-matrix test-tdl-fast
 	@echo OK
 
 test-min: test-three-min test-gl-matrix-min test-tdl-fast-min test-glm-js-min

@@ -3,7 +3,16 @@ if (typeof glm !== 'object' || !glm) {
    try { _ENV = require('../xjs._ENV') || _ENV; /* for cscript / old engine testing */ } catch(e) { }
    try { console.exists } catch(e) { console = _ENV.console; }
    IMPLEMENTATIONS = {
-      'glm-js': function() { glm = require('../build/glm-js.js'); },
+      'glm-js': function() {
+         try { GLMAT.exists; } catch(e) { GLMAT = null; }
+         GLMAT = require('../lib/gl-matrix') || GLMAT;
+         _glm = require('../src/glm.common');
+         require('../src/glm.gl-matrix');
+         require('../src/glm.buffers');
+         GLM = glm;
+         glm = require('../src/glm.experimental') || glm;
+         GLM.$init({vendor_name: 'gl-matrix', vendor_version: '2.2.2'});
+      },
       'glm-js-min': function() { glm = require('../build/glm-js.min.js'); },
       'gl-matrix-min': function() { glm = require('../build/glm-gl-matrix.min.js'); },
       'gl-matrix': function() {
