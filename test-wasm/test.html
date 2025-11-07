@@ -97,6 +97,10 @@
         function animate(time) {
             requestAnimationFrame(animate);
 
+            if (glm) {
+                glm.frame();
+            }
+
             const timeSeconds = time * 0.001;
             const positions = mesh.geometry.attributes.position;
             const vertex = new THREE.Vector3();

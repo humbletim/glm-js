@@ -1,12 +1,19 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <emscripten/bind.h>
 
 using namespace emscripten;
+
+const int MAX_VEC_STACK = 10000;
+
+class vec2;
+class vec3;
+class vec4;
 
 // vec2
 class vec2 {
@@ -31,10 +38,10 @@ public:
         return ss.str();
     }
 
-    vec2 add(const vec2& other) const { vec2 res; res.v = v + other.v; return res; }
-    vec2 sub(const vec2& other) const { vec2 res; res.v = v - other.v; return res; }
-    vec2 mul(float scalar) const { vec2 res; res.v = v * scalar; return res; }
-    vec2 div(float scalar) const { vec2 res; res.v = v / scalar; return res; }
+    vec2& add(const vec2& other) const;
+    vec2& sub(const vec2& other) const;
+    vec2& mul(float scalar) const;
+    vec2& div(float scalar) const;
 };
 
 // vec3
@@ -63,10 +70,10 @@ public:
         return ss.str();
     }
 
-    vec3 add(const vec3& other) const { vec3 res; res.v = v + other.v; return res; }
-    vec3 sub(const vec3& other) const { vec3 res; res.v = v - other.v; return res; }
-    vec3 mul(float scalar) const { vec3 res; res.v = v * scalar; return res; }
-    vec3 div(float scalar) const { vec3 res; res.v = v / scalar; return res; }
+    vec3& add(const vec3& other) const;
+    vec3& sub(const vec3& other) const;
+    vec3& mul(float scalar) const;
+    vec3& div(float scalar) const;
 };
 
 // vec4
@@ -98,10 +105,10 @@ public:
         return ss.str();
     }
 
-    vec4 add(const vec4& other) const { vec4 res; res.v = v + other.v; return res; }
-    vec4 sub(const vec4& other) const { vec4 res; res.v = v - other.v; return res; }
-    vec4 mul(float scalar) const { vec4 res; res.v = v * scalar; return res; }
-    vec4 div(float scalar) const { vec4 res; res.v = v / scalar; return res; }
+    vec4& add(const vec4& other) const;
+    vec4& sub(const vec4& other) const;
+    vec4& mul(float scalar) const;
+    vec4& div(float scalar) const;
 };
 
 // mat3
@@ -147,54 +154,164 @@ public:
     }
 };
 
+std::vector<vec2> vec2_stack(MAX_VEC_STACK);
+int vec2_stack_ptr = 0;
+std::vector<vec3> vec3_stack(MAX_VEC_STACK);
+int vec3_stack_ptr = 0;
+std::vector<vec4> vec4_stack(MAX_VEC_STACK);
+int vec4_stack_ptr = 0;
+
+vec2& _vec2() {
+    if (vec2_stack_ptr >= MAX_VEC_STACK) {
+        vec2_stack_ptr = 0;
+    }
+    vec2& v = vec2_stack[vec2_stack_ptr++];
+    v.v = glm::vec2(0.0f, 0.0f);
+    return v;
+}
+
+vec2& _vec2_f(float x) {
+    if (vec2_stack_ptr >= MAX_VEC_STACK) {
+        vec2_stack_ptr = 0;
+    }
+    vec2& v = vec2_stack[vec2_stack_ptr++];
+    v.v = glm::vec2(x, x);
+    return v;
+}
+
+vec2& _vec2_ff(float x, float y) {
+    if (vec2_stack_ptr >= MAX_VEC_STACK) {
+        vec2_stack_ptr = 0;
+    }
+    vec2& v = vec2_stack[vec2_stack_ptr++];
+    v.v = glm::vec2(x, y);
+    return v;
+}
+
+vec3& _vec3() {
+    if (vec3_stack_ptr >= MAX_VEC_STACK) {
+        vec3_stack_ptr = 0;
+    }
+    vec3& v = vec3_stack[vec3_stack_ptr++];
+    v.v = glm::vec3(0.0f, 0.0f, 0.0f);
+    return v;
+}
+
+vec3& _vec3_f(float x) {
+    if (vec3_stack_ptr >= MAX_VEC_STACK) {
+        vec3_stack_ptr = 0;
+    }
+    vec3& v = vec3_stack[vec3_stack_ptr++];
+    v.v = glm::vec3(x, x, x);
+    return v;
+}
+
+vec3& _vec3_fff(float x, float y, float z) {
+    if (vec3_stack_ptr >= MAX_VEC_STACK) {
+        vec3_stack_ptr = 0;
+    }
+    vec3& v = vec3_stack[vec3_stack_ptr++];
+    v.v = glm::vec3(x, y, z);
+    return v;
+}
+
+vec4& _vec4() {
+    if (vec4_stack_ptr >= MAX_VEC_STACK) {
+        vec4_stack_ptr = 0;
+    }
+    vec4& v = vec4_stack[vec4_stack_ptr++];
+    v.v = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+    return v;
+}
+
+vec4& _vec4_f(float x) {
+    if (vec4_stack_ptr >= MAX_VEC_STACK) {
+        vec4_stack_ptr = 0;
+    }
+    vec4& v = vec4_stack[vec4_stack_ptr++];
+    v.v = glm::vec4(x, x, x, x);
+    return v;
+}
+
+vec4& _vec4_ffff(float x, float y, float z, float w) {
+    if (vec4_stack_ptr >= MAX_VEC_STACK) {
+        vec4_stack_ptr = 0;
+    }
+    vec4& v = vec4_stack[vec4_stack_ptr++];
+    v.v = glm::vec4(x, y, z, w);
+    return v;
+}
+
+vec2& vec2::add(const vec2& other) const { vec2& res = _vec2(); res.v = v + other.v; return res; }
+vec2& vec2::sub(const vec2& other) const { vec2& res = _vec2(); res.v = v - other.v; return res; }
+vec2& vec2::mul(float scalar) const { vec2& res = _vec2(); res.v = v * scalar; return res; }
+vec2& vec2::div(float scalar) const { vec2& res = _vec2(); res.v = v / scalar; return res; }
+
+vec3& vec3::add(const vec3& other) const { vec3& res = _vec3(); res.v = v + other.v; return res; }
+vec3& vec3::sub(const vec3& other) const { vec3& res = _vec3(); res.v = v - other.v; return res; }
+vec3& vec3::mul(float scalar) const { vec3& res = _vec3(); res.v = v * scalar; return res; }
+vec3& vec3::div(float scalar) const { vec3& res = _vec3(); res.v = v / scalar; return res; }
+
+vec4& vec4::add(const vec4& other) const { vec4& res = _vec4(); res.v = v + other.v; return res; }
+vec4& vec4::sub(const vec4& other) const { vec4& res = _vec4(); res.v = v - other.v; return res; }
+vec4& vec4::mul(float scalar) const { vec4& res = _vec4(); res.v = v * scalar; return res; }
+vec4& vec4::div(float scalar) const { vec4& res = _vec4(); res.v = v / scalar; return res; }
+
+
+void frame() {
+    vec2_stack_ptr = 0;
+    vec3_stack_ptr = 0;
+    vec4_stack_ptr = 0;
+}
+
 EMSCRIPTEN_BINDINGS(glm_wasm) {
     class_<vec2>("vec2")
-        .constructor<>()
-        .constructor<float>()
-        .constructor<float, float>()
         .function("clone", &vec2::clone)
         .function("toString", &vec2::toString)
-        .function("add", &vec2::add)
-        .function("sub", &vec2::sub)
-        .function("mul", &vec2::mul)
-        .function("div", &vec2::div)
+        .function("add", &vec2::add, allow_raw_pointers())
+        .function("sub", &vec2::sub, allow_raw_pointers())
+        .function("mul", &vec2::mul, allow_raw_pointers())
+        .function("div", &vec2::div, allow_raw_pointers())
         .property("x", &vec2::get_x, &vec2::set_x)
         .property("y", &vec2::get_y, &vec2::set_y)
         ;
 
+    function("vec2", &_vec2_ff, allow_raw_pointers());
+    function("vec2", &_vec2_f, allow_raw_pointers());
+    function("vec2", &_vec2, allow_raw_pointers());
+
     class_<vec3>("vec3")
-        .constructor<>()
-        .constructor<float>()
-        .constructor<float, float, float>()
-        .constructor<const vec2&, float>()
         .function("clone", &vec3::clone)
         .function("toString", &vec3::toString)
-        .function("add", &vec3::add)
-        .function("sub", &vec3::sub)
-        .function("mul", &vec3::mul)
-        .function("div", &vec3::div)
+        .function("add", &vec3::add, allow_raw_pointers())
+        .function("sub", &vec3::sub, allow_raw_pointers())
+        .function("mul", &vec3::mul, allow_raw_pointers())
+        .function("div", &vec3::div, allow_raw_pointers())
         .property("x", &vec3::get_x, &vec3::set_x)
         .property("y", &vec3::get_y, &vec3::set_y)
         .property("z", &vec3::get_z, &vec3::set_z)
         ;
 
+    function("vec3", &_vec3_fff, allow_raw_pointers());
+    function("vec3", &_vec3_f, allow_raw_pointers());
+    function("vec3", &_vec3, allow_raw_pointers());
+
     class_<vec4>("vec4")
-        .constructor<>()
-        .constructor<float>()
-        .constructor<float, float, float, float>()
-        .constructor<const vec2&, float, float>()
-        .constructor<const vec3&, float>()
         .function("clone", &vec4::clone)
         .function("toString", &vec4::toString)
-        .function("add", &vec4::add)
-        .function("sub", &vec4::sub)
-        .function("mul", &vec4::mul)
-        .function("div", &vec4::div)
+        .function("add", &vec4::add, allow_raw_pointers())
+        .function("sub", &vec4::sub, allow_raw_pointers())
+        .function("mul", &vec4::mul, allow_raw_pointers())
+        .function("div", &vec4::div, allow_raw_pointers())
         .property("x", &vec4::get_x, &vec4::set_x)
         .property("y", &vec4::get_y, &vec4::set_y)
         .property("z", &vec4::get_z, &vec4::set_z)
         .property("w", &vec4::get_w, &vec4::set_w)
         ;
+
+    function("vec4", &_vec4_ffff, allow_raw_pointers());
+    function("vec4", &_vec4_f, allow_raw_pointers());
+    function("vec4", &_vec4, allow_raw_pointers());
 
     class_<mat3>("mat3")
         .constructor<>()
@@ -209,4 +326,6 @@ EMSCRIPTEN_BINDINGS(glm_wasm) {
         .function("clone", &mat4::clone)
         .function("toString", &mat4::toString)
         ;
+
+    function("frame", &frame);
 }

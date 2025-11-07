@@ -43,7 +43,7 @@ tdl-fast: build/glm-tdl-fast.js
 glm-js: build/glm-js.js
 
 build/glm-wasm.js: src-wasm/glm-wasm.cpp src-wasm/glm-wasm-loader.js
-	emcc -Ilib/glm src-wasm/glm-wasm.cpp -o build/glm-wasm.js -lembind --pre-js src-wasm/glm-wasm-loader.js
+	emcc -Ilib src-wasm/glm-wasm.cpp -o build/glm-wasm.js -lembind --pre-js src-wasm/glm-wasm-loader.js
 
 test: test-three.js test-gl-matrix test-tdl-fast
 	@echo "NOTE: skipping test-glm-js, as it requires manual intervention to run"
