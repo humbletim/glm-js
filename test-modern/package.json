@@ -1,0 +1,11 @@
+{
+  "name": "glm-js-modern-tests",
+  "version": "1.0.0",
+  "description": "Modern test suite for glm-js",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "author": "",
+  "license": "ISC"
+}
