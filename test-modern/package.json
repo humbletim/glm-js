@@ -1,10 +1,9 @@
 {
-  "name": "glm-js-modern-tests",
+  "name": "glm-js-modern-tests-legacy-forwarder",
   "version": "1.0.0",
-  "description": "Modern test suite for glm-js",
-  "main": "index.js",
+  "description": "Legacy test runner for the original glm-js implementation.",
   "scripts": {
-    "test": "node --test"
+    "test": "GLM_IMPLEMENTATION_PATH='./build/glm-three.js' node ../modern/tests/run-tests.js"
   },
   "author": "",
   "license": "ISC"

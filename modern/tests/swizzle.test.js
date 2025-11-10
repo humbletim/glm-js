@@ -1,6 +1,5 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const glm = require('../build/glm-three.js');
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
 test('Swizzling: Read operations', () => {
   const v4 = glm.vec4(1, 2, 3, 4);

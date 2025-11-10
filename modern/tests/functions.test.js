@@ -1,6 +1,5 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const glm = require('../build/glm-three.js');
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
 test('Top-level Functions: Vector operations', () => {
   // glm.dot

@@ -1,0 +1,7 @@
+{
+  "name": "glm-js-modern",
+  "version": "1.0.0",
+  "description": "Modern implementation of glm-js",
+  "type": "module",
+  "main": "implementation/index.js"
+}
