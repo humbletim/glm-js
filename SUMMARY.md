@@ -40,7 +40,20 @@ Standard GLM functions must be exposed at the top level and accept your vector/m
 * **Vector Math:** `glm.dot(v1, v2)`, `glm.cross(v1, v2)`, `glm.normalize(v)`, `glm.distance(v1, v2)`, `glm.length(v)`.
 * **Utilities:** `glm.mix(v1, v2, t)`, `glm.clamp(v, min, max)`, `glm.radians(deg)`, `glm.degrees(rad)`.
 
-#### 5. Types
+#### 5. Aliases & Alternative Conventions
+The classic `glm-js` implementation provides several alternative ways to call the same underlying functions. These are important for drop-in compatibility.
+
+* **Top-Level Aliases:** Many prototype methods are also available as top-level functions on the `glm` object.
+    * `glm.mul(glm.vec3(1,2,3), glm.vec3(1,2,3))` is equivalent to `glm.vec3(1,2,3)['*'](glm.vec3(1,2,3))`.
+    * `glm.add(...)`, `glm.sub(...)`, `glm.div(...)`, etc.
+* **Prototype Method Aliases:** The operator-style methods have more descriptive aliases.
+    * `v.mul(v2)` is equivalent to `v['*'](v2)`.
+    * `v.add(...)`, `v.sub(...)`, `v.div(...)`, etc.
+* **In-Place Method Aliases:** The in-place operators also have descriptive aliases.
+    * `v.mul_eq(v2)` is equivalent to `v['*='](v2)`.
+    * `v.add_eq(...)`, `v.sub_eq(...)`, `v.div_eq(...)`, etc.
+
+#### 6. Types
 The tests confirm support for these types:
 * **Float:** `vec2`, `vec3`, `vec4`, `mat3`, `mat4`, `quat`.
 * **Other:** `uvecN`, `ivecN`, `bvecN` (unsigned, integer, boolean variants).

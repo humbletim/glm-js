@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "description": "Modern implementation of glm-js",
   "type": "module",
-  "main": "implementation/index.js"
+  "main": "implementation/index.js",
+  "scripts": {
+    "test": "node --test --import ./tests/test-setup.js tests/*.test.js"
+  }
 }
