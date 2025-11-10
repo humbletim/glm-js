@@ -37,7 +37,7 @@ Support for GLSL-style component access.
 Standard GLM functions must be exposed at the top level and accept your vector/matrix types.
 
 * **Transformations:** `glm.translate(m4, v3)`, `glm.rotate(m4, angle, axisV3)`, `glm.scale(m4, v3)`, `glm.lookAt(eye, center, up)`, `glm.perspective(fov, aspect, near, far)`, `glm.ortho(left, right, bottom, top, near, far)`.
-* **Vector Math:** `glm.dot(v1, v2)`, `glm.cross(v1, v2)`, `glm.normalize(v)`, `glm.distance(v1, v2)`, `glm.length(v)`.
+* **Vector Math:** `glm.dot(v1, v2)`, `glm.cross(v1, v2)`, `glm.normalize(v)`, `glm.distance(v1, v2)`, `glm.length(v)`, `glm.length2(v)`.
 * **Utilities:** `glm.mix(v1, v2, t)`, `glm.clamp(v, min, max)`, `glm.radians(deg)`, `glm.degrees(rad)`.
 
 #### 5. Aliases & Alternative Conventions

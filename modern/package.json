@@ -6,5 +6,8 @@
   "main": "implementation/index.js",
   "scripts": {
     "test": "node --test --import ./tests/test-setup.js tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20.6.0"
   }
 }

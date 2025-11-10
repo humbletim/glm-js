@@ -82,5 +82,37 @@ function scale(m, v) {
     return out;
 }
 
+function length2(a) {
+    return dot(a, a);
+}
 
-export { dot, cross, normalize, translate, rotate, scale };
+function length(a) {
+    return Math.sqrt(length2(a));
+}
+
+function distance(a, b) {
+    const diff = new (a.constructor)();
+    for (let i = 0; i < a.elements.length; i++) {
+        diff.elements[i] = a.elements[i] - b.elements[i];
+    }
+    return length(diff);
+}
+
+
+function mix(a, b, t) {
+    const out = new (a.constructor)();
+    for (let i = 0; i < a.elements.length; i++) {
+        out.elements[i] = a.elements[i] * (1 - t) + b.elements[i] * t;
+    }
+    return out;
+}
+
+function clamp(a, min, max) {
+    const out = new (a.constructor)();
+    for (let i = 0; i < a.elements.length; i++) {
+        out.elements[i] = Math.max(min, Math.min(max, a.elements[i]));
+    }
+    return out;
+}
+
+export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp };

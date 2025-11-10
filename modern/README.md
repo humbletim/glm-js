@@ -14,6 +14,8 @@ This directory contains a complete, ground-up rewrite of the `glm-js` library us
 
 ## Running the Tests
 
+**Note:** Running the tests requires Node.js version 20.6.0 or higher.
+
 The test suite in `modern/tests/` is implementation-agnostic. It uses a loader that can be configured via an environment variable to target different versions of the library.
 
 ### Testing the New Implementation
