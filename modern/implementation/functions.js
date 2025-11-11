@@ -1,4 +1,5 @@
 // modern/implementation/functions.js
+import { mat4 } from './mat.js';
 
 function dot(a, b) {
     let out = 0;
@@ -31,19 +32,43 @@ function normalize(a) {
 }
 
 function translate(m, v) {
-    const out = new m.constructor(m);
-    out.elements[12] += v.elements[0];
-    out.elements[13] += v.elements[1];
-    out.elements[14] += v.elements[2];
+    let _m, _v;
+    if (v === undefined) {
+        // Overload: translate(v)
+        _v = m;
+        _m = new mat4();
+    } else {
+        // Overload: translate(m, v)
+        _m = m;
+        _v = v;
+    }
+    const out = new _m.constructor(_m);
+    out.elements[12] += _v.elements[0];
+    out.elements[13] += _v.elements[1];
+    out.elements[14] += _v.elements[2];
     return out;
 }
 
 function rotate(m, angle, axis) {
-    const out = new m.constructor(m);
-    const c = Math.cos(angle);
-    const s = Math.sin(angle);
+    let _m, _angle, _axis;
+
+    if (axis === undefined) {
+        // Overload: rotate(angle, axis)
+        _angle = m;
+        _axis = angle;
+        _m = new mat4();
+    } else {
+        // Overload: rotate(m, angle, axis)
+        _m = m;
+        _angle = angle;
+        _axis = axis;
+    }
+
+    const out = new _m.constructor(_m);
+    const c = Math.cos(_angle);
+    const s = Math.sin(_angle);
     const C = 1 - c;
-    const x = axis.elements[0], y = axis.elements[1], z = axis.elements[2];
+    const x = _axis.elements[0], y = _axis.elements[1], z = _axis.elements[2];
 
     const r00 = x * x * C + c;
     const r01 = y * x * C + z * s;
@@ -55,9 +80,9 @@ function rotate(m, angle, axis) {
     const r21 = y * z * C - x * s;
     const r22 = z * z * C + c;
 
-    const m00 = m.elements[0], m01 = m.elements[1], m02 = m.elements[2];
-    const m04 = m.elements[4], m05 = m.elements[5], m06 = m.elements[6];
-    const m08 = m.elements[8], m09 = m.elements[9], m10 = m.elements[10];
+    const m00 = _m.elements[0], m01 = _m.elements[1], m02 = _m.elements[2];
+    const m04 = _m.elements[4], m05 = _m.elements[5], m06 = _m.elements[6];
+    const m08 = _m.elements[8], m09 = _m.elements[9], m10 = _m.elements[10];
 
     out.elements[0] = r00 * m00 + r10 * m01 + r20 * m02;
     out.elements[1] = r01 * m00 + r11 * m01 + r21 * m02;
@@ -75,10 +100,20 @@ function rotate(m, angle, axis) {
 }
 
 function scale(m, v) {
-    const out = new m.constructor(m);
-    out.elements[0] *= v.elements[0];
-    out.elements[5] *= v.elements[1];
-    out.elements[10] *= v.elements[2];
+    let _m, _v;
+    if (v === undefined) {
+        // Overload: scale(v)
+        _v = m;
+        _m = new mat4();
+    } else {
+        // Overload: scale(m, v)
+        _m = m;
+        _v = v;
+    }
+    const out = new _m.constructor(_m);
+    out.elements[0] *= _v.elements[0];
+    out.elements[5] *= _v.elements[1];
+    out.elements[10] *= _v.elements[2];
     return out;
 }
 
@@ -115,4 +150,63 @@ function clamp(a, min, max) {
     return out;
 }
 
-export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp };
+function toMat4(q) {
+    const out = new mat4();
+    const x = q.elements[0], y = q.elements[1], z = q.elements[2], w = q.elements[3];
+
+    const x2 = x + x;
+    const y2 = y + y;
+    const z2 = z + z;
+
+    const xx = x * x2;
+    const xy = x * y2;
+    const xz = x * z2;
+
+    const yy = y * y2;
+    const yz = y * z2;
+    const zz = z * z2;
+
+    const wx = w * x2;
+    const wy = w * y2;
+    const wz = w * z2;
+
+    out.elements[0] = 1 - (yy + zz);
+    out.elements[1] = xy + wz;
+    out.elements[2] = xz - wy;
+    out.elements[3] = 0;
+
+    out.elements[4] = xy - wz;
+    out.elements[5] = 1 - (xx + zz);
+    out.elements[6] = yz + wx;
+    out.elements[7] = 0;
+
+    out.elements[8] = xz + wy;
+    out.elements[9] = yz - wx;
+    out.elements[10] = 1 - (xx + yy);
+    out.elements[11] = 0;
+
+    out.elements[12] = 0;
+    out.elements[13] = 0;
+    out.elements[14] = 0;
+    out.elements[15] = 1;
+
+    return out;
+}
+
+function add(a, b) {
+    return a['+'](b);
+}
+
+function sub(a, b) {
+    return a['-'](b);
+}
+
+function mul(a, b) {
+    return a['*'](b);
+}
+
+function div(a, b) {
+    return a['/'](b);
+}
+
+export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div };

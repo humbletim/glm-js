@@ -43,10 +43,15 @@ class vec2 {
         return this;
     }
 
-    '*'(scalar) {
+    '*'(other) {
         const out = new vec2();
-        out.elements[0] = this.elements[0] * scalar;
-        out.elements[1] = this.elements[1] * scalar;
+        if (typeof other === 'number') {
+            out.elements[0] = this.elements[0] * other;
+            out.elements[1] = this.elements[1] * other;
+        } else {
+            out.elements[0] = this.elements[0] * other.elements[0];
+            out.elements[1] = this.elements[1] * other.elements[1];
+        }
         return out;
     }
 
@@ -78,6 +83,10 @@ class vec2 {
         const epsilon = 1e-6;
         return Math.abs(this.elements[0] - other.elements[0]) < epsilon &&
                Math.abs(this.elements[1] - other.elements[1]) < epsilon;
+    }
+
+    get array() {
+        return Array.from(this.elements);
     }
 }
 
@@ -134,11 +143,17 @@ class vec3 {
         return this;
     }
 
-    '*'(scalar) {
+    '*'(other) {
         const out = new vec3();
-        out.elements[0] = this.elements[0] * scalar;
-        out.elements[1] = this.elements[1] * scalar;
-        out.elements[2] = this.elements[2] * scalar;
+        if (typeof other === 'number') {
+            out.elements[0] = this.elements[0] * other;
+            out.elements[1] = this.elements[1] * other;
+            out.elements[2] = this.elements[2] * other;
+        } else {
+            out.elements[0] = this.elements[0] * other.elements[0];
+            out.elements[1] = this.elements[1] * other.elements[1];
+            out.elements[2] = this.elements[2] * other.elements[2];
+        }
         return out;
     }
 
@@ -175,6 +190,10 @@ class vec3 {
         return Math.abs(this.elements[0] - other.elements[0]) < epsilon &&
                Math.abs(this.elements[1] - other.elements[1]) < epsilon &&
                Math.abs(this.elements[2] - other.elements[2]) < epsilon;
+    }
+
+    get array() {
+        return Array.from(this.elements);
     }
 }
 
@@ -244,12 +263,19 @@ class vec4 {
         return this;
     }
 
-    '*'(scalar) {
+    '*'(other) {
         const out = new vec4();
-        out.elements[0] = this.elements[0] * scalar;
-        out.elements[1] = this.elements[1] * scalar;
-        out.elements[2] = this.elements[2] * scalar;
-        out.elements[3] = this.elements[3] * scalar;
+        if (typeof other === 'number') {
+            out.elements[0] = this.elements[0] * other;
+            out.elements[1] = this.elements[1] * other;
+            out.elements[2] = this.elements[2] * other;
+            out.elements[3] = this.elements[3] * other;
+        } else {
+            out.elements[0] = this.elements[0] * other.elements[0];
+            out.elements[1] = this.elements[1] * other.elements[1];
+            out.elements[2] = this.elements[2] * other.elements[2];
+            out.elements[3] = this.elements[3] * other.elements[3];
+        }
         return out;
     }
 
@@ -291,6 +317,10 @@ class vec4 {
                Math.abs(this.elements[1] - other.elements[1]) < epsilon &&
                Math.abs(this.elements[2] - other.elements[2]) < epsilon &&
                Math.abs(this.elements[3] - other.elements[3]) < epsilon;
+    }
+
+    get array() {
+        return Array.from(this.elements);
     }
 }
 

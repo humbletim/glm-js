@@ -7,10 +7,10 @@ test('Aliases and Alternative Conventions', () => {
         const v1 = glm.vec3(1, 2, 3);
         const v2 = glm.vec3(4, 5, 6);
 
-        assert.deepStrictEqual(glm.add(v1, v2), v1['+'](v2));
-        assert.deepStrictEqual(glm.sub(v1, v2), v1['-'](v2));
-        assert.deepStrictEqual(glm.mul(v1, v2), v1['*'](v2));
-        assert.deepStrictEqual(glm.div(v1, 2), v1['/'](2));
+        assert.deepStrictEqual(glm.add(v1, v2).array, v1['+'](v2).array);
+        assert.deepStrictEqual(glm.sub(v1, v2).array, v1['-'](v2).array);
+        assert.deepStrictEqual(glm.mul(v1, v2).array, v1['*'](v2).array);
+        assert.deepStrictEqual(glm.div(v1, 2).array, v1['/'](2).array);
     });
 });
 

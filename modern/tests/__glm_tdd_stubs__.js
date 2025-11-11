@@ -26,6 +26,4 @@
         vendor_version: '1.0.0'
     };
 
-    glm.add = ()=> {};
     glm.radians = ()=> {};
-    glm.toMat4 = ()=> new Array(16).fill(NaN);
