@@ -34,6 +34,14 @@ The following features have been implemented in the modern `glm-js` library:
     *   `cross`
     *   `dot`
     *   `epsilon`
+    *   `inverse`
+    *   `transpose`
+    *   `slerp`
+    *   `lookAt`
+    *   `perspective`
+    *   `ortho`
+    *   `degrees`
+    *   `radians`
 
 ## Unimplemented Features
 
@@ -41,12 +49,6 @@ The following features from the legacy `glm-js` library have not yet been implem
 
 ### Missing Core Functions
 
-*   `inverse`
-*   `transpose`
-*   `slerp`
-*   `lookAt`
-*   `perspective`
-*   `ortho`
 *   `angle`
 *   `axis`
 *   `diagonal4x4`
@@ -54,8 +56,6 @@ The following features from the legacy `glm-js` library have not yet been implem
 *   `to_string`
 *   `sqrt`
 *   `euler`
-*   `degrees`
-*   `radians`
 *   `sign`
 *   `abs`
 *   `fract`

@@ -3,7 +3,7 @@ import { applySwizzling } from './swizzle.js';
 
 class vec2 {
     constructor(x, y) {
-        this.elements = new Float32Array(2);
+        Object.defineProperty(this, 'elements', { value: new Float32Array(2)});
 
         if (x instanceof vec2 || x instanceof vec3 || x instanceof vec4) {
             this.elements[0] = x.elements[0];
@@ -88,11 +88,35 @@ class vec2 {
     get array() {
         return Array.from(this.elements);
     }
+
+    mul(other) {
+        return this['*'](other);
+    }
+
+    add(other) {
+        return this['+'](other);
+    }
+
+    sub(other) {
+        return this['-'](other);
+    }
+
+    div(other) {
+        return this['/'](other);
+    }
+
+    eql(other) {
+        return this['=='](other);
+    }
+
+    eql_epsilon(other) {
+        return this['~='](other);
+    }
 }
 
 class vec3 {
     constructor(x, y, z) {
-        this.elements = new Float32Array(3);
+        Object.defineProperty(this, 'elements', { value: new Float32Array(3)});
 
         if (x instanceof vec3 || x instanceof vec4) {
             this.elements[0] = x.elements[0];
@@ -195,11 +219,35 @@ class vec3 {
     get array() {
         return Array.from(this.elements);
     }
+
+    mul(other) {
+        return this['*'](other);
+    }
+
+    add(other) {
+        return this['+'](other);
+    }
+
+    sub(other) {
+        return this['-'](other);
+    }
+
+    div(other) {
+        return this['/'](other);
+    }
+
+    eql(other) {
+        return this['=='](other);
+    }
+
+    eql_epsilon(other) {
+        return this['~='](other);
+    }
 }
 
 class vec4 {
     constructor(x, y, z, w) {
-        this.elements = new Float32Array(4);
+        Object.defineProperty(this, 'elements', { value: new Float32Array(4)});
 
         if (x instanceof vec4) {
             this.elements[0] = x.elements[0];
@@ -321,6 +369,30 @@ class vec4 {
 
     get array() {
         return Array.from(this.elements);
+    }
+
+    mul(other) {
+        return this['*'](other);
+    }
+
+    add(other) {
+        return this['+'](other);
+    }
+
+    sub(other) {
+        return this['-'](other);
+    }
+
+    div(other) {
+        return this['/'](other);
+    }
+
+    eql(other) {
+        return this['=='](other);
+    }
+
+    eql_epsilon(other) {
+        return this['~='](other);
     }
 }
 

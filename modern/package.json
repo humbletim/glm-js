@@ -6,7 +6,7 @@
   "main": "implementation/index.js",
   "scripts": {
     "test": "node --test --import ./tests/__init__.js",
-    "test:legacy": "node tests/run-legacy-tests.js",
+    "test:legacy": "node tests/__run-legacy-tests.js",
     "cjs": "echo 'module.exports = require(\"./implementation/index.js\").default' | npx esbuild --bundle --format=cjs --outfile=dist/modern-glm-js.cjs",
     "mjs": "echo 'module.exports = require(\"./implementation/index.js\").default' | npx esbuild --bundle --format=esm --outfile=dist/modern-glm-js.mjs"
   },
