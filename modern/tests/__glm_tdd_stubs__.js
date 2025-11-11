@@ -3,33 +3,6 @@
 // Stub out the legacy "$" functions
 glm.$log = console.log.bind(console, '[glm.$log]');
 
-// FIXME: temporary forward-porting to let tests get further....
-const blah = {
-  FIXEDPRECISION: 6,
-  $toFixedString: function (prefix, what, props, precision) {
-    if (precision === undefined)
-      precision = this.FIXEDPRECISION;
-    if (!props || !props.map) throw new Error('unsupported argtype to $toFixedString(..,..,props=' + typeof props + ')');
-    function verify() {
-      try {
-        // pre-check .toFixed conversion would work
-        var lp = "";
-        props.map(function (p) { var w = what[lp = p]; if (!w.toFixed) throw new Error('!toFixed in w' + [w, prefix, JSON.stringify(what)]); return w.toFixed(0); });
-      } catch (e) {
-        // GLM.$DEBUG && GLM.$outer.console.error(
-        //     "$toFixedString error", prefix, typeof what, Object.prototype.toString.call(what), lp
-        // );
-        // GLM.$DEBUG && glm.$log(
-        //     "$toFixedString error", prefix, typeof what, Object.prototype.toString.call(what), lp);
-        throw new Error(e);
-      }
-    }
-    verify();
-    props = props.map(function (p) { return what[p].toFixed(precision); });
-    return prefix + "(" + props.join(", ") + ")";
-  }
-};
-
 // original legacy tests have .should in places... this is fine to leave PERMANENTLY (here in modern-legacy-testing stubs)
 Object.defineProperty(Object.prototype, 'should', { get() { return expect(this); } });
 
@@ -42,21 +15,19 @@ glm.$to_string = (_obj, precision) => {
     precision = 6;
     FAITHFUL=true;
   }
-  // mock implementations to allow tests to get further...
-  if (_obj instanceof glm.vec3) return blah.$toFixedString('fvec3', _obj, ['x', 'y', 'z'], precision);
-  if (!(_obj instanceof glm.mat4)) return String(_obj);
-  const N = 4;
-  const obj = _obj.toJSON();
-  var ret = [0, 1, 2, 3].slice(0, N)
-    .map(function (_) { return obj[_]; }) // into columns
-    .map(function (wi) { // each column's vecN
-      return blah.$toFixedString("\t", wi, ['x', 'y', 'z', 'w'] || wi.elements.length || wi.$components, precision);
-    });
-  const t = 'mat4x4'
-  const formatted = t + '(\n' + ret.join(", \n") + "\n)";
-  // console.log('$to_string', obj)
-  return FAITHFUL ? formatted : formatted.replace(/[\t\n]/g, ''); // flat
 
+  if (_obj instanceof glm.vec2 || _obj instanceof glm.vec3 || _obj instanceof glm.vec4) {
+    return toCppStringVec(_obj, precision);
+  }
+  if (_obj instanceof glm.mat3 || _obj instanceof glm.mat4) {
+    const formatted = toCppStringMat(_obj, precision);
+    return FAITHFUL ? formatted : formatted.replace(/[\t\n]/g, ''); // flat
+  }
+  if (_obj instanceof glm.quat) {
+    return toCppStringQuat(_obj, precision);
+  }
+
+  return String(_obj);
 };
 
 
@@ -69,6 +40,23 @@ glm.to_string = function to_string(v, { precision=6 }={}) {
     if (typeof v === 'number') return 'float('+v.toFixed(precision)+')' 
     return 'unsupported argtype'
     return v+'';
+}
+
+glm.$toFixedString = function (prefix, what, props, precision) {
+    if (precision === undefined)
+      precision = 6;
+    if (!props || !props.map) throw new Error('unsupported argtype to $toFixedString(..,..,props=' + typeof props + ')');
+    function verify() {
+      try {
+        var lp = "";
+        props.map(function (p) { var w = what[lp = p]; if (!w.toFixed) throw new Error('!toFixed in w' + [w, prefix, JSON.stringify(what)]); return w.toFixed(0); });
+      } catch (e) {
+        throw new Error(e);
+      }
+    }
+    verify();
+    const formattedProps = props.map(function (p) { return what[p].toFixed(precision); });
+    return prefix + "(" + formattedProps.join(", ") + ")";
 }
 
 glm.$to_glsl = (obj) => 'TODO';

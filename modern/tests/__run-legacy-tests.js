@@ -26,7 +26,15 @@ cane.patchChai(chai);
 //     this.to.be.closeTo(d, glm.epsilon());
 // });
 
-Object.assign(globalThis, { glm, expect: chai.expect });
+import { toCppStringMat, toCppStringVec, toCppStringQuat } from "../implementation/format.js";
+
+Object.assign(globalThis, {
+    glm,
+    expect: chai.expect,
+    toCppStringMat,
+    toCppStringVec,
+    toCppStringQuat,
+});
 // use of eval is blessed -- it avoids any and all CJS vs ESM infighting 
 eval(readFileSync('./tests/__glm_tdd_stubs__.js', 'utf-8'))
 
