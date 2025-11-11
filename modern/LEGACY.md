@@ -2,23 +2,23 @@
 |---|---|---|
 | `version` | Returns the library version | `missing` |
 | `normalize` | Normalizes a vector | `implemented` |
-| `inverse` | Calculates the inverse of a matrix or quaternion | `missing` |
+| `inverse` | Calculates the inverse of a matrix or quaternion | `implemented` |
 | `distance` | Calculates the distance between two vectors | `implemented` |
 | `length` | Calculates the length of a vector | `implemented` |
 | `length2` | Calculates the squared length of a vector | `implemented` |
-| `transpose` | Transposes a matrix | `missing` |
-| `slerp` | Spherical linear interpolation between two quaternions | `missing` |
+| `transpose` | Transposes a matrix | `implemented` |
+| `slerp` | Spherical linear interpolation between two quaternions | `implemented` |
 | `mix` | Linear interpolation between two values | `implemented` |
 | `clamp` | Constrains a value to a range | `implemented` |
 | `angleAxis` | Creates a quaternion from an angle and an axis | `implemented` |
 | `rotate` | Rotates a vector or matrix | `implemented` |
 | `scale` | Scales a matrix | `implemented` |
 | `translate` | Translates a matrix | `implemented` |
-| `lookAt` | Creates a view matrix | `missing` |
+| `lookAt` | Creates a view matrix | `implemented` |
 | `cross` | Calculates the cross product of two vectors | `implemented` |
 | `dot` | Calculates the dot product of two vectors | `implemented` |
-| `perspective` | Creates a perspective projection matrix | `missing` |
-| `ortho` | Creates an orthographic projection matrix | `missing` |
+| `perspective` | Creates a perspective projection matrix | `implemented` |
+| `ortho` | Creates an orthographic projection matrix | `implemented` |
 | `angle` | Calculates the angle between two vectors | `missing` |
 | `axis` | Extracts the axis of a quaternion | `missing` |
 | `make_vec2` | Creates a vec2 | `diverged` |
@@ -47,8 +47,8 @@
 | `two_over_root_pi`| 2 / sqrt(pi) | `missing` |
 | `one_over_root_two`| 1 / sqrt(2) | `missing` |
 | `epsilonEqual` | Epsilon equality comparison | `diverged` |
-| `degrees` | Converts radians to degrees | `missing` |
-| `radians` | Converts degrees to radians | `missing` |
+| `degrees` | Converts radians to degrees | `implemented` |
+| `radians` | Converts degrees to radians | `implemented` |
 | `sign` | Extracts the sign of a value | `missing` |
 | `abs` | Calculates the absolute value | `missing` |
 | `fract` | Calculates the fractional part of a number | `missing` |

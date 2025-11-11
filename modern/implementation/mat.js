@@ -1,5 +1,6 @@
 // modern/implementation/mat.js
 import { vec3, vec4 } from './vec.js';
+import { normalize, cross, dot } from './functions.js';
 
 class mat3 {
     constructor(arg) {
@@ -38,6 +39,53 @@ class mat3 {
         out.elements[6] = b[6] * a[0] + b[7] * a[3] + b[8] * a[6];
         out.elements[7] = b[6] * a[1] + b[7] * a[4] + b[8] * a[7];
         out.elements[8] = b[6] * a[2] + b[7] * a[5] + b[8] * a[8];
+
+        return out;
+    }
+
+    transpose() {
+        const out = new mat3();
+        const a = this.elements;
+
+        out.elements[0] = a[0];
+        out.elements[1] = a[3];
+        out.elements[2] = a[6];
+        out.elements[3] = a[1];
+        out.elements[4] = a[4];
+        out.elements[5] = a[7];
+        out.elements[6] = a[2];
+        out.elements[7] = a[5];
+        out.elements[8] = a[8];
+
+        return out;
+    }
+
+    determinant() {
+        const a = this.elements;
+
+        return a[0] * (a[4] * a[8] - a[5] * a[7]) -
+               a[1] * (a[3] * a[8] - a[5] * a[6]) +
+               a[2] * (a[3] * a[7] - a[4] * a[6]);
+    }
+
+    inverse() {
+        const out = new mat3();
+        const a = this.elements;
+        const det = this.determinant();
+
+        if (!det) { return null; }
+
+        const invDet = 1.0 / det;
+
+        out.elements[0] = (a[4] * a[8] - a[5] * a[7]) * invDet;
+        out.elements[1] = (a[2] * a[7] - a[1] * a[8]) * invDet;
+        out.elements[2] = (a[1] * a[5] - a[2] * a[4]) * invDet;
+        out.elements[3] = (a[5] * a[6] - a[3] * a[8]) * invDet;
+        out.elements[4] = (a[0] * a[8] - a[2] * a[6]) * invDet;
+        out.elements[5] = (a[2] * a[3] - a[0] * a[5]) * invDet;
+        out.elements[6] = (a[3] * a[7] - a[4] * a[6]) * invDet;
+        out.elements[7] = (a[1] * a[6] - a[0] * a[7]) * invDet;
+        out.elements[8] = (a[0] * a[4] - a[1] * a[3]) * invDet;
 
         return out;
     }
@@ -90,7 +138,194 @@ class mat4 {
 
         return out;
     }
+
+    transpose() {
+        const out = new mat4();
+        const a = this.elements;
+
+        out.elements[0] = a[0];
+        out.elements[1] = a[4];
+        out.elements[2] = a[8];
+        out.elements[3] = a[12];
+        out.elements[4] = a[1];
+        out.elements[5] = a[5];
+        out.elements[6] = a[9];
+        out.elements[7] = a[13];
+        out.elements[8] = a[2];
+        out.elements[9] = a[6];
+        out.elements[10] = a[10];
+        out.elements[11] = a[14];
+        out.elements[12] = a[3];
+        out.elements[13] = a[7];
+        out.elements[14] = a[11];
+        out.elements[15] = a[15];
+
+        return out;
+    }
+
+    determinant() {
+        const a = this.elements;
+
+        const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+        const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+        const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+        const a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+
+        const b00 = a00 * a11 - a01 * a10;
+        const b01 = a00 * a12 - a02 * a10;
+        const b02 = a00 * a13 - a03 * a10;
+        const b03 = a01 * a12 - a02 * a11;
+        const b04 = a01 * a13 - a03 * a11;
+        const b05 = a02 * a13 - a03 * a12;
+        const b06 = a20 * a31 - a21 * a30;
+        const b07 = a20 * a32 - a22 * a30;
+        const b08 = a20 * a33 - a23 * a30;
+        const b09 = a21 * a32 - a22 * a31;
+        const b10 = a21 * a33 - a23 * a31;
+        const b11 = a22 * a33 - a23 * a32;
+
+        return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+    }
+
+    inverse() {
+        const out = new mat4();
+        const a = this.elements;
+        const det = this.determinant();
+
+        if (!det) { return null; }
+
+        const invDet = 1.0 / det;
+
+        const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+        const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+        const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+        const a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+
+        const b00 = a00 * a11 - a01 * a10;
+        const b01 = a00 * a12 - a02 * a10;
+        const b02 = a00 * a13 - a03 * a10;
+        const b03 = a01 * a12 - a02 * a11;
+        const b04 = a01 * a13 - a03 * a11;
+        const b05 = a02 * a13 - a03 * a12;
+        const b06 = a20 * a31 - a21 * a30;
+        const b07 = a20 * a32 - a22 * a30;
+        const b08 = a20 * a33 - a23 * a30;
+        const b09 = a21 * a32 - a22 * a31;
+        const b10 = a21 * a33 - a23 * a31;
+        const b11 = a22 * a33 - a23 * a32;
+
+        out.elements[0] = (a11 * b11 - a12 * b10 + a13 * b09) * invDet;
+        out.elements[1] = (a02 * b10 - a01 * b11 - a03 * b09) * invDet;
+        out.elements[2] = (a31 * b05 - a32 * b04 + a33 * b03) * invDet;
+        out.elements[3] = (a22 * b04 - a21 * b05 - a23 * b03) * invDet;
+        out.elements[4] = (a12 * b08 - a10 * b11 - a13 * b07) * invDet;
+        out.elements[5] = (a00 * b11 - a02 * b08 + a03 * b07) * invDet;
+        out.elements[6] = (a32 * b02 - a30 * b05 - a33 * b01) * invDet;
+        out.elements[7] = (a20 * b05 - a22 * b02 + a23 * b01) * invDet;
+        out.elements[8] = (a10 * b10 - a11 * b08 + a13 * b06) * invDet;
+        out.elements[9] = (a01 * b08 - a00 * b10 - a03 * b06) * invDet;
+        out.elements[10] = (a30 * b04 - a31 * b02 + a33 * b00) * invDet;
+        out.elements[11] = (a21 * b02 - a20 * b04 - a23 * b00) * invDet;
+        out.elements[12] = (a11 * b07 - a10 * b09 - a12 * b06) * invDet;
+        out.elements[13] = (a00 * b09 - a01 * b07 + a02 * b06) * invDet;
+        out.elements[14] = (a31 * b01 - a30 * b03 - a32 * b00) * invDet;
+        out.elements[15] = (a20 * b03 - a21 * b01 + a22 * b00) * invDet;
+
+        return out;
+    }
 }
 
 
 export { mat3, mat4 };
+
+export function transpose(m) {
+    return m.transpose();
+}
+
+export function inverse(m) {
+    return m.inverse();
+}
+
+export function lookAt(eye, center, up) {
+    const out = new mat4();
+
+    const f = normalize(center['-'](eye));
+    const s = normalize(cross(f, up));
+    const u = cross(s, f);
+
+    out.elements[0] = s.elements[0];
+    out.elements[1] = u.elements[0];
+    out.elements[2] = -f.elements[0];
+    out.elements[3] = 0;
+    out.elements[4] = s.elements[1];
+    out.elements[5] = u.elements[1];
+    out.elements[6] = -f.elements[1];
+    out.elements[7] = 0;
+    out.elements[8] = s.elements[2];
+    out.elements[9] = u.elements[2];
+    out.elements[10] = -f.elements[2];
+    out.elements[11] = 0;
+    out.elements[12] = -dot(s, eye);
+    out.elements[13] = -dot(u, eye);
+    out.elements[14] = dot(f, eye);
+    out.elements[15] = 1;
+
+    return out;
+}
+
+export function perspective(fovy, aspect, near, far) {
+    const out = new mat4();
+    const f = 1.0 / Math.tan(fovy / 2);
+
+    out.elements[0] = f / aspect;
+    out.elements[1] = 0;
+    out.elements[2] = 0;
+    out.elements[3] = 0;
+    out.elements[4] = 0;
+    out.elements[5] = f;
+    out.elements[6] = 0;
+    out.elements[7] = 0;
+    out.elements[8] = 0;
+    out.elements[9] = 0;
+    out.elements[11] = -1;
+    out.elements[12] = 0;
+    out.elements[13] = 0;
+    out.elements[15] = 0;
+
+    if (far != null && far !== Infinity) {
+        const nf = 1 / (near - far);
+        out.elements[10] = (far + near) * nf;
+        out.elements[14] = 2 * far * near * nf;
+    } else {
+        out.elements[10] = -1;
+        out.elements[14] = -2 * near;
+    }
+
+    return out;
+}
+
+export function ortho(left, right, bottom, top, near, far) {
+    const out = new mat4();
+    const lr = 1 / (left - right);
+    const bt = 1 / (bottom - top);
+    const nf = 1 / (near - far);
+
+    out.elements[0] = -2 * lr;
+    out.elements[1] = 0;
+    out.elements[2] = 0;
+    out.elements[3] = 0;
+    out.elements[4] = 0;
+    out.elements[5] = -2 * bt;
+    out.elements[6] = 0;
+    out.elements[7] = 0;
+    out.elements[8] = 0;
+    out.elements[9] = 0;
+    out.elements[10] = 2 * nf;
+    out.elements[11] = 0;
+    out.elements[12] = (left + right) * lr;
+    out.elements[13] = (top + bottom) * bt;
+    out.elements[14] = (far + near) * nf;
+    out.elements[15] = 1;
+
+    return out;
+}

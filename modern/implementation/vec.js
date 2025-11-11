@@ -88,6 +88,30 @@ class vec2 {
     get array() {
         return Array.from(this.elements);
     }
+
+    mul(other) {
+        return this['*'](other);
+    }
+
+    add(other) {
+        return this['+'](other);
+    }
+
+    sub(other) {
+        return this['-'](other);
+    }
+
+    div(other) {
+        return this['/'](other);
+    }
+
+    eql(other) {
+        return this['=='](other);
+    }
+
+    eql_epsilon(other) {
+        return this['~='](other);
+    }
 }
 
 class vec3 {
@@ -194,6 +218,30 @@ class vec3 {
 
     get array() {
         return Array.from(this.elements);
+    }
+
+    mul(other) {
+        return this['*'](other);
+    }
+
+    add(other) {
+        return this['+'](other);
+    }
+
+    sub(other) {
+        return this['-'](other);
+    }
+
+    div(other) {
+        return this['/'](other);
+    }
+
+    eql(other) {
+        return this['=='](other);
+    }
+
+    eql_epsilon(other) {
+        return this['~='](other);
     }
 }
 
@@ -321,6 +369,30 @@ class vec4 {
 
     get array() {
         return Array.from(this.elements);
+    }
+
+    mul(other) {
+        return this['*'](other);
+    }
+
+    add(other) {
+        return this['+'](other);
+    }
+
+    sub(other) {
+        return this['-'](other);
+    }
+
+    div(other) {
+        return this['/'](other);
+    }
+
+    eql(other) {
+        return this['=='](other);
+    }
+
+    eql_epsilon(other) {
+        return this['~='](other);
     }
 }
 
