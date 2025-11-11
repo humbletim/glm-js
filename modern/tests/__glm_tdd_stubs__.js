@@ -25,5 +25,3 @@
     glm.vendor = {
         vendor_version: '1.0.0'
     };
-
-    glm.radians = ()=> {};
