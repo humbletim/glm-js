@@ -1,5 +1,6 @@
 // modern/implementation/functions.js
-import { mat4 } from './mat.js';
+import { mat3, mat4, inverse } from './mat.js';
+import { vec3, vec4 } from './vec.js';
 
 function dot(a, b) {
     let out = 0;
@@ -209,4 +210,90 @@ function div(a, b) {
     return a['/'](b);
 }
 
-export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div };
+function unProject(win, model, proj, viewport) {
+    const inv = inverse(proj['*'](model));
+
+    const tmp = new vec4(win, 1.0);
+
+    tmp.elements[0] = (tmp.elements[0] - viewport[0]) / viewport[2];
+    tmp.elements[1] = (tmp.elements[1] - viewport[1]) / viewport[3];
+
+    for (let i = 0; i < 4; i++) {
+        tmp.elements[i] = tmp.elements[i] * 2.0 - 1.0;
+    }
+
+    const obj = inv['*'](tmp);
+
+    for (let i = 0; i < 4; i++) {
+        obj.elements[i] /= obj.elements[3];
+    }
+
+    return new vec3(obj);
+}
+
+function project(obj, model, proj, viewport) {
+    let tmp = new vec4(obj, 1.0);
+    tmp = model['*'](tmp);
+    tmp = proj['*'](tmp);
+
+    for (let i = 0; i < 4; i++) {
+        tmp.elements[i] /= tmp.elements[3];
+    }
+
+    for (let i = 0; i < 4; i++) {
+        tmp.elements[i] = tmp.elements[i] * 0.5 + 0.5;
+    }
+
+    tmp.elements[0] = tmp.elements[0] * viewport[2] + viewport[0];
+    tmp.elements[1] = tmp.elements[1] * viewport[3] + viewport[1];
+
+    return new vec3(tmp);
+}
+
+function diagonal3x3(v) {
+    const out = new mat3();
+    out.elements[0] = v.elements[0];
+    out.elements[4] = v.elements[1];
+    out.elements[8] = v.elements[2];
+    return out;
+}
+
+function diagonal4x4(v) {
+    const out = new mat4();
+    out.elements[0] = v.elements[0];
+    out.elements[5] = v.elements[1];
+    out.elements[10] = v.elements[2];
+    out.elements[15] = v.elements[3];
+    return out;
+}
+
+function angle(q) {
+    return Math.acos(q.elements[3]) * 2;
+}
+
+function axis(q) {
+    const tmp1 = 1.0 - q.elements[3] * q.elements[3];
+    if (tmp1 <= 0) {
+        return new vec3(0, 0, 1);
+    }
+    const tmp2 = 1.0 / Math.sqrt(tmp1);
+    return new vec3(q.elements[0] * tmp2, q.elements[1] * tmp2, q.elements[2] * tmp2);
+}
+
+function roll(q) {
+    return Math.atan2(2 * (q.elements[0] * q.elements[1] + q.elements[3] * q.elements[2]), q.elements[3] * q.elements[3] + q.elements[0] * q.elements[0] - q.elements[1] * q.elements[1] - q.elements[2] * q.elements[2]);
+}
+
+function pitch(q) {
+    return Math.atan2(2 * (q.elements[1] * q.elements[2] + q.elements[3] * q.elements[0]), q.elements[3] * q.elements[3] - q.elements[0] * q.elements[0] - q.elements[1] * q.elements[1] + q.elements[2] * q.elements[2]);
+}
+
+function yaw(q) {
+    return Math.asin(Math.max(-1, Math.min(1, -2 * (q.elements[0] * q.elements[2] - q.elements[3] * q.elements[1]))));
+}
+
+function eulerAngles(q) {
+    return new vec3(pitch(q), yaw(q), roll(q));
+}
+
+export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, roll, pitch, yaw, eulerAngles };

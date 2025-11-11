@@ -94,7 +94,6 @@ glm.$from_glsl = () => { };
 glm.pi = Math.PI
 glm.pi_2 = Math.PI / 2
 glm.root_two = Math.sqrt(2);
-glm.diagonal4x4 = 'TODO';
 glm.make_vec4 = 'TODO';
 
 // Ugh...

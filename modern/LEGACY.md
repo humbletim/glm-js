@@ -19,16 +19,16 @@
 | `dot` | Calculates the dot product of two vectors | `implemented` |
 | `perspective` | Creates a perspective projection matrix | `implemented` |
 | `ortho` | Creates an orthographic projection matrix | `implemented` |
-| `angle` | Calculates the angle between two vectors | `missing` |
-| `axis` | Extracts the axis of a quaternion | `missing` |
+| `angle` | Calculates the angle between two vectors | `implemented` |
+| `axis` | Extracts the axis of a quaternion | `implemented` |
 | `make_vec2` | Creates a vec2 | `diverged` |
 | `make_vec3` | Creates a vec3 | `diverged` |
 | `make_vec4` | Creates a vec4 | `diverged` |
 | `make_quat` | Creates a quat | `diverged` |
 | `make_mat3` | Creates a mat3 | `diverged` |
 | `make_mat4` | Creates a mat4 | `diverged` |
-| `diagonal4x4` | Creates a 4x4 diagonal matrix | `missing` |
-| `diagonal3x3` | Creates a 3x3 diagonal matrix | `missing` |
+| `diagonal4x4` | Creates a 4x4 diagonal matrix | `implemented` |
+| `diagonal3x3` | Creates a 3x3 diagonal matrix | `implemented` |
 | `to_string` | Converts a vector, matrix, or quaternion to a string | `missing` |
 | `sqrt` | Calculates the square root | `missing` |
 | `epsilon` | A small constant for floating point comparisons | `implemented` |
@@ -53,10 +53,10 @@
 | `abs` | Calculates the absolute value | `missing` |
 | `fract` | Calculates the fractional part of a number | `missing` |
 | `all` | Checks if all components of a boolean vector are true | `missing` |
-| `roll` | Extracts the roll from a quaternion | `missing` |
-| `pitch` | Extracts the pitch from a quaternion | `missing` |
-| `yaw` | Extracts the yaw from a quaternion | `missing` |
-| `eulerAngles` | Extracts the Euler angles from a quaternion | `missing` |
+| `roll` | Extracts the roll from a quaternion | `implemented` |
+| `pitch` | Extracts the pitch from a quaternion | `implemented` |
+| `yaw` | Extracts the yaw from a quaternion | `implemented` |
+| `eulerAngles` | Extracts the Euler angles from a quaternion | `implemented` |
 | `frexp` | Splits a number into a significand and an exponent | `missing` |
 | `ldexp` | Multiplies a number by an integral power of two | `missing` |
 | `string` | Alias for to_string | `missing` |
@@ -82,8 +82,8 @@
 | `max` | Returns the maximum of two values | `missing` |
 | `equal` | Strict equality comparison | `diverged` |
 | `rotation` | Creates a rotation matrix | `missing` |
-| `project` | Projects a vector onto a screen | `missing` |
-| `unProject` | Un-projects a vector from a screen | `missing` |
+| `project` | Projects a vector onto a screen | `implemented` |
+| `unProject` | Un-projects a vector from a screen | `implemented` |
 | `orientedAngle` | Calculates the oriented angle between two vectors | `missing` |
 | `copy` | Copies a vector, matrix, or quaternion | `missing` |
 | `sub` | Subtracts two vectors | `diverged` |
