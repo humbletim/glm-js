@@ -4,6 +4,7 @@
  * @returns {Number} The angle in radians.
  */
 export function radians(degrees) {
+  // TODO support glm.vec3 input etc.
   return degrees * Math.PI / 180;
 }
 

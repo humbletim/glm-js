@@ -3,7 +3,7 @@ import { vec3 } from './vec.js';
 
 class quat {
     constructor(w, x, y, z) {
-        this.elements = new Float32Array([0, 0, 0, 1]); // Default to identity
+        Object.defineProperty(this, 'elements', { value: new Float32Array([0,0,0,1])}); // Default to identity
 
         if (typeof w === 'number' && x === undefined) {
             // In glm-js, quat(1) is identity, so we don't need to do anything
@@ -15,6 +15,10 @@ class quat {
             this.elements[2] = z;
             this.elements[3] = w;
         }
+    }
+
+    get array() {
+        return Array.from(this.elements);
     }
 
     '*'(other) {

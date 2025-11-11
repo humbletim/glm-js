@@ -9,9 +9,11 @@ function applySwizzling(vecClass, vec2, vec3, vec4) {
     const instance = new vecClass();
     const components = ['x', 'y', 'z', 'w'].slice(0, instance.elements.length);
 
+    vecClass.prototype.toJSON = function(){ return Object.fromEntries(components.map(c=>([c,this[c]]))) };
     // Read operations
     for (const c1 of components) {
         Object.defineProperty(vecClass.prototype, c1, {
+            enumerable: true,
             get: function() { return this.elements[componentMap[c1]]; },
             set: function(val) { this.elements[componentMap[c1]] = val; }
         });

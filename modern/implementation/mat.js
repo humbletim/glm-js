@@ -92,7 +92,7 @@ class mat3 {
 }
 class mat4 {
     constructor(arg) {
-        this.elements = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+        Object.defineProperty(this, 'elements', { value: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])});
 
         if (typeof arg === 'number') {
             this.elements[0] = arg;
