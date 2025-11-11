@@ -42,6 +42,16 @@ The following features have been implemented in the modern `glm-js` library:
     *   `ortho`
     *   `degrees`
     *   `radians`
+*   `angle`
+*   `axis`
+*   `diagonal4x4`
+*   `diagonal3x3`
+*   `roll`
+*   `pitch`
+*   `yaw`
+*   `eulerAngles`
+*   `project`
+*   `unProject`
 
 ## Unimplemented Features
 
@@ -49,10 +59,6 @@ The following features from the legacy `glm-js` library have not yet been implem
 
 ### Missing Core Functions
 
-*   `angle`
-*   `axis`
-*   `diagonal4x4`
-*   `diagonal3x3`
 *   `to_string`
 *   `sqrt`
 *   `euler`
@@ -60,17 +66,11 @@ The following features from the legacy `glm-js` library have not yet been implem
 *   `abs`
 *   `fract`
 *   `all`
-*   `roll`
-*   `pitch`
-*   `yaw`
-*   `eulerAngles`
 *   `frexp`
 *   `ldexp`
 *   `min`
 *   `max`
 *   `rotation`
-*   `project`
-*   `unProject`
 *   `orientedAngle`
 *   `copy`
 *   `toMat4`
