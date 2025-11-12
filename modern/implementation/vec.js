@@ -1,8 +1,10 @@
 // modern/implementation/vec.js
 import { applySwizzling } from './swizzle.js';
+import { GLMBaseMixin } from './base.js';
 
-class vec2 {
+class vec2 extends GLMBaseMixin(class {}) {
     constructor(x, y) {
+        super();
         Object.defineProperty(this, 'elements', { value: new Float32Array(2)});
 
         if (x instanceof vec2 || x instanceof vec3 || x instanceof vec4) {
@@ -24,23 +26,11 @@ class vec2 {
         return out;
     }
 
-    '+='(other) {
-        this.elements[0] += other.elements[0];
-        this.elements[1] += other.elements[1];
-        return this;
-    }
-
     '-'(other) {
         const out = new vec2();
         out.elements[0] = this.elements[0] - other.elements[0];
         out.elements[1] = this.elements[1] - other.elements[1];
         return out;
-    }
-
-    '-='(other) {
-        this.elements[0] -= other.elements[0];
-        this.elements[1] -= other.elements[1];
-        return this;
     }
 
     '*'(other) {
@@ -55,23 +45,11 @@ class vec2 {
         return out;
     }
 
-    '*='(scalar) {
-        this.elements[0] *= scalar;
-        this.elements[1] *= scalar;
-        return this;
-    }
-
     '/'(scalar) {
         const out = new vec2();
         out.elements[0] = this.elements[0] / scalar;
         out.elements[1] = this.elements[1] / scalar;
         return out;
-    }
-
-    '/='(scalar) {
-        this.elements[0] /= scalar;
-        this.elements[1] /= scalar;
-        return this;
     }
 
     '=='(other) {
@@ -114,8 +92,9 @@ class vec2 {
     }
 }
 
-class vec3 {
+class vec3 extends GLMBaseMixin(class {}) {
     constructor(x, y, z) {
+        super();
         Object.defineProperty(this, 'elements', { value: new Float32Array(3)});
 
         if (x instanceof vec3 || x instanceof vec4) {
@@ -145,26 +124,12 @@ class vec3 {
         return out;
     }
 
-    '+='(other) {
-        this.elements[0] += other.elements[0];
-        this.elements[1] += other.elements[1];
-        this.elements[2] += other.elements[2];
-        return this;
-    }
-
     '-'(other) {
         const out = new vec3();
         out.elements[0] = this.elements[0] - other.elements[0];
         out.elements[1] = this.elements[1] - other.elements[1];
         out.elements[2] = this.elements[2] - other.elements[2];
         return out;
-    }
-
-    '-='(other) {
-        this.elements[0] -= other.elements[0];
-        this.elements[1] -= other.elements[1];
-        this.elements[2] -= other.elements[2];
-        return this;
     }
 
     '*'(other) {
@@ -181,26 +146,12 @@ class vec3 {
         return out;
     }
 
-    '*='(scalar) {
-        this.elements[0] *= scalar;
-        this.elements[1] *= scalar;
-        this.elements[2] *= scalar;
-        return this;
-    }
-
     '/'(scalar) {
         const out = new vec3();
         out.elements[0] = this.elements[0] / scalar;
         out.elements[1] = this.elements[1] / scalar;
         out.elements[2] = this.elements[2] / scalar;
         return out;
-    }
-
-    '/='(scalar) {
-        this.elements[0] /= scalar;
-        this.elements[1] /= scalar;
-        this.elements[2] /= scalar;
-        return this;
     }
 
     '=='(other) {
@@ -245,8 +196,9 @@ class vec3 {
     }
 }
 
-class vec4 {
+class vec4 extends GLMBaseMixin(class {}) {
     constructor(x, y, z, w) {
+        super();
         Object.defineProperty(this, 'elements', { value: new Float32Array(4)});
 
         if (x instanceof vec4) {
@@ -286,14 +238,6 @@ class vec4 {
         return out;
     }
 
-    '+='(other) {
-        this.elements[0] += other.elements[0];
-        this.elements[1] += other.elements[1];
-        this.elements[2] += other.elements[2];
-        this.elements[3] += other.elements[3];
-        return this;
-    }
-
     '-'(other) {
         const out = new vec4();
         out.elements[0] = this.elements[0] - other.elements[0];
@@ -301,14 +245,6 @@ class vec4 {
         out.elements[2] = this.elements[2] - other.elements[2];
         out.elements[3] = this.elements[3] - other.elements[3];
         return out;
-    }
-
-    '-='(other) {
-        this.elements[0] -= other.elements[0];
-        this.elements[1] -= other.elements[1];
-        this.elements[2] -= other.elements[2];
-        this.elements[3] -= other.elements[3];
-        return this;
     }
 
     '*'(other) {
@@ -327,14 +263,6 @@ class vec4 {
         return out;
     }
 
-    '*='(scalar) {
-        this.elements[0] *= scalar;
-        this.elements[1] *= scalar;
-        this.elements[2] *= scalar;
-        this.elements[3] *= scalar;
-        return this;
-    }
-
     '/'(scalar) {
         const out = new vec4();
         out.elements[0] = this.elements[0] / scalar;
@@ -342,14 +270,6 @@ class vec4 {
         out.elements[2] = this.elements[2] / scalar;
         out.elements[3] = this.elements[3] / scalar;
         return out;
-    }
-
-    '/='(scalar) {
-        this.elements[0] /= scalar;
-        this.elements[1] /= scalar;
-        this.elements[2] /= scalar;
-        this.elements[3] /= scalar;
-        return this;
     }
 
     '=='(other) {

@@ -1,10 +1,12 @@
 // modern/implementation/mat.js
 import { vec3, vec4 } from './vec.js';
 import { normalize, cross, dot } from './functions.js';
+import { GLMBaseMixin } from './base.js';
 
-class mat3 {
+class mat3 extends GLMBaseMixin(class {}) {
     constructor(arg) {
-        this.elements = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+        super();
+        Object.defineProperty(this, 'elements', { value: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1])});
 
         if (typeof arg === 'number') {
             this.elements[0] = arg;
@@ -90,8 +92,9 @@ class mat3 {
         return out;
     }
 }
-class mat4 {
+class mat4 extends GLMBaseMixin(class {}) {
     constructor(arg) {
+        super();
         Object.defineProperty(this, 'elements', { value: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])});
 
         if (typeof arg === 'number') {

@@ -1,8 +1,10 @@
 // modern/implementation/quat.js
 import { vec3 } from './vec.js';
+import { GLMBaseMixin } from './base.js';
 
-class quat {
+class quat extends GLMBaseMixin(class {}) {
     constructor(w, x, y, z) {
+        super();
         Object.defineProperty(this, 'elements', { value: new Float32Array([0,0,0,1])}); // Default to identity
 
         if (typeof w === 'number' && x === undefined) {
@@ -15,10 +17,6 @@ class quat {
             this.elements[2] = z;
             this.elements[3] = w;
         }
-    }
-
-    get array() {
-        return Array.from(this.elements);
     }
 
     '*'(other) {
