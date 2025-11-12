@@ -1,979 +1,0 @@
-
-> glm-js-modern@1.0.0 test:legacy
-> node tests/__run-legacy-tests.js
-
-wtf vec2 2
-wtf vec3 3
-wtf vec4 4
-wtf mat3 9
-wtf mat4 16
-wtf quat 4
-[glm.$log] glm: [object Object]
-
-
-  glm
-    examples
-      1) === vec4(1,2,3,4)
-    common
-      2) module props
-      ✓ $sizeof
-      ✓ .BYTES_PER_ELEMENT
-      ✓ $isGLMConstructor
-      ✓ $isGLMObject
-      ✓ .$getGLMType
-      3) .$rebindTypedArrays
-      4) to_string
-      $subarray
-        5) .subarray
-      .$outer
-log
-debug
-info
-        6) .console
-        7) .mat4_angleAxis
-        8) .quat_array_from_xyz
-      Objectification
-        9) $to_object
-        ✓ $to_json
-        10) .$inspect
-        ✓ JSON.stringify
-      glsl
-        11) $to_glsl
-        12) $from_glsl
-        13) additional glsl serialization tests
-    ...
-      14) .constants
-      15) .degrees
-      16) .radians
-      17) .perspective
-      18) .ortho(left,right,bottom,top)
-      19) .ortho(left,right,bottom,top,near,far)
-      20) .rotation
-      21) .angleAxis
-      22) .mix<float>
-      23) .clamp<float>
-      ✓ .clamp<vec2>
-      24) .min
-      25) .max
-      26) .abs
-      27) ._frexp._DataView
-      28) .frexp
-      29) .all
-      30) ._sign
-      ✓ Math.sign sanity check
-      31) .sign
-      32) .sign<vec>
-      33) .mix<vec2>
-      34) .mix<quat>
-      35) .slerp<quat>
-      36) .using_namespace<func>
-      .scale
-        ✓ <mat4,vec3>
-        ✓ <vec3>
-      .translate
-        ✓ <mat4,vec3>
-        ✓ <vec3>
-    meta
-      ✓ $to_array
-      37) $template link
-      38) $template
-      39) $template exceptions
-      40) $template traceable function names
-      41) operators
-      42) = [array assignment]
-      43) swizzles
-    mat3
-      44) core operations
-      45) clone
-      ✓ diagonal3x3
-    mat4
-      46) exceptions
-      47) mat3-partial assignment
-      48) invert tranpose
-      49) inverse
-      50) multiply neatly
-      51) diagonalNxN
-      core operations
-        52) construction by reference
-        53) construction by n
-        54) construction by arrays
-        55) construction by objects
-        56) lookAt
-    quat
-      57) core operations
-      58) core operations, more
-      59) core operations, yet more
-      60) core operations, as a mat4 too
-      ✓ from mat4
-      ✓ length2ify
-      61) inversify
-      62) multiply
-      63) copy/assign
-      ✓ angle/axis
-      64) exceptions
-    vec2
-      65) core operations
-      ✓ multiply by a scalar
-      ✓ inplace multiply by a scalar
-      ✓ lengthify
-      ✓ length2ify
-    vec3
-      66) core operations
-      67) exceptions
-      68) multiply by a scalar
-      ✓ inplace multiply by a scalar
-      69) inplace multiply by a quat (experimental)
-      ✓ lengthify
-      ✓ normalize
-      70) cross
-      ✓ dot
-      71) spin about a quat
-      72) mixify
-    vec4
-      73) core operations
-      74) exceptions
-      75) multiply by a scalar
-      ✓ inplace multiply by a scalar
-      ✓ lengthify
-      ✓ normalize
-      76) spin about a quat
-      77) apply mat4
-      78) inplace multiply by a mat4 (experimental)
-      ✓ length2ify
-      79) mixify
-    other
-      80) $dumpTypes
-      81) glm.$partition
-    buffers
-      82) .make_<type>(elements)
-      83) regression tests
-      .$vectorType
-        84) + / +=
-        85) arrayize
-        86) .setFromBuffers
-        87) .$to_glsl
-        88) dynamic mode
-        89) exceptions
-        90) misc
-        91) byteLength
-    uvecN
-      92) core operations
-      93) exceptions
-    ivecN
-      94) core operations
-      95) exceptions
-    exceptions
-      96) exceptions 0
-      97) exceptions 1
-      98) vec2
-      99) uvec2
-      100) ivec2
-      101) bvec2
-      102) vec3
-      103) uvec3
-      104) ivec3
-      105) bvec3
-      106) vec4
-      107) uvec4
-      108) ivec4
-      109) bvec4
-      .$toFixedString regression tests
-        ✓ (s,s,s) exception
-        ✓ (s,s,[s]) exception
-        ✓ (s,s,[len],N) exception
-    undefined info
-[glm.$log] "-1.TODO.0"
-      ✓ ...OK
-
-
-  34 passing (194ms)
-  109 failing
-
-  1) glm examples === vec4(1,2,3,4):
-     TypeError: glm.make_vec4 is not a function
-
-
-  2) glm common module props:
-     AssertionError: expected '-1.TODO.0' to match /\d\.\d\.\d/
-  > expect(glm.version).to.match(/\d\.\d\.\d/);
-
-  3) glm common .$rebindTypedArrays:
-
-      AssertionError: expected '1000010000100001' to equal '0000000000000000'
-      + expected - actual
-
-      -1000010000100001
-      +0000000000000000
-
-  > expect(new glm.mat4(new Float32Array(16))).to.flatten.into("0000000000000000");
-
-  4) glm common to_string:
-
-      AssertionError: expected 'mat4x4((1.000000, 0.000000, 0.000000, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(0.000000, 0.000000, 1.000000, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))' to equal 'mat4x4((1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.000000, 0.000000, 1.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))'
-      + expected - actual
-
-      -mat4x4((1.000000, 0.000000, 0.000000, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(0.000000, 0.000000, 1.000000, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))
-      +mat4x4((1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.000000, 0.000000, 1.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))
-
-  > ).to.equal('mat4x4((1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.000000, 0.000000, 1.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-
-  5) glm common $subarray .subarray:
-     TypeError: v.xy.= is not a function
-  > v.xy['=']([55,66]);
-
-  6) glm common .$outer .console:
-     TypeError: glm.$outer.console[p] is not a function
-  > .split(',').forEach(function(p) { glm.$outer.console[p](p); });
-
-  7) glm common .$outer .mat4_angleAxis:
-     TypeError: glm.$outer.mat4_angleAxis is not a function
-  > expect(glm.$outer.mat4_angleAxis(glm.radians(45), glm.vec3(0,1,0)),
-
-  8) glm common .$outer .quat_array_from_xyz:
-     TypeError: glm.$outer.quat_array_from_xyz is not a function
-  > glm.quat(glm.$outer.quat_array_from_xyz(mots))
-
-  9) glm common Objectification $to_object:
-
-      AssertionError: expected { x: -1, y: 2, z: -3, w: 4 } to deeply equal { x: true, y: true, z: true, w: true }
-      + expected - actual
-
-       {
-      -  "w": 4
-      -  "x": -1
-      -  "y": 2
-      -  "z": -3
-      +  "w": true
-      +  "x": true
-      +  "y": true
-      +  "z": true
-       }
-
-  > expect(glm.$to_object(glm.bvec4(-1,2,-3,4))).to.eql({"x":true,"y":true,"z":true,"w":true});
-
-  10) glm common Objectification .$inspect:
-
-      AssertionError: expected '{}' to equal '{\n  "x": 1,\n  "y": 2\n}'
-      + expected - actual
-
-      -{}
-      +{
-      +  "x": 1,
-      +  "y": 2
-      +}
-
-  > expect(glm.$inspect.call(glm.vec2(1,2))).to.equal('{\n  "x": 1,\n  "y": 2\n}');
-
-  11) glm common glsl $to_glsl:
-
-      AssertionError: expected 'TODO' to equal 'vec3(1)'
-      + expected - actual
-
-      -TODO
-      +vec3(1)
-
-  > expect(glm.$to_glsl(glm.vec3(1))).to.equal('vec3(1)');
-
-  12) glm common glsl $from_glsl:
-     AssertionError: expected undefined to deeply equal '1,1,1'
-  > expect(glm.$from_glsl('vec3(1)', true)).to.eql([1,1,1]);
-
-  13) glm common glsl additional glsl serialization tests:
-
-      AssertionError: expected 'TODO' to equal 'vec4(0)'
-      + expected - actual
-
-      -TODO
-      +vec4(0)
-
-  > glm.$to_glsl(glm.vec4()).should.equal("vec4(0)");
-
-  14) glm ... .constants:
-
-      coercion via .valueOf
-      + expected - actual
-
-      -NaN
-      +0.000001
-
-  > expect(+glm.epsilon, 'coercion via .valueOf').to.equal(glm.epsilon());
-
-  15) glm ... .degrees:
-     Error: [] glm_eq: expected object with .$type
-  > expect(glm.degrees(v)).to.glm_eq([1,2,3]);
-
-  16) glm ... .radians:
-     Error: [] glm_eq: expected object with .$type
-  > expect(glm.radians(v)).to.glm_eq([1,2,3]);
-
-  17) glm ... .perspective:
-
-      AssertionError: expected 'mat4x4(\n\t(1.810660, 0.000000, 0.000000, 0.000000),\n\t(0.000000, 2.414214, 0.000000, 0.000000),\n\t(0.000000, 0.000000, -1.002002, -1.000000),\n\t(0.000000, 0.000000, -0.200200, 0.000000)\n)' to equal 'mat4x4(\n\t(1.810660, 0.000000, 0.000000, 0.000000), \n\t(0.000000, 2.414214, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.002002, -1.000000), \n\t(0.000000, 0.000000, -0.200200, 0.000000)\n)'
-      + expected - actual
-
-       mat4x4(
-      -	(1.810660, 0.000000, 0.000000, 0.000000),
-      -	(0.000000, 2.414214, 0.000000, 0.000000),
-      -	(0.000000, 0.000000, -1.002002, -1.000000),
-      +	(1.810660, 0.000000, 0.000000, 0.000000),
-      +	(0.000000, 2.414214, 0.000000, 0.000000),
-      +	(0.000000, 0.000000, -1.002002, -1.000000),
-	(0.000000, 0.000000, -0.200200, 0.000000)
-       )
-
-  > ).to.equal('mat4x4(\n\t(1.810660, 0.000000, 0.000000, 0.000000), \n\t(0.000000, 2.414214, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.002002, -1.000000), \n\t(0.000000, 0.000000, -0.200200, 0.000000)\n)' );
-
-  18) glm ... .ortho(left,right,bottom,top):
-
-      AssertionError: expected 'mat4x4(\n\t(0.031250, 0.000000, 0.000000, 0.000000),\n\t(0.000000, -0.055556, 0.000000, 0.000000),\n\t(0.000000, 0.000000, NaN, 0.000000),\n\t(0.000000, 0.000000, NaN, 1.000000)\n)' to equal 'mat4x4(\n\t(0.031250, 0.000000, 0.000000, 0.000000), \n\t(0.000000, -0.055556, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.000000, 0.000000), \n\t(0.000000, 0.000000, 0.000000, 1.000000)\n)'
-      + expected - actual
-
-       mat4x4(
-      -	(0.031250, 0.000000, 0.000000, 0.000000),
-      -	(0.000000, -0.055556, 0.000000, 0.000000),
-      -	(0.000000, 0.000000, NaN, 0.000000),
-      -	(0.000000, 0.000000, NaN, 1.000000)
-      +	(0.031250, 0.000000, 0.000000, 0.000000),
-      +	(0.000000, -0.055556, 0.000000, 0.000000),
-      +	(0.000000, 0.000000, -1.000000, 0.000000),
-      +	(0.000000, 0.000000, 0.000000, 1.000000)
-       )
-
-  > ).to.equal('mat4x4(\n\t(0.031250, 0.000000, 0.000000, 0.000000), \n\t(0.000000, -0.055556, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -1.000000, 0.000000), \n\t(0.000000, 0.000000, 0.000000, 1.000000)\n)');
-
-  19) glm ... .ortho(left,right,bottom,top,near,far):
-
-      AssertionError: expected 'mat4x4(\n\t(0.031250, 0.000000, 0.000000, 0.000000),\n\t(0.000000, -0.055556, 0.000000, 0.000000),\n\t(0.000000, 0.000000, -0.500000, 0.000000),\n\t(0.000000, 0.000000, 0.000000, 1.000000)\n)' to equal 'mat4x4(\n\t(0.031250, 0.000000, 0.000000, 0.000000), \n\t(0.000000, -0.055556, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -0.500000, 0.000000), \n\t(0.000000, 0.000000, 0.000000, 1.000000)\n)'
-      + expected - actual
-
-       mat4x4(
-      -	(0.031250, 0.000000, 0.000000, 0.000000),
-      -	(0.000000, -0.055556, 0.000000, 0.000000),
-      -	(0.000000, 0.000000, -0.500000, 0.000000),
-      +	(0.031250, 0.000000, 0.000000, 0.000000),
-      +	(0.000000, -0.055556, 0.000000, 0.000000),
-      +	(0.000000, 0.000000, -0.500000, 0.000000),
-	(0.000000, 0.000000, 0.000000, 1.000000)
-       )
-
-  > ).to.equal('mat4x4(\n\t(0.031250, 0.000000, 0.000000, 0.000000), \n\t(0.000000, -0.055556, 0.000000, 0.000000), \n\t(0.000000, 0.000000, -0.500000, 0.000000), \n\t(0.000000, 0.000000, 0.000000, 1.000000)\n)');
-
-  20) glm ... .rotation:
-     TypeError: glm.rotation is not a function
-  > glm.rotation(glm.vec3(1,0,0), glm.vec3(1,0,0)['*'](q))
-
-  21) glm ... .angleAxis:
-     AssertionError: expected NaN to be close to 45 +/- 0.00005729577951308232
-  > expect((glm.eulerAngles(qq)[1])).to.approximate.degrees(45.0);
-
-  22) glm ... .mix<float>:
-     TypeError: Cannot read properties of undefined (reading 'length')
-  > for (let i = 0; i < a.elements.length; i++) {
-       at Object.mix  (file://implementation/functions.js:140:36)
-  > expect(glm.mix(0,.5,.25)).to.equal(.125);
-
-  23) glm ... .clamp<float>:
-     TypeError: Cannot read properties of undefined (reading 'length')
-  > for (let i = 0; i < a.elements.length; i++) {
-       at Object.clamp  (file://implementation/functions.js:148:36)
-  > expect(glm.clamp(0,.25,.5)).to.equal(.25);
-
-  24) glm ... .min:
-     TypeError: glm.min is not a function
-  > expect(glm.min(0,.5)).to.equal(0);
-
-  25) glm ... .max:
-     TypeError: glm.max is not a function
-  > expect(glm.max(0,.5)).to.equal(.5);
-
-  26) glm ... .abs:
-     TypeError: glm.abs is not a function
-  > expect(glm.abs(-1)).to.equal(1);
-
-  27) glm ... ._frexp._DataView:
-     TypeError: Cannot read properties of undefined (reading '_DataView')
-  > var a = new glm._frexp._DataView(new ArrayBuffer(8));
-
-  28) glm ... .frexp:
-     TypeError: glm.frexp is not a function
-  > expect(glm.frexp(Math.PI), 'glm.frexp(MATH.PI)').to.be.roughly([.78539816,2]);
-
-  29) glm ... .all:
-     TypeError: glm.all is not a function
-  > expect(glm.all(glm.bvec4(1)),
-
-  30) glm ... ._sign:
-     TypeError: undefined is not a function
-  > .map(glm._sign)).to.eql(
-
-  31) glm ... .sign:
-     TypeError: undefined is not a function
-  > .map(glm.sign)).to.eql(
-
-  32) glm ... .sign<vec>:
-     TypeError: glm.sign is not a function
-  > expect(glm.sign(glm.vec2(1,-1))).to.eql(glm.vec2(1,-1));
-
-  33) glm ... .mix<vec2>:
-
-      AssertionError: expected 'TODO' to equal 'vec2(1.5)'
-      + expected - actual
-
-      -TODO
-      +vec2(1.5)
-
-  > expect(glm.mix(glm.vec2(1,2), glm.vec2(2,1), .5)).to.be.glsl('vec2(1.5)');
-
-  34) glm ... .mix<quat>:
-     AssertionError:  [0,0.07703663408756256,0][0]: expected NaN to be close to 0 +/- 0.00005729577951308232
-  > expect(glm.mix(qa, qb, .5)).euler.to.be.glm_eq([0,(45-35)/2,0]);
-
-  35) glm ... .slerp<quat>:
-     AssertionError:  [0,0.0872664675116539,0][0]: expected NaN to be close to 0 +/- 0.00005729577951308232
-  > expect(glm.slerp(qa, qb, .5)).euler.to.be.glm_eq([0,(45-35)/2,0]);
-
-  36) glm ... .using_namespace<func>:
-     TypeError: glm.using_namespace is not a function
-  > glm.using_namespace(
-
-  37) glm meta $template link:
-     TypeError: glm.mul.link is not a function
-  > expect(glm.mul.link('mat4,mat4')(glm.mat4(2),glm.mat4(3))).to.eql(glm.mat4(2)['*'](glm.mat4(3)));
-
-  38) glm meta $template:
-     AssertionError: expected undefined to be an object
-  > expect(glm.$template).to.be.an('object');
-
-  39) glm meta $template exceptions:
-     TypeError: Cannot read properties of undefined (reading 'extend')
-  > glm.$template.extend(
-
-  40) glm meta $template traceable function names:
-     AssertionError: expected [Function] to throw error including '_traceable expects tidy function' but got 'Cannot read properties of undefined (reading \'_traceable\')'
-  > expect(function() { glm.$template._traceable('nonfunc', 5) }).to.throw("_traceable expects tidy function");
-
-  41) glm meta operators:
-
-      AssertionError: expected '-7,-16,-4,-4' to deeply equal '-1,-2,-3,-4'
-      + expected - actual
-
-       [
-      -  -7
-      -  -16
-      +  -1
-      +  -2
-      +  -3
-         -4
-      -  -4
-       ]
-
-  > expect(v4).to.glm_eq([-1,-2,-3,-4]);
-
-  42) glm meta = [array assignment]:
-     TypeError: bv3.= is not a function
-  > bv3['=']([true,true,false]);
-
-  43) glm meta swizzles:
-     TypeError: v4.copy is not a function
-  > v4.copy(glm.vec4(-1,-2,-3,-4));
-  > tv4('xzy', [1,2,3], [1,3,2,-4]);
-
-  44) glm mat3 core operations:
-     TypeError: a.copy is not a function
-  > a.copy(b);
-
-  45) glm mat3 clone:
-     TypeError: a.clone is not a function
-  > var b = a.clone();
-
-  46) glm mat4 exceptions:
-     AssertionError: expected [Function] to throw an error
-  > expect(function() { glm.mat4({}); }).to['throw'](/unrecognized object passed to .*?\bmat4/);
-
-  47) glm mat4 mat3-partial assignment:
-     TypeError: m4.= is not a function
-  > m4['='](glm.mat4(glm.mat3(glm.vec3(5),
-
-  48) glm mat4 invert tranpose:
-
-      AssertionError: expected 'mat4x4((0.707107, 0.000000, -0.707107, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(0.707107, 0.000000, 0.707107, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))' to equal 'mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))'
-      + expected - actual
-
-      -mat4x4((0.707107, 0.000000, -0.707107, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(0.707107, 0.000000, 0.707107, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))
-      +mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))
-
-  > glm.to_string(glm.transpose(glm.inverse(glm.toMat4(qq)))).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-
-  49) glm mat4 inverse:
-     AssertionError: expected null to deeply equal 'mat4x4((1.000000, 0.000000, 0.000000, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(0.000000, 0.000000, 1.000000, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))'
-  > expect(glm.inverse(nodeterminant)).to.eql(glm.mat4(1));
-
-  50) glm mat4 multiply neatly:
-     TypeError: glm.mat4(...).mul is not a function
-  > expect(glm.mat4().mul(glm.mat4())).to.be.instanceOf(glm.mat4);
-
-  51) glm mat4 diagonalNxN:
-     AssertionError: expected [Function] to throw an error
-  > expect(function() { glm.diagonal3x3(glm.vec4(1,2,3,4)); }).to.throw('unsupported argtype to GLM.diagonal3x3');
-
-  52) glm mat4 core operations construction by reference:
-
-      AssertionError: expected 'TODO' to equal 'mat4(2)'
-      + expected - actual
-
-      -TODO
-      +mat4(2)
-
-  > expect(ref).to.be.glsl("mat4(2)");
-
-  53) glm mat4 core operations construction by n:
-
-      AssertionError: expected '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0' to deeply equal '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15'
-      + expected - actual
-
-       [
-         0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      -  0
-      +  1
-      +  2
-      +  3
-      +  4
-      +  5
-      +  6
-      +  7
-      +  8
-      +  9
-      +  10
-      +  11
-      +  12
-      +  13
-      +  14
-      +  15
-       ]
-
-  > .to.glm_eq([ 0,  1,  2,  3,
-
-  54) glm mat4 core operations construction by arrays:
-
-      AssertionError: expected '1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1' to deeply equal '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15'
-      + expected - actual
-
-       [
-      -  1
-         0
-      -  0
-      -  0
-      -  0
-         1
-      -  0
-      -  0
-      -  0
-      -  0
-      -  1
-      -  0
-      -  0
-      -  0
-      -  0
-      -  1
-      +  2
-      +  3
-      +  4
-      +  5
-      +  6
-      +  7
-      +  8
-      +  9
-      +  10
-      +  11
-      +  12
-      +  13
-      +  14
-      +  15
-       ]
-
-  > .to.glm_eq([ 0,  1,  2,  3,
-
-  55) glm mat4 core operations construction by objects:
-     AssertionError: expected 1 to be close to -1 +/- 0.000001
-  > .to.glm_eq([-1, 0,-0, 0,
-
-  56) glm mat4 core operations lookAt:
-
-      AssertionError: expected 'mat4x4((-0.707107, -0.408248, -0.577350, 0.000000),(0.000000, 0.816497, -0.577350, 0.000000),(0.707107, -0.408248, -0.577350, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))' to equal 'mat4x4((-0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.816497, -0.577350, 0.000000), (0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))'
-      + expected - actual
-
-      -mat4x4((-0.707107, -0.408248, -0.577350, 0.000000),(0.000000, 0.816497, -0.577350, 0.000000),(0.707107, -0.408248, -0.577350, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))
-      +mat4x4((-0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.816497, -0.577350, 0.000000), (0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))
-
-  > expect(glm.to_string(glm.lookAt(glm.vec3(0), glm.vec3(1), glm.vec3(0,1,0)))).to.equal("mat4x4((-0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.816497, -0.577350, 0.000000), (0.707107, -0.408248, -0.577350, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))")
-
-  57) glm quat core operations:
-     TypeError: Cannot read properties of undefined (reading 'toFixed')
-  > const w = q.w.toFixed(precision);
-       at toCppStringQuat  (file://implementation/format.js:55:17)
-  >      at glm.$to_string  (eval at <anonymous> (file://tests/__run-legacy-tests.js:39:1), <anonymous>:27:12)
-  >      at Object.to_string  (eval at <anonymous> (file://tests/__run-legacy-tests.js:39:1), <anonymous>:38:20)
-  > glm.to_string(glm.quat()).should.equal('<quat>fvec3(0.000000, 0.000000, 0.000000)');
-
-  58) glm quat core operations, more:
-
-      AssertionError: expected 'mat4x4((0.707107, 0.000000, -0.707107, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(0.707107, 0.000000, 0.707107, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))' to equal 'mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))'
-      + expected - actual
-
-      -mat4x4((0.707107, 0.000000, -0.707107, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(0.707107, 0.000000, 0.707107, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))
-      +mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))
-
-  > glm.to_string(glm.toMat4(aa)).should.equal('mat4x4((0.707107, 0.000000, -0.707107, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (0.707107, 0.000000, 0.707107, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))')
-
-  59) glm quat core operations, yet more:
-
-      AssertionError: expected 'mat4x4((0.000000, 0.000000, -1.000000, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(1.000000, 0.000000, 0.000000, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))' to equal 'mat4x4((0.000000, 0.000000, -1.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))'
-      + expected - actual
-
-      -mat4x4((0.000000, 0.000000, -1.000000, 0.000000),(0.000000, 1.000000, 0.000000, 0.000000),(1.000000, 0.000000, 0.000000, 0.000000),(0.000000, 0.000000, 0.000000, 1.000000))
-      +mat4x4((0.000000, 0.000000, -1.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))
-
-  > glm.to_string(glm.toMat4(glm.normalize(glm.quat(1,0,1,0)))).should.equal('mat4x4((0.000000, 0.000000, -1.000000, 0.000000), (0.000000, 1.000000, 0.000000, 0.000000), (1.000000, 0.000000, 0.000000, 0.000000), (0.000000, 0.000000, 0.000000, 1.000000))');
-
-  60) glm quat core operations, as a mat4 too:
-     TypeError: glm.toMat4(...).mul is not a function
-  > glm.to_string(glm.toMat4(qq).mul(glm.vec4(1,2,3,1)))
-
-  61) glm quat inversify:
-     AssertionError: expected NaN to be close to 60 +/- 0.00005729577951308232
-  > glm.degrees(glm.eulerAngles(Q)[1]).should.be.approximately(60,glm.degrees(glm.epsilon()));
-
-  62) glm quat multiply:
-     AssertionError:  [0,0,0][0]: expected NaN to be close to 0 +/- 0.00005729577951308232
-  > expect(a['*'](b)).euler.to.glm_eq([0,0,0]);
-
-  63) glm quat copy/assign:
-     TypeError: glm.quat(...).= is not a function
-  > expect(glm.quat(1)['='](glm.angleAxis(glm.radians(45), glm.vec3(0,0,1))))
-
-  64) glm quat exceptions:
-     AssertionError: expected [Function] to throw an error
-  > expect(function(){glm.quat({})}).to['throw'](/unrecognized object passed to.*?\bquat/);
-
-  65) glm vec2 core operations:
-
-      AssertionError: expected '[object Object]' to equal 'fvec2(1.000000, 2.000000)'
-      + expected - actual
-
-      -[object Object]
-      +fvec2(1.000000, 2.000000)
-
-  > glm.vec2(1,2).toString().should.equal('fvec2(1.000000, 2.000000)');
-
-  66) glm vec3 core operations:
-
-      AssertionError: expected '[object Object]' to equal 'fvec3(1.000000, 2.000000, 2.000000)'
-      + expected - actual
-
-      -[object Object]
-      +fvec3(1.000000, 2.000000, 2.000000)
-
-  > glm.vec3(1,2).toString().should.equal('fvec3(1.000000, 2.000000, 2.000000)');
-
-  67) glm vec3 exceptions:
-     AssertionError: expected [Function] to throw an error
-  > expect(function(){glm.vec3({},0)}).to['throw'](/unrecognized object passed to.*?[(]o,z[)]/);
-
-  68) glm vec3 multiply by a scalar:
-
-      AssertionError: expected '2,4,0' to deeply equal '2,4,4'
-      + expected - actual
-
-       [
-         2
-         4
-      -  0
-      +  4
-       ]
-
-  > glm.$to_array(glm.vec3(1,2).mul(2)).should.eql([2,4,4]);
-
-  69) glm vec3 inplace multiply by a quat (experimental):
-     TypeError: Cannot read properties of undefined (reading 'link')
-  > var vq_mul_eq = glm.mul_eq.link('inplace:vec3,quat');
-
-  70) glm vec3 cross:
-
-      AssertionError: expected 'NaN,NaN' to deeply equal '0,0,1'
-      + expected - actual
-
-       [
-      -  NaN
-      -  NaN
-      +  0
-      +  0
-      +  1
-       ]
-
-  > expect(glm.cross(glm.vec2(1,0), glm.vec2(0,1))).to.glm_eq([0,0,1]);
-
-  71) glm vec3 spin about a quat:
-
-      vec3 * quat
-      + expected - actual
-
-       [
-      -  0
-      -  0
-      -  0
-      +  -100
-      +  100
-      +  -100
-       ]
-
-  > ).to.glm_eq([-100,100,-100]);
-
-  72) glm vec3 mixify:
-
-      AssertionError: expected 'TODO' to equal 'vec3(1.3183099031448364)'
-      + expected - actual
-
-      -TODO
-      +vec3(1.3183099031448364)
-
-  > ).to.be.glsl('vec3(1.3183099031448364)');
-
-  73) glm vec4 core operations:
-
-      AssertionError: expected '[object Object]' to equal 'fvec4(1.000000, 2.000000, 2.000000, 2.000000)'
-      + expected - actual
-
-      -[object Object]
-      +fvec4(1.000000, 2.000000, 2.000000, 2.000000)
-
-  > glm.vec4(1,2).toString().should.equal('fvec4(1.000000, 2.000000, 2.000000, 2.000000)');
-
-  74) glm vec4 exceptions:
-     AssertionError: expected [Function] to throw an error
-  > expect(function(){glm.vec4({},0)}).to['throw'](/unrecognized object passed to.*?[(]o,w[)]/);
-
-  75) glm vec4 multiply by a scalar:
-
-      AssertionError: expected '2,4,0,0' to deeply equal '2,4,4,4'
-      + expected - actual
-
-       [
-         2
-         4
-      -  0
-      -  0
-      +  4
-      +  4
-       ]
-
-  > glm.$to_array(glm.vec4(1,2).mul(2)).should.eql([2,4,4,4]);
-
-  76) glm vec4 spin about a quat:
-
-      AssertionError: expected '0,0,0,1' to deeply equal '-100,100,-100,1'
-      + expected - actual
-
-       [
-      -  0
-      -  0
-      -  0
-      +  -100
-      +  100
-      +  -100
-         1
-       ]
-
-  > glm.$to_array(glm.vec4(100,100,100,1).mul(qspin)).should.eql([-100,100,-100,1]);
-
-  77) glm vec4 apply mat4:
-
-      AssertionError: expected '1,0,0,0' to deeply equal '-1,2,-3,1'
-      + expected - actual
-
-       [
-      +  -1
-      +  2
-      +  -3
-         1
-      -  0
-      -  0
-      -  0
-       ]
-
-  > glm.$to_array(glm.vec4(1,2,3,1)['*'](M)).should.eql([-1,2,-3,1]);
-
-  78) glm vec4 inplace multiply by a mat4 (experimental):
-     TypeError: Cannot read properties of undefined (reading 'link')
-  > var vm_mul_eq = glm.mul_eq.link('inplace:vec4,mat4');
-
-  79) glm vec4 mixify:
-
-      AssertionError: expected 'TODO' to equal 'vec4(1.5707963705062866)'
-      + expected - actual
-
-      -TODO
-      +vec4(1.5707963705062866)
-
-  > glm.$to_glsl(glm.mix(glm.vec4(Math.PI),glm.vec4(),.5)).should.equal('vec4(1.5707963705062866)' );
-
-  80) glm other $dumpTypes:
-     TypeError: glm.$dumpTypes is not a function
-  > glm.$dumpTypes(function(k,v) {
-
-  81) glm other glm.$partition:
-     TypeError: glm.$partition is not a function
-  > glm.$partition(x,glm.vec2,8);
-
-  82) glm buffers .make_<type>(elements):
-     TypeError: glm.make_vec2 is not a function
-  > expect(glm.make_vec2(floats))
-
-  83) glm buffers regression tests:
-     TypeError: glm.make_mat4 is not a function
-  > expect(glm.make_mat4(f)).to.flatten.into('0000123400000000');
-
-  84) glm buffers .$vectorType + / +=:
-     TypeError: glm.$vvec2 is not a function
-  > var a = glm.$vvec2(2);
-
-  85) glm buffers .$vectorType arrayize:
-     TypeError: glm.$vectorType is not a constructor
-  > var vv = new glm.$vectorType(glm.vec4, 4).arrayize(true);
-
-  86) glm buffers .$vectorType .setFromBuffers:
-     TypeError: glm.$vmat4 is not a constructor
-  > var mm = new glm.$vmat4(2);
-
-  87) glm buffers .$vectorType .$to_glsl:
-     TypeError: glm.$vmat4 is not a constructor
-  > var mm = new glm.$vmat4(2);
-
-  88) glm buffers .$vectorType dynamic mode:
-     TypeError: glm.$vvec4 is not a constructor
-  > var dynamic = new glm.$vvec4(a, true);
-
-  89) glm buffers .$vectorType exceptions:
-     AssertionError: expected [Function] to throw error matching /expecting.*GLMConstructor/ but got 'glm.$vectorType is not a constructor'
-  > }).to.throw(/expecting.*GLMConstructor/);
-
-  90) glm buffers .$vectorType misc:
-     TypeError: glm.$int32 is not a function
-  > var i = glm.$int32();
-
-  91) glm buffers .$vectorType byteLength:
-     TypeError: glm.$vvec3 is not a constructor
-  > var v = new glm.$vvec3(new Float32Array(d, 0, 10 * glm.vec3.componentLength));
-
-  92) glm uvecN core operations:
-
-      AssertionError: expected '-2.0999999046325684,-2.5,-2.9000000953674316,2.9000000953674316' to deeply equal '-2,-2,-2,2'
-      + expected - actual
-
-       [
-      -  -2.0999999046325684
-      -  -2.5
-      -  -2.9000000953674316
-      -  2.9000000953674316
-      +  -2
-      +  -2
-      +  -2
-      +  2
-       ]
-
-  > glm.$to_array(glm.uvec4(-2.1,-2.5,-2.9,2.9)).should.eql([-2,-2,-2,2]);
-
-  93) glm uvecN exceptions:
-     AssertionError: expected [Function] to throw an error
-  > expect(function() { glm.uvec4({}); }).to['throw'](/unrecognized object passed to .*?uvec4/);
-
-  94) glm ivecN core operations:
-
-      AssertionError: expected '-2.0999999046325684,-2.5,-2.9000000953674316,2.9000000953674316' to deeply equal '-2,-2,-2,2'
-      + expected - actual
-
-       [
-      -  -2.0999999046325684
-      -  -2.5
-      -  -2.9000000953674316
-      -  2.9000000953674316
-      +  -2
-      +  -2
-      +  -2
-      +  2
-       ]
-
-  > glm.$to_array(glm.ivec4(-2.1,-2.5,-2.9,2.9)).should.eql([-2,-2,-2,2]);
-
-  95) glm ivecN exceptions:
-     AssertionError: expected [Function] to throw an error
-  > expect(function() { glm.ivec4({}); }).to['throw'](/unrecognized object passed to .*?ivec4/);
-
-  96) glm exceptions exceptions 0:
-     AssertionError: expected [Function] to throw an error
-  > }).to['throw'](/vec3 elements size mismatch/);
-
-  97) glm exceptions exceptions 1:
-     AssertionError: expected [Function] to throw error matching /unsupported argtype/ but got 'Cannot read properties of null (reading \'elements\')'
-  > }).to['throw'](/unsupported argtype/);
-
-  98) glm exceptions vec2:
-     AssertionError: vec2: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  99) glm exceptions uvec2:
-     AssertionError: uvec2: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  100) glm exceptions ivec2:
-     AssertionError: ivec2: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  101) glm exceptions bvec2:
-     AssertionError: bvec2: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  102) glm exceptions vec3:
-     AssertionError: vec3: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  103) glm exceptions uvec3:
-     AssertionError: uvec3: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  104) glm exceptions ivec3:
-     AssertionError: ivec3: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  105) glm exceptions bvec3:
-     AssertionError: bvec3: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  106) glm exceptions vec4:
-     AssertionError: vec4: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  107) glm exceptions uvec4:
-     AssertionError: uvec4: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  108) glm exceptions ivec4:
-     AssertionError: ivec4: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
-
-  109) glm exceptions bvec4:
-     AssertionError: bvec4: expected [Function] to throw an error
-  > }, typ).to['throw']("no constructor found for: glm."+typ+"(string)");
