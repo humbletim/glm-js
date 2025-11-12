@@ -96,3 +96,15 @@ The following features from the legacy `glm-js` library have not yet been implem
 *   `root_three`
 *   `two_over_root_pi`
 *   `one_over_root_two`
+
+## Feature Completion Status
+
+A feature is considered "done" when it meets the following three criteria:
+
+1.  **Legacy Test Suite Compliance:** The feature passes all relevant tests in the legacy test suite.
+2.  **GLM-CPP/GLSL Alignment:** The feature's behavior aligns with the conventions of the C++ GLM library.
+3.  **Modern Test Suite Coverage:** The feature has comprehensive test coverage in the modern test suite.
+
+### Completed Features
+
+As of this analysis, no features have been identified that meet all three criteria for completion. The modern test suite is still under development, and several features have known bugs or are missing functionality. This section will be updated as features are completed.
