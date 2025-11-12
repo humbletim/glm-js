@@ -46,7 +46,7 @@
 | `root_three` | The square root of 3 | `missing` |
 | `two_over_root_pi`| 2 / sqrt(pi) | `missing` |
 | `one_over_root_two`| 1 / sqrt(2) | `missing` |
-| `epsilonEqual` | Epsilon equality comparison | `diverged` |
+| `epsilonEqual` | Epsilon equality comparison | `implemented` |
 | `degrees` | Converts radians to degrees | `implemented` |
 | `radians` | Converts degrees to radians | `implemented` |
 | `sign` | Extracts the sign of a value | `missing` |
@@ -80,21 +80,21 @@
 | `using_namespace` | Injects glm into the global namespace | `deprecated` |
 | `min` | Returns the minimum of two values | `missing` |
 | `max` | Returns the maximum of two values | `missing` |
-| `equal` | Strict equality comparison | `diverged` |
+| `equal` | Strict equality comparison | `implemented` |
 | `rotation` | Creates a rotation matrix | `missing` |
 | `project` | Projects a vector onto a screen | `implemented` |
 | `unProject` | Un-projects a vector from a screen | `implemented` |
 | `orientedAngle` | Calculates the oriented angle between two vectors | `missing` |
 | `copy` | Copies a vector, matrix, or quaternion | `missing` |
-| `sub` | Subtracts two vectors | `diverged` |
+| `sub` | Subtracts two vectors | `implemented` |
 | `sub_eq` | Subtracts and assigns | `diverged` |
-| `add` | Adds two vectors | `diverged` |
+| `add` | Adds two vectors | `implemented` |
 | `add_eq` | Adds and assigns | `diverged` |
-| `div` | Divides a vector by a scalar | `diverged` |
+| `div` | Divides a vector by a scalar | `implemented` |
 | `div_eq` | Divides and assigns | `diverged` |
-| `mul` | Multiplies a vector by a scalar or two matrices | `diverged` |
-| `eql_epsilon` | Epsilon equality comparison | `diverged` |
-| `eql` | Strict equality comparison | `diverged` |
+| `mul` | Multiplies a vector by a scalar or two matrices | `implemented` |
+| `eql_epsilon` | Epsilon equality comparison | `deprecated` |
+| `eql` | Strict equality comparison | `deprecated` |
 | `mul_eq` | Multiplies and assigns | `diverged` |
 | `toMat4` | Converts a quaternion to a 4x4 matrix | `missing` |
 | `vendor` | Returns the underlying vendor library | `deprecated` |

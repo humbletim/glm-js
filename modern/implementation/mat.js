@@ -27,7 +27,7 @@ class mat3 extends GLMBaseMixin(class {}) {
         }
     }
 
-    '*'(other) {
+    mul(other) {
         const out = new mat3();
         const a = this.elements;
         const b = other.elements;
@@ -117,7 +117,7 @@ class mat4 extends GLMBaseMixin(class {}) {
         }
     }
 
-    '*'(other) {
+    mul(other) {
         const out = new mat4();
         const a = this.elements;
         const b = other.elements;

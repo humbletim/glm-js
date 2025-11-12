@@ -19,7 +19,7 @@ class quat extends GLMBaseMixin(class {}) {
         }
     }
 
-    '*'(other) {
+    mul(other) {
         const out = new quat();
         const ax = this.elements[0], ay = this.elements[1], az = this.elements[2], aw = this.elements[3];
         const bx = other.elements[0], by = other.elements[1], bz = other.elements[2], bw = other.elements[3];
