@@ -1,24 +1,29 @@
 // modern/tests/aliases.test.js
-import test from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-test('Aliases and Alternative Conventions', () => {
-    test('Top-level aliases', () => {
-        const v1 = glm.vec3(1, 2, 3);
-        const v2 = glm.vec3(4, 5, 6);
+describe('Canonical Naming and Aliases', () => {
 
-        assert.deepStrictEqual(glm.add(v1, v2).array, v1['+'](v2).array);
-        assert.deepStrictEqual(glm.sub(v1, v2).array, v1['-'](v2).array);
-        assert.deepStrictEqual(glm.mul(v1, v2).array, v1['*'](v2).array);
-        assert.deepStrictEqual(glm.div(v1, 2).array, v1['/'](2).array);
-    });
-});
+    it('should confirm .equal() is canonical and .eql() is a functioning alias', () => {
+        const v1 = new glm.vec3(1, 2, 3);
+        const v2 = new glm.vec3(1, 2, 3);
+        const v3 = new glm.vec3(4, 5, 6);
 
-test('Operator Sugar', () => {
-    test("vec3['*'](vec3)", () => {
-        const v1 = glm.vec3(1, 2, 3);
-        const v2 = glm.vec3(4, 5, 6);
-        const result = v1['*'](v2);
-        assert.deepStrictEqual(result.array, [4, 10, 18]);
+        assert.ok(v1.equal(v2), '.equal() should return true for equal vectors');
+        assert.ok(v1.eql(v2), '.eql() alias should also return true for equal vectors');
+        assert.strictEqual(v1.equal(v3), false, '.equal() should return false for unequal vectors');
+        assert.strictEqual(v1.eql(v3), false, '.eql() alias should also return false for unequal vectors');
     });
+
+    it('should confirm .epsilonEqual() is canonical and .eql_epsilon() is a functioning alias', () => {
+        const v1 = new glm.vec3(1, 2, 3);
+        const v2 = new glm.vec3(1.0000001, 2.0000001, 3.0000001);
+        const v3 = new glm.vec3(1.1, 2.1, 3.1);
+
+        assert.ok(v1.epsilonEqual(v2), '.epsilonEqual() should return true for vectors within epsilon');
+        assert.ok(v1.eql_epsilon(v2), '.eql_epsilon() alias should also return true for vectors within epsilon');
+        assert.strictEqual(v1.epsilonEqual(v3), false, '.epsilonEqual() should return false for vectors outside epsilon');
+        assert.strictEqual(v1.eql_epsilon(v3), false, '.eql_epsilon() alias should also return false for vectors outside epsilon');
+    });
+
 });

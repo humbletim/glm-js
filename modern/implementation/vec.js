@@ -19,21 +19,21 @@ class vec2 extends GLMBaseMixin(class {}) {
         }
     }
 
-    '+'(other) {
+    add(other) { // NOTE: glm-js specific hybrid
         const out = new vec2();
         out.elements[0] = this.elements[0] + other.elements[0];
         out.elements[1] = this.elements[1] + other.elements[1];
         return out;
     }
 
-    '-'(other) {
+    sub(other) { // NOTE: glm-js specific hybrid
         const out = new vec2();
         out.elements[0] = this.elements[0] - other.elements[0];
         out.elements[1] = this.elements[1] - other.elements[1];
         return out;
     }
 
-    '*'(other) {
+    mul(other) { // NOTE: glm-js specific hybrid
         const out = new vec2();
         if (typeof other === 'number') {
             out.elements[0] = this.elements[0] * other;
@@ -45,50 +45,28 @@ class vec2 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '/'(scalar) {
+    div(scalar) { // NOTE: glm-js specific hybrid
         const out = new vec2();
         out.elements[0] = this.elements[0] / scalar;
         out.elements[1] = this.elements[1] / scalar;
         return out;
     }
 
-    '=='(other) {
+    equal(other) {
         return this.elements[0] === other.elements[0] &&
                this.elements[1] === other.elements[1];
     }
+    eql(other) { return this.equal(other); /* NOTE: deprecated legacy alias */ }
 
-    '~='(other) {
+    epsilonEqual(other) {
         const epsilon = 1e-6;
         return Math.abs(this.elements[0] - other.elements[0]) < epsilon &&
                Math.abs(this.elements[1] - other.elements[1]) < epsilon;
     }
+    eql_epsilon(other) { return this.epsilonEqual(other); /* NOTE: deprecated legacy alias */ }
 
     get array() {
         return Array.from(this.elements);
-    }
-
-    mul(other) {
-        return this['*'](other);
-    }
-
-    add(other) {
-        return this['+'](other);
-    }
-
-    sub(other) {
-        return this['-'](other);
-    }
-
-    div(other) {
-        return this['/'](other);
-    }
-
-    eql(other) {
-        return this['=='](other);
-    }
-
-    eql_epsilon(other) {
-        return this['~='](other);
     }
 }
 
@@ -116,7 +94,7 @@ class vec3 extends GLMBaseMixin(class {}) {
         }
     }
 
-    '+'(other) {
+    add(other) { // NOTE: glm-js specific hybrid
         const out = new vec3();
         out.elements[0] = this.elements[0] + other.elements[0];
         out.elements[1] = this.elements[1] + other.elements[1];
@@ -124,7 +102,7 @@ class vec3 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '-'(other) {
+    sub(other) { // NOTE: glm-js specific hybrid
         const out = new vec3();
         out.elements[0] = this.elements[0] - other.elements[0];
         out.elements[1] = this.elements[1] - other.elements[1];
@@ -132,7 +110,7 @@ class vec3 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '*'(other) {
+    mul(other) { // NOTE: glm-js specific hybrid
         const out = new vec3();
         if (typeof other === 'number') {
             out.elements[0] = this.elements[0] * other;
@@ -146,7 +124,7 @@ class vec3 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '/'(scalar) {
+    div(scalar) { // NOTE: glm-js specific hybrid
         const out = new vec3();
         out.elements[0] = this.elements[0] / scalar;
         out.elements[1] = this.elements[1] / scalar;
@@ -154,45 +132,23 @@ class vec3 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '=='(other) {
+    equal(other) {
         return this.elements[0] === other.elements[0] &&
                this.elements[1] === other.elements[1] &&
                this.elements[2] === other.elements[2];
     }
+    eql(other) { return this.equal(other); /* NOTE: deprecated legacy alias */ }
 
-    '~='(other) {
+    epsilonEqual(other) {
         const epsilon = 1e-6;
         return Math.abs(this.elements[0] - other.elements[0]) < epsilon &&
                Math.abs(this.elements[1] - other.elements[1]) < epsilon &&
                Math.abs(this.elements[2] - other.elements[2]) < epsilon;
     }
+    eql_epsilon(other) { return this.epsilonEqual(other); /* NOTE: deprecated legacy alias */ }
 
     get array() {
         return Array.from(this.elements);
-    }
-
-    mul(other) {
-        return this['*'](other);
-    }
-
-    add(other) {
-        return this['+'](other);
-    }
-
-    sub(other) {
-        return this['-'](other);
-    }
-
-    div(other) {
-        return this['/'](other);
-    }
-
-    eql(other) {
-        return this['=='](other);
-    }
-
-    eql_epsilon(other) {
-        return this['~='](other);
     }
 }
 
@@ -229,7 +185,7 @@ class vec4 extends GLMBaseMixin(class {}) {
         }
     }
 
-    '+'(other) {
+    add(other) { // NOTE: glm-js specific hybrid
         const out = new vec4();
         out.elements[0] = this.elements[0] + other.elements[0];
         out.elements[1] = this.elements[1] + other.elements[1];
@@ -238,7 +194,7 @@ class vec4 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '-'(other) {
+    sub(other) { // NOTE: glm-js specific hybrid
         const out = new vec4();
         out.elements[0] = this.elements[0] - other.elements[0];
         out.elements[1] = this.elements[1] - other.elements[1];
@@ -247,7 +203,7 @@ class vec4 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '*'(other) {
+    mul(other) { // NOTE: glm-js specific hybrid
         const out = new vec4();
         if (typeof other === 'number') {
             out.elements[0] = this.elements[0] * other;
@@ -263,7 +219,7 @@ class vec4 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '/'(scalar) {
+    div(scalar) { // NOTE: glm-js specific hybrid
         const out = new vec4();
         out.elements[0] = this.elements[0] / scalar;
         out.elements[1] = this.elements[1] / scalar;
@@ -272,47 +228,25 @@ class vec4 extends GLMBaseMixin(class {}) {
         return out;
     }
 
-    '=='(other) {
+    equal(other) {
         return this.elements[0] === other.elements[0] &&
                this.elements[1] === other.elements[1] &&
                this.elements[2] === other.elements[2] &&
                this.elements[3] === other.elements[3];
     }
+    eql(other) { return this.equal(other); /* NOTE: deprecated legacy alias */ }
 
-    '~='(other) {
+    epsilonEqual(other) {
         const epsilon = 1e-6;
         return Math.abs(this.elements[0] - other.elements[0]) < epsilon &&
                Math.abs(this.elements[1] - other.elements[1]) < epsilon &&
                Math.abs(this.elements[2] - other.elements[2]) < epsilon &&
                Math.abs(this.elements[3] - other.elements[3]) < epsilon;
     }
+    eql_epsilon(other) { return this.epsilonEqual(other); /* NOTE: deprecated legacy alias */ }
 
     get array() {
         return Array.from(this.elements);
-    }
-
-    mul(other) {
-        return this['*'](other);
-    }
-
-    add(other) {
-        return this['+'](other);
-    }
-
-    sub(other) {
-        return this['-'](other);
-    }
-
-    div(other) {
-        return this['/'](other);
-    }
-
-    eql(other) {
-        return this['=='](other);
-    }
-
-    eql_epsilon(other) {
-        return this['~='](other);
     }
 }
 
