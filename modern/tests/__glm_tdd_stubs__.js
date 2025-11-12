@@ -20,7 +20,7 @@ glm.$to_string = (_obj, precision) => {
     return toCppStringVec(_obj, precision);
   }
   if (_obj instanceof glm.mat3 || _obj instanceof glm.mat4) {
-    const formatted = toCppStringMat(_obj, precision);
+    const formatted = toCppStringMat(_obj, precision).replace(/,\n/g, ', \n'); // legacy tests expect the trailing space after comma
     return FAITHFUL ? formatted : formatted.replace(/[\t\n]/g, ''); // flat
   }
   if (_obj instanceof glm.quat) {

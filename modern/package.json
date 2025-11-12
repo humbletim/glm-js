@@ -7,6 +7,7 @@
   "scripts": {
     "test": "node --test --import ./tests/__init__.js",
     "test:legacy": "node tests/__run-legacy-tests.js",
+    "legacy:passfailcounts": "(node tests/__run-legacy-tests.js 2>&1 || true) | grep -E '^[[:space:]]+[0-9]+ (passing|failing)'",
     "cjs": "echo 'module.exports = require(\"./implementation/index.js\").default' | npx esbuild --bundle --format=cjs --outfile=dist/modern-glm-js.cjs",
     "mjs": "echo 'module.exports = require(\"./implementation/index.js\").default' | npx esbuild --bundle --format=esm --outfile=dist/modern-glm-js.mjs"
   },
