@@ -1,4 +1,5 @@
 // modern/implementation/base.js
+import { toCppStringVec, toCppStringMat, toCppStringQuat } from './format.js';
 
 const GLMBaseMixin = (superclass) => class extends superclass {
     clone() {
@@ -35,10 +36,16 @@ const GLMBaseMixin = (superclass) => class extends superclass {
     }
 
     toString() {
-        const className = this.constructor.name;
-        const elements = Array.from(this.elements.slice(0, 4)).join(', ');
-        const ellipsis = this.elements.length > 4 ? ', ...' : '';
-        return `${className}.elements=[${elements}${ellipsis}]`;
+        switch (this._type) {
+            case 'vec':
+                return toCppStringVec(this);
+            case 'mat':
+                return toCppStringMat(this);
+            case 'quat':
+                return toCppStringQuat(this);
+            default:
+                throw new Error(`Unknown GLM type: ${this._type}`);
+        }
     }
 };
 

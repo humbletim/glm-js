@@ -1,17 +1,17 @@
 // modern/implementation/quat.js
 import { vec3 } from './vec.js';
 import { GLMBaseMixin } from './base.js';
+import { dot } from './functions.js';
 
 class quat extends GLMBaseMixin(class {}) {
     constructor(w, x, y, z) {
         super();
+        this._type = 'quat';
         Object.defineProperty(this, 'elements', { value: new Float32Array([0,0,0,1])}); // Default to identity
 
-        if (typeof w === 'number' && x === undefined) {
-            // In glm-js, quat(1) is identity, so we don't need to do anything
-        } else if (w instanceof quat) {
+        if (w instanceof quat) {
             this.elements.set(w.elements);
-        } else if (typeof w === 'number') {
+        } else if (typeof w === 'number' && typeof x === 'number' && typeof y === 'number' && typeof z === 'number') {
             this.elements[0] = x;
             this.elements[1] = y;
             this.elements[2] = z;
@@ -50,7 +50,7 @@ export { quat, angleAxis };
 
 export function slerp(q1, q2, t) {
     const out = new quat();
-    let cosTheta = q1.elements[0] * q2.elements[0] + q1.elements[1] * q2.elements[1] + q1.elements[2] * q2.elements[2] + q1.elements[3] * q2.elements[3];
+    let cosTheta = dot(q1, q2);
 
     if (Math.abs(cosTheta) >= 1.0) {
         out.elements.set(q1.elements);
@@ -58,10 +58,7 @@ export function slerp(q1, q2, t) {
     }
 
     if (cosTheta < 0.0) {
-        q2.elements[0] = -q2.elements[0];
-        q2.elements[1] = -q2.elements[1];
-        q2.elements[2] = -q2.elements[2];
-        q2.elements[3] = -q2.elements[3];
+        q2 = new quat(-q2.elements[3], -q2.elements[0], -q2.elements[1], -q2.elements[2]);
         cosTheta = -cosTheta;
     }
 

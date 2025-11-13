@@ -14,9 +14,12 @@ class vec2 extends GLMBaseMixin(class {}) {
             this.elements[0] = x;
             this.elements[1] = x;
         } else {
-            this.elements[0] = x || 0;
-            this.elements[1] = y || 0;
+            const finalX = x || 0;
+            const finalY = y === undefined ? finalX : (y || 0);
+            this.elements[0] = finalX;
+            this.elements[1] = finalY;
         }
+        this._type = 'vec';
     }
 
     add(other) { // NOTE: glm-js specific hybrid
@@ -88,10 +91,14 @@ class vec3 extends GLMBaseMixin(class {}) {
             this.elements[1] = x;
             this.elements[2] = x;
         } else {
-            this.elements[0] = x || 0;
-            this.elements[1] = y || 0;
-            this.elements[2] = z || 0;
+            const finalX = x || 0;
+            const finalY = y === undefined ? finalX : (y || 0);
+            const finalZ = z === undefined ? finalY : (z || 0);
+            this.elements[0] = finalX;
+            this.elements[1] = finalY;
+            this.elements[2] = finalZ;
         }
+        this._type = 'vec';
     }
 
     add(other) { // NOTE: glm-js specific hybrid
@@ -178,11 +185,16 @@ class vec4 extends GLMBaseMixin(class {}) {
             this.elements[2] = x;
             this.elements[3] = x;
         } else {
-            this.elements[0] = x || 0;
-            this.elements[1] = y || 0;
-            this.elements[2] = z || 0;
-            this.elements[3] = w || 0;
+            const finalX = x || 0;
+            const finalY = y === undefined ? finalX : (y || 0);
+            const finalZ = z === undefined ? finalY : (z || 0);
+            const finalW = w === undefined ? finalZ : (w || 0);
+            this.elements[0] = finalX;
+            this.elements[1] = finalY;
+            this.elements[2] = finalZ;
+            this.elements[3] = finalW;
         }
+        this._type = 'vec';
     }
 
     add(other) { // NOTE: glm-js specific hybrid

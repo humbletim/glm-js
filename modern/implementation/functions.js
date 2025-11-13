@@ -136,17 +136,28 @@ function distance(a, b) {
 
 
 function mix(a, b, t) {
+    if (typeof a === 'number') {
+        return a * (1 - t) + b * t;
+    }
+
     const out = new (a.constructor)();
     for (let i = 0; i < a.elements.length; i++) {
-        out.elements[i] = a.elements[i] * (1 - t) + b.elements[i] * t;
+        const tVal = (typeof t === 'number') ? t : t.elements[i];
+        out.elements[i] = a.elements[i] * (1 - tVal) + b.elements[i] * tVal;
     }
     return out;
 }
 
 function clamp(a, min, max) {
+    if (typeof a === 'number') {
+        return Math.max(min, Math.min(max, a));
+    }
+
     const out = new (a.constructor)();
     for (let i = 0; i < a.elements.length; i++) {
-        out.elements[i] = Math.max(min, Math.min(max, a.elements[i]));
+        const minVal = (typeof min === 'number') ? min : min.elements[i];
+        const maxVal = (typeof max === 'number') ? max : max.elements[i];
+        out.elements[i] = Math.max(minVal, Math.min(maxVal, a.elements[i]));
     }
     return out;
 }

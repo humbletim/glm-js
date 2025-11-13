@@ -3,7 +3,7 @@ import { vec2, vec3, vec4 } from './vec.js';
 import { mat3, mat4, inverse, transpose, lookAt, perspective, ortho } from './mat.js';
 import { quat, angleAxis, slerp } from './quat.js';
 import * as functions from './functions.js';
-import { radians, degrees } from './common.js';
+import { radians, degrees, min, max, abs, fract, all, sign, frexp, rotation } from './common.js';
 
 // Factory function for mat3
 const mat3Factory = function(arg) {
@@ -65,6 +65,14 @@ const glm = {
     epsilon: () => 1e-6,
     radians,
     degrees,
+    min,
+    max,
+    abs,
+    fract,
+    all,
+    sign,
+    frexp,
+    rotation,
     inverse,
     transpose,
     lookAt,

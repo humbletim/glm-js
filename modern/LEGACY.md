@@ -29,7 +29,7 @@
 | `make_mat4` | Creates a mat4 | `diverged` |
 | `diagonal4x4` | Creates a 4x4 diagonal matrix | `implemented` |
 | `diagonal3x3` | Creates a 3x3 diagonal matrix | `implemented` |
-| `to_string` | Converts a vector, matrix, or quaternion to a string | `missing` |
+| `to_string` | Converts a vector, matrix, or quaternion to a string | `implemented` |
 | `sqrt` | Calculates the square root | `missing` |
 | `epsilon` | A small constant for floating point comparisons | `implemented` |
 | `euler` | Extracts Euler angles from a quaternion | `missing` |
@@ -49,15 +49,15 @@
 | `epsilonEqual` | Epsilon equality comparison | `implemented` |
 | `degrees` | Converts radians to degrees | `implemented` |
 | `radians` | Converts degrees to radians | `implemented` |
-| `sign` | Extracts the sign of a value | `missing` |
-| `abs` | Calculates the absolute value | `missing` |
-| `fract` | Calculates the fractional part of a number | `missing` |
-| `all` | Checks if all components of a boolean vector are true | `missing` |
+| `sign` | Extracts the sign of a value | `implemented` |
+| `abs` | Calculates the absolute value | `implemented` |
+| `fract` | Calculates the fractional part of a number | `implemented` |
+| `all` | Checks if all components of a boolean vector are true | `implemented` |
 | `roll` | Extracts the roll from a quaternion | `implemented` |
 | `pitch` | Extracts the pitch from a quaternion | `implemented` |
 | `yaw` | Extracts the yaw from a quaternion | `implemented` |
 | `eulerAngles` | Extracts the Euler angles from a quaternion | `implemented` |
-| `frexp` | Splits a number into a significand and an exponent | `missing` |
+| `frexp` | Splits a number into a significand and an exponent | `implemented` |
 | `ldexp` | Multiplies a number by an integral power of two | `missing` |
 | `string` | Alias for to_string | `missing` |
 | `number` | Type casting | `deprecated` |
@@ -78,10 +78,10 @@
 | `mat4` | 4x4 matrix | `implemented` |
 | `quat` | Quaternion | `implemented` |
 | `using_namespace` | Injects glm into the global namespace | `deprecated` |
-| `min` | Returns the minimum of two values | `missing` |
-| `max` | Returns the maximum of two values | `missing` |
+| `min` | Returns the minimum of two values | `implemented` |
+| `max` | Returns the maximum of two values | `implemented` |
 | `equal` | Strict equality comparison | `implemented` |
-| `rotation` | Creates a rotation matrix | `missing` |
+| `rotation` | Creates a rotation matrix | `implemented` |
 | `project` | Projects a vector onto a screen | `implemented` |
 | `unProject` | Un-projects a vector from a screen | `implemented` |
 | `orientedAngle` | Calculates the oriented angle between two vectors | `missing` |
