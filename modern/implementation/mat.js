@@ -6,6 +6,7 @@ import { GLMBaseMixin } from './base.js';
 class mat3 extends GLMBaseMixin(class {}) {
     constructor(arg) {
         super();
+        this._type = 'mat';
         Object.defineProperty(this, 'elements', { value: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1])});
 
         if (typeof arg === 'number') {
@@ -95,6 +96,7 @@ class mat3 extends GLMBaseMixin(class {}) {
 class mat4 extends GLMBaseMixin(class {}) {
     constructor(arg) {
         super();
+        this._type = 'mat';
         Object.defineProperty(this, 'elements', { value: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])});
 
         if (typeof arg === 'number') {
@@ -250,50 +252,38 @@ export function inverse(m) {
 }
 
 export function lookAt(eye, center, up) {
+    const f = normalize(center.sub(eye));
+    const s = normalize(cross(up, f));
+    const u = cross(f, s);
+
     const out = new mat4();
-
-    const f = normalize(center['-'](eye));
-    const s = normalize(cross(f, up));
-    const u = cross(s, f);
-
     out.elements[0] = s.elements[0];
-    out.elements[1] = u.elements[0];
-    out.elements[2] = -f.elements[0];
+    out.elements[1] = s.elements[1];
+    out.elements[2] = s.elements[2];
     out.elements[3] = 0;
-    out.elements[4] = s.elements[1];
+    out.elements[4] = u.elements[0];
     out.elements[5] = u.elements[1];
-    out.elements[6] = -f.elements[1];
+    out.elements[6] = u.elements[2];
     out.elements[7] = 0;
-    out.elements[8] = s.elements[2];
-    out.elements[9] = u.elements[2];
-    out.elements[10] = -f.elements[2];
+    out.elements[8] = f.elements[0];
+    out.elements[9] = f.elements[1];
+    out.elements[10] = f.elements[2];
     out.elements[11] = 0;
     out.elements[12] = -dot(s, eye);
     out.elements[13] = -dot(u, eye);
-    out.elements[14] = dot(f, eye);
+    out.elements[14] = -dot(f, eye);
     out.elements[15] = 1;
 
-    return out;
+    return out.transpose();
 }
 
 export function perspective(fovy, aspect, near, far) {
-    const out = new mat4();
+    const out = new mat4(0);
     const f = 1.0 / Math.tan(fovy / 2);
 
     out.elements[0] = f / aspect;
-    out.elements[1] = 0;
-    out.elements[2] = 0;
-    out.elements[3] = 0;
-    out.elements[4] = 0;
     out.elements[5] = f;
-    out.elements[6] = 0;
-    out.elements[7] = 0;
-    out.elements[8] = 0;
-    out.elements[9] = 0;
     out.elements[11] = -1;
-    out.elements[12] = 0;
-    out.elements[13] = 0;
-    out.elements[15] = 0;
 
     if (far != null && far !== Infinity) {
         const nf = 1 / (near - far);
@@ -308,23 +298,14 @@ export function perspective(fovy, aspect, near, far) {
 }
 
 export function ortho(left, right, bottom, top, near, far) {
-    const out = new mat4();
+    const out = new mat4(0);
     const lr = 1 / (left - right);
     const bt = 1 / (bottom - top);
     const nf = 1 / (near - far);
 
     out.elements[0] = -2 * lr;
-    out.elements[1] = 0;
-    out.elements[2] = 0;
-    out.elements[3] = 0;
-    out.elements[4] = 0;
     out.elements[5] = -2 * bt;
-    out.elements[6] = 0;
-    out.elements[7] = 0;
-    out.elements[8] = 0;
-    out.elements[9] = 0;
     out.elements[10] = 2 * nf;
-    out.elements[11] = 0;
     out.elements[12] = (left + right) * lr;
     out.elements[13] = (top + bottom) * bt;
     out.elements[14] = (far + near) * nf;

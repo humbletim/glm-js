@@ -52,6 +52,15 @@ The following features have been implemented in the modern `glm-js` library:
 *   `eulerAngles`
 *   `project`
 *   `unProject`
+*   `min`
+*   `max`
+*   `abs`
+*   `fract`
+*   `all`
+*   `sign`
+*   `frexp`
+*   `rotation`
+*   `to_string`
 
 ## Unimplemented Features
 
@@ -59,18 +68,9 @@ The following features from the legacy `glm-js` library have not yet been implem
 
 ### Missing Core Functions
 
-*   `to_string`
 *   `sqrt`
 *   `euler`
-*   `sign`
-*   `abs`
-*   `fract`
-*   `all`
-*   `frexp`
 *   `ldexp`
-*   `min`
-*   `max`
-*   `rotation`
 *   `orientedAngle`
 *   `copy`
 *   `toMat4`
