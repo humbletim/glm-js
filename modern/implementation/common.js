@@ -18,6 +18,22 @@ export function degrees(radians) {
   return radians * 180 / Math.PI;
 }
 
+export const pi = Math.PI;
+export const half_pi = Math.PI / 2;
+export const quarter_pi = Math.PI / 4;
+export const one_over_pi = 1 / Math.PI;
+export const two_over_pi = 2 / Math.PI;
+export const root_pi = Math.sqrt(Math.PI);
+export const two_over_root_pi = 2 / Math.sqrt(Math.PI);
+
+export const root_two = Math.sqrt(2);
+export const one_over_root_two = 1 / Math.sqrt(2);
+export const root_three = Math.sqrt(3);
+
+export const e = Math.E;
+export const ln_ten = Math.LN10;
+export const ln_two = Math.LN2;
+
 export function min(a, b) {
     if (typeof a === 'number' && typeof b === 'number') {
         return Math.min(a, b);
