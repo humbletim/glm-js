@@ -81,21 +81,6 @@ The following features from the legacy `glm-js` library have not yet been implem
 *   `ivec2`, `ivec3`, `ivec4`
 *   `bvec2`, `bvec3`, `bvec4`
 
-### Missing Mathematical Constants
-
-*   `e`
-*   `ln_ten`
-*   `ln_two`
-*   `pi`
-*   `half_pi`
-*   `quarter_pi`
-*   `one_over_pi`
-*   `two_over_pi`
-*   `root_pi`
-*   `root_two`
-*   `root_three`
-*   `two_over_root_pi`
-*   `one_over_root_two`
 
 ## Feature Completion Status
 

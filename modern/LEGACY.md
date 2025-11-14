@@ -36,16 +36,16 @@
 | `e` | The mathematical constant e | `missing` |
 | `ln_ten` | The natural logarithm of 10 | `missing` |
 | `ln_two` | The natural logarithm of 2 | `missing` |
-| `pi` | The mathematical constant pi | `missing` |
-| `half_pi` | pi / 2 | `missing` |
-| `quarter_pi` | pi / 4 | `missing` |
-| `one_over_pi` | 1 / pi | `missing` |
-| `two_over_pi` | 2 / pi | `missing` |
-| `root_pi` | The square root of pi | `missing` |
-| `root_two` | The square root of 2 | `missing` |
-| `root_three` | The square root of 3 | `missing` |
-| `two_over_root_pi`| 2 / sqrt(pi) | `missing` |
-| `one_over_root_two`| 1 / sqrt(2) | `missing` |
+| `pi` | The mathematical constant pi | `implemented` |
+| `half_pi` | pi / 2 | `implemented` |
+| `quarter_pi` | pi / 4 | `implemented` |
+| `one_over_pi` | 1 / pi | `implemented` |
+| `two_over_pi` | 2 / pi | `implemented` |
+| `root_pi` | The square root of pi | `implemented` |
+| `root_two` | The square root of 2 | `implemented` |
+| `root_three` | The square root of 3 | `implemented` |
+| `two_over_root_pi`| 2 / sqrt(pi) | `implemented` |
+| `one_over_root_two`| 1 / sqrt(2) | `implemented` |
 | `epsilonEqual` | Epsilon equality comparison | `implemented` |
 | `degrees` | Converts radians to degrees | `implemented` |
 | `radians` | Converts degrees to radians | `implemented` |
