@@ -8,9 +8,9 @@ var __esm = (fn, res) => function __init() {
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
+var __export = (target, all2) => {
+  for (var name in all2)
+    __defProp(target, name, { get: all2[name], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -23,7 +23,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // implementation/swizzle.js
-function applySwizzling(vecClass, vec22, vec32, vec42) {
+function applySwizzling(vecClass, vec22, vec33, vec42) {
   const instance = new vecClass();
   const components = ["x", "y", "z", "w"].slice(0, instance.elements.length);
   vecClass.prototype.toJSON = function() {
@@ -54,7 +54,7 @@ function applySwizzling(vecClass, vec22, vec32, vec42) {
         const prop2 = c1 + c2 + c3;
         Object.defineProperty(vecClass.prototype, prop2, {
           get: function() {
-            return new vec32(this.elements[componentMap[c1]], this.elements[componentMap[c2]], this.elements[componentMap[c3]]);
+            return new vec33(this.elements[componentMap[c1]], this.elements[componentMap[c2]], this.elements[componentMap[c3]]);
           },
           set: function(val) {
             this.elements[componentMap[c1]] = val.elements ? val.elements[0] : val[0];
@@ -73,10 +73,35 @@ var init_swizzle = __esm({
   }
 });
 
+// implementation/format.js
+function format(number) {
+  return number.toFixed(6);
+}
+function toCppStringVec(vec) {
+  const className = "f" + vec.constructor.name.toLowerCase();
+  const elements = Array.from(vec.elements).map(format).join(", ");
+  return `${className}(${elements})`;
+}
+function toCppStringMat(mat) {
+  const className = mat.constructor.name.toLowerCase();
+  const elements = Array.from(mat.elements).map(format).join(", ");
+  return `${className}(${elements})`;
+}
+function toCppStringQuat(quat2) {
+  const className = quat2.constructor.name.toLowerCase();
+  const elements = Array.from(quat2.elements).map(format).join(", ");
+  return `${className}(${elements})`;
+}
+var init_format = __esm({
+  "implementation/format.js"() {
+  }
+});
+
 // implementation/base.js
 var GLMBaseMixin;
 var init_base = __esm({
   "implementation/base.js"() {
+    init_format();
     GLMBaseMixin = (superclass) => class extends superclass {
       clone() {
         return new this.constructor(this);
@@ -117,17 +142,23 @@ var init_base = __esm({
         return this["="](this.div(other));
       }
       toString() {
-        const className = this.constructor.name;
-        const elements = Array.from(this.elements.slice(0, 4)).join(", ");
-        const ellipsis = this.elements.length > 4 ? ", ..." : "";
-        return `${className}.elements=[${elements}${ellipsis}]`;
+        switch (this._type) {
+          case "vec":
+            return toCppStringVec(this);
+          case "mat":
+            return toCppStringMat(this);
+          case "quat":
+            return toCppStringQuat(this);
+          default:
+            throw new Error(`Unknown GLM type: ${this._type}`);
+        }
       }
     };
   }
 });
 
 // implementation/vec.js
-var vec2, vec3, vec4;
+var vec2, vec32, vec4;
 var init_vec = __esm({
   "implementation/vec.js"() {
     init_swizzle();
@@ -137,16 +168,19 @@ var init_vec = __esm({
       constructor(x, y) {
         super();
         Object.defineProperty(this, "elements", { value: new Float32Array(2) });
-        if (x instanceof _vec2 || x instanceof vec3 || x instanceof vec4) {
+        if (x instanceof _vec2 || x instanceof vec32 || x instanceof vec4) {
           this.elements[0] = x.elements[0];
           this.elements[1] = x.elements[1];
         } else if (typeof x === "number" && y === void 0) {
           this.elements[0] = x;
           this.elements[1] = x;
         } else {
-          this.elements[0] = x || 0;
-          this.elements[1] = y || 0;
+          const finalX = x || 0;
+          const finalY = y === void 0 ? finalX : y || 0;
+          this.elements[0] = finalX;
+          this.elements[1] = finalY;
         }
+        this._type = "vec";
       }
       add(other) {
         const out = new _vec2();
@@ -194,7 +228,7 @@ var init_vec = __esm({
         return Array.from(this.elements);
       }
     };
-    vec3 = class _vec3 extends GLMBaseMixin(class {
+    vec32 = class _vec3 extends GLMBaseMixin(class {
     }) {
       constructor(x, y, z) {
         super();
@@ -212,10 +246,14 @@ var init_vec = __esm({
           this.elements[1] = x;
           this.elements[2] = x;
         } else {
-          this.elements[0] = x || 0;
-          this.elements[1] = y || 0;
-          this.elements[2] = z || 0;
+          const finalX = x || 0;
+          const finalY = y === void 0 ? finalX : y || 0;
+          const finalZ = z === void 0 ? finalY : z || 0;
+          this.elements[0] = finalX;
+          this.elements[1] = finalY;
+          this.elements[2] = finalZ;
         }
+        this._type = "vec";
       }
       add(other) {
         const out = new _vec3();
@@ -278,7 +316,7 @@ var init_vec = __esm({
           this.elements[1] = x.elements[1];
           this.elements[2] = x.elements[2];
           this.elements[3] = x.elements[3];
-        } else if (x instanceof vec3) {
+        } else if (x instanceof vec32) {
           this.elements[0] = x.elements[0];
           this.elements[1] = x.elements[1];
           this.elements[2] = x.elements[2];
@@ -294,11 +332,16 @@ var init_vec = __esm({
           this.elements[2] = x;
           this.elements[3] = x;
         } else {
-          this.elements[0] = x || 0;
-          this.elements[1] = y || 0;
-          this.elements[2] = z || 0;
-          this.elements[3] = w || 0;
+          const finalX = x || 0;
+          const finalY = y === void 0 ? finalX : y || 0;
+          const finalZ = z === void 0 ? finalY : z || 0;
+          const finalW = w === void 0 ? finalZ : w || 0;
+          this.elements[0] = finalX;
+          this.elements[1] = finalY;
+          this.elements[2] = finalZ;
+          this.elements[3] = finalW;
         }
+        this._type = "vec";
       }
       add(other) {
         const out = new _vec4();
@@ -356,9 +399,9 @@ var init_vec = __esm({
         return Array.from(this.elements);
       }
     };
-    applySwizzling(vec2, vec2, vec3, vec4);
-    applySwizzling(vec3, vec2, vec3, vec4);
-    applySwizzling(vec4, vec2, vec3, vec4);
+    applySwizzling(vec2, vec2, vec32, vec4);
+    applySwizzling(vec32, vec2, vec32, vec4);
+    applySwizzling(vec4, vec2, vec32, vec4);
   }
 });
 
@@ -381,16 +424,13 @@ __export(functions_exports, {
   mix: () => mix,
   mul: () => mul,
   normalize: () => normalize,
-  pitch: () => pitch,
   project: () => project,
-  roll: () => roll,
   rotate: () => rotate,
   scale: () => scale,
   sub: () => sub,
   toMat4: () => toMat4,
   translate: () => translate,
-  unProject: () => unProject,
-  yaw: () => yaw
+  unProject: () => unProject
 });
 function dot(a, b) {
   let out = 0;
@@ -501,16 +541,25 @@ function distance(a, b) {
   return length(diff);
 }
 function mix(a, b, t) {
+  if (typeof a === "number") {
+    return a * (1 - t) + b * t;
+  }
   const out = new a.constructor();
   for (let i = 0; i < a.elements.length; i++) {
-    out.elements[i] = a.elements[i] * (1 - t) + b.elements[i] * t;
+    const tVal = typeof t === "number" ? t : t.elements[i];
+    out.elements[i] = a.elements[i] * (1 - tVal) + b.elements[i] * tVal;
   }
   return out;
 }
-function clamp(a, min, max) {
+function clamp(a, min2, max2) {
+  if (typeof a === "number") {
+    return Math.max(min2, Math.min(max2, a));
+  }
   const out = new a.constructor();
   for (let i = 0; i < a.elements.length; i++) {
-    out.elements[i] = Math.max(min, Math.min(max, a.elements[i]));
+    const minVal = typeof min2 === "number" ? min2 : min2.elements[i];
+    const maxVal = typeof max2 === "number" ? max2 : max2.elements[i];
+    out.elements[i] = Math.max(minVal, Math.min(maxVal, a.elements[i]));
   }
   return out;
 }
@@ -571,7 +620,7 @@ function unProject(win, model, proj, viewport) {
   for (let i = 0; i < 4; i++) {
     obj.elements[i] /= obj.elements[3];
   }
-  return new vec3(obj);
+  return new vec32(obj);
 }
 function project(obj, model, proj, viewport) {
   let tmp = new vec4(obj, 1);
@@ -585,7 +634,7 @@ function project(obj, model, proj, viewport) {
   }
   tmp.elements[0] = tmp.elements[0] * viewport[2] + viewport[0];
   tmp.elements[1] = tmp.elements[1] * viewport[3] + viewport[1];
-  return new vec3(tmp);
+  return new vec32(tmp);
 }
 function diagonal3x3(v) {
   const out = new mat3();
@@ -608,22 +657,27 @@ function angle(q) {
 function axis(q) {
   const tmp1 = 1 - q.elements[3] * q.elements[3];
   if (tmp1 <= 0) {
-    return new vec3(0, 0, 1);
+    return new vec32(0, 0, 1);
   }
   const tmp2 = 1 / Math.sqrt(tmp1);
-  return new vec3(q.elements[0] * tmp2, q.elements[1] * tmp2, q.elements[2] * tmp2);
-}
-function roll(q) {
-  return Math.atan2(2 * (q.elements[0] * q.elements[1] + q.elements[3] * q.elements[2]), q.elements[3] * q.elements[3] + q.elements[0] * q.elements[0] - q.elements[1] * q.elements[1] - q.elements[2] * q.elements[2]);
-}
-function pitch(q) {
-  return Math.atan2(2 * (q.elements[1] * q.elements[2] + q.elements[3] * q.elements[0]), q.elements[3] * q.elements[3] - q.elements[0] * q.elements[0] - q.elements[1] * q.elements[1] + q.elements[2] * q.elements[2]);
-}
-function yaw(q) {
-  return Math.asin(Math.max(-1, Math.min(1, -2 * (q.elements[0] * q.elements[2] - q.elements[3] * q.elements[1]))));
+  return new vec32(q.elements[0] * tmp2, q.elements[1] * tmp2, q.elements[2] * tmp2);
 }
 function eulerAngles(q) {
-  return new vec3(pitch(q), yaw(q), roll(q));
+  const m = toMat4(q);
+  const te = m.elements;
+  const m11 = te[0], m12 = te[4], m13 = te[8];
+  const m21 = te[1], m22 = te[5], m23 = te[9];
+  const m31 = te[2], m32 = te[6], m33 = te[10];
+  const angles = new vec32();
+  angles.y = Math.asin(Math.max(-1, Math.min(1, m13)));
+  if (Math.abs(m13) < 0.99999) {
+    angles.x = Math.atan2(-m23, m33);
+    angles.z = Math.atan2(-m12, m11);
+  } else {
+    angles.x = Math.atan2(m32, m22);
+    angles.z = 0;
+  }
+  return angles;
 }
 var init_functions = __esm({
   "implementation/functions.js"() {
@@ -640,45 +694,34 @@ function inverse(m) {
   return m.inverse();
 }
 function lookAt(eye, center, up) {
+  const f = normalize(center.sub(eye));
+  const s = normalize(cross(up, f));
+  const u = cross(f, s);
   const out = new mat4();
-  const f = normalize(center["-"](eye));
-  const s = normalize(cross(f, up));
-  const u = cross(s, f);
   out.elements[0] = s.elements[0];
-  out.elements[1] = u.elements[0];
-  out.elements[2] = -f.elements[0];
+  out.elements[1] = s.elements[1];
+  out.elements[2] = s.elements[2];
   out.elements[3] = 0;
-  out.elements[4] = s.elements[1];
+  out.elements[4] = u.elements[0];
   out.elements[5] = u.elements[1];
-  out.elements[6] = -f.elements[1];
+  out.elements[6] = u.elements[2];
   out.elements[7] = 0;
-  out.elements[8] = s.elements[2];
-  out.elements[9] = u.elements[2];
-  out.elements[10] = -f.elements[2];
+  out.elements[8] = f.elements[0];
+  out.elements[9] = f.elements[1];
+  out.elements[10] = f.elements[2];
   out.elements[11] = 0;
   out.elements[12] = -dot(s, eye);
   out.elements[13] = -dot(u, eye);
-  out.elements[14] = dot(f, eye);
+  out.elements[14] = -dot(f, eye);
   out.elements[15] = 1;
-  return out;
+  return out.transpose();
 }
 function perspective(fovy, aspect, near, far) {
-  const out = new mat4();
+  const out = new mat4(0);
   const f = 1 / Math.tan(fovy / 2);
   out.elements[0] = f / aspect;
-  out.elements[1] = 0;
-  out.elements[2] = 0;
-  out.elements[3] = 0;
-  out.elements[4] = 0;
   out.elements[5] = f;
-  out.elements[6] = 0;
-  out.elements[7] = 0;
-  out.elements[8] = 0;
-  out.elements[9] = 0;
   out.elements[11] = -1;
-  out.elements[12] = 0;
-  out.elements[13] = 0;
-  out.elements[15] = 0;
   if (far != null && far !== Infinity) {
     const nf = 1 / (near - far);
     out.elements[10] = (far + near) * nf;
@@ -690,22 +733,13 @@ function perspective(fovy, aspect, near, far) {
   return out;
 }
 function ortho(left, right, bottom, top, near, far) {
-  const out = new mat4();
+  const out = new mat4(0);
   const lr = 1 / (left - right);
   const bt = 1 / (bottom - top);
   const nf = 1 / (near - far);
   out.elements[0] = -2 * lr;
-  out.elements[1] = 0;
-  out.elements[2] = 0;
-  out.elements[3] = 0;
-  out.elements[4] = 0;
   out.elements[5] = -2 * bt;
-  out.elements[6] = 0;
-  out.elements[7] = 0;
-  out.elements[8] = 0;
-  out.elements[9] = 0;
   out.elements[10] = 2 * nf;
-  out.elements[11] = 0;
   out.elements[12] = (left + right) * lr;
   out.elements[13] = (top + bottom) * bt;
   out.elements[14] = (far + near) * nf;
@@ -722,6 +756,7 @@ var init_mat = __esm({
     }) {
       constructor(arg) {
         super();
+        this._type = "mat";
         Object.defineProperty(this, "elements", { value: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]) });
         if (typeof arg === "number") {
           this.elements[0] = arg;
@@ -798,6 +833,7 @@ var init_mat = __esm({
     }) {
       constructor(arg) {
         super();
+        this._type = "mat";
         Object.defineProperty(this, "elements", { value: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) });
         if (typeof arg === "number") {
           this.elements[0] = arg;
@@ -940,16 +976,13 @@ function angleAxis(angle2, axis2) {
 }
 function slerp(q1, q2, t) {
   const out = new quat();
-  let cosTheta = q1.elements[0] * q2.elements[0] + q1.elements[1] * q2.elements[1] + q1.elements[2] * q2.elements[2] + q1.elements[3] * q2.elements[3];
+  let cosTheta = dot(q1, q2);
   if (Math.abs(cosTheta) >= 1) {
     out.elements.set(q1.elements);
     return out;
   }
   if (cosTheta < 0) {
-    q2.elements[0] = -q2.elements[0];
-    q2.elements[1] = -q2.elements[1];
-    q2.elements[2] = -q2.elements[2];
-    q2.elements[3] = -q2.elements[3];
+    q2 = new quat(-q2.elements[3], -q2.elements[0], -q2.elements[1], -q2.elements[2]);
     cosTheta = -cosTheta;
   }
   const halfTheta = Math.acos(cosTheta);
@@ -974,15 +1007,16 @@ var init_quat = __esm({
   "implementation/quat.js"() {
     init_vec();
     init_base();
+    init_functions();
     quat = class _quat extends GLMBaseMixin(class {
     }) {
       constructor(w, x, y, z) {
         super();
+        this._type = "quat";
         Object.defineProperty(this, "elements", { value: new Float32Array([0, 0, 0, 1]) });
-        if (typeof w === "number" && x === void 0) {
-        } else if (w instanceof _quat) {
+        if (w instanceof _quat) {
           this.elements.set(w.elements);
-        } else if (typeof w === "number") {
+        } else if (typeof w === "number" && typeof x === "number" && typeof y === "number" && typeof z === "number") {
           this.elements[0] = x;
           this.elements[1] = y;
           this.elements[2] = z;
@@ -1010,8 +1044,141 @@ function radians(degrees2) {
 function degrees(radians2) {
   return radians2 * 180 / Math.PI;
 }
+function min(a, b) {
+  if (typeof a === "number" && typeof b === "number") {
+    return Math.min(a, b);
+  }
+  const out = new a.constructor();
+  for (let i = 0; i < a.elements.length; i++) {
+    out.elements[i] = Math.min(a.elements[i], b.elements[i]);
+  }
+  return out;
+}
+function max(a, b) {
+  if (typeof a === "number" && typeof b === "number") {
+    return Math.max(a, b);
+  }
+  const out = new a.constructor();
+  for (let i = 0; i < a.elements.length; i++) {
+    out.elements[i] = Math.max(a.elements[i], b.elements[i]);
+  }
+  return out;
+}
+function abs(a) {
+  if (typeof a === "number") {
+    return Math.abs(a);
+  }
+  const out = new a.constructor();
+  for (let i = 0; i < a.elements.length; i++) {
+    out.elements[i] = Math.abs(a.elements[i]);
+  }
+  return out;
+}
+function fract(a) {
+  if (typeof a === "number") {
+    return a - Math.floor(a);
+  }
+  const out = new a.constructor();
+  for (let i = 0; i < a.elements.length; i++) {
+    out.elements[i] = a.elements[i] - Math.floor(a.elements[i]);
+  }
+  return out;
+}
+function all(a) {
+  for (let i = 0; i < a.elements.length; i++) {
+    if (!a.elements[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+function sign(a) {
+  if (typeof a === "number") {
+    return Math.sign(a);
+  }
+  const out = new a.constructor();
+  for (let i = 0; i < a.elements.length; i++) {
+    out.elements[i] = Math.sign(a.elements[i]);
+  }
+  return out;
+}
+function frexp(a) {
+  if (typeof a === "number") {
+    if (a === 0) {
+      return { significand: 0, exponent: 0 };
+    }
+    const dataView = new DataView(new ArrayBuffer(8));
+    dataView.setFloat64(0, a);
+    const bits = dataView.getBigUint64(0);
+    const exponent = Number(bits >> 52n & 0x7FFn) - 1023;
+    const mantissa = bits & 0xFFFFFFFFFFFFFn;
+    const significand = 1 + Number(mantissa) / 2 ** 52;
+    return { significand, exponent };
+  }
+  const out = new a.constructor();
+  const exponents = new a.constructor();
+  for (let i = 0; i < a.elements.length; i++) {
+    const { significand, exponent } = frexp(a.elements[i]);
+    out.elements[i] = significand;
+    exponents.elements[i] = exponent;
+  }
+  return { significand: out, exponent: exponents };
+}
+function rotation(angle2, axis2) {
+  if (!(axis2 instanceof vec3)) {
+    throw new Error("Axis must be a vec3");
+  }
+  const halfAngle = angle2 / 2;
+  const s = Math.sin(halfAngle);
+  const c = Math.cos(halfAngle);
+  const out = new quat();
+  out.elements[0] = axis2.elements[0] * s;
+  out.elements[1] = axis2.elements[1] * s;
+  out.elements[2] = axis2.elements[2] * s;
+  out.elements[3] = c;
+  return out;
+}
+var pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi, root_two, one_over_root_two, root_three, e, ln_ten, ln_two;
 var init_common = __esm({
   "implementation/common.js"() {
+    init_quat();
+    pi = Math.PI;
+    half_pi = Math.PI / 2;
+    quarter_pi = Math.PI / 4;
+    one_over_pi = 1 / Math.PI;
+    two_over_pi = 2 / Math.PI;
+    root_pi = Math.sqrt(Math.PI);
+    two_over_root_pi = 2 / Math.sqrt(Math.PI);
+    root_two = Math.sqrt(2);
+    one_over_root_two = 1 / Math.sqrt(2);
+    root_three = Math.sqrt(3);
+    e = Math.E;
+    ln_ten = Math.LN10;
+    ln_two = Math.LN2;
+  }
+});
+
+// package.json
+var package_default;
+var init_package = __esm({
+  "package.json"() {
+    package_default = {
+      name: "glm-js-modern",
+      version: "0.0.7",
+      description: "Modern implementation of glm-js",
+      type: "module",
+      main: "implementation/index.js",
+      scripts: {
+        test: "node --test --import ./tests/__init__.js",
+        "test:legacy": "node tests/__run-legacy-tests.js",
+        "legacy:passfailcounts": "(node tests/__run-legacy-tests.js 2>&1 || true) | grep -E '^[[:space:]]+[0-9]+ (passing|failing)'",
+        cjs: `echo 'module.exports = require("./implementation/index.js").default' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT="'$(git rev-parse --short HEAD)'" --outfile=dist/modern-glm-js.cjs`,
+        esm: `echo 'module.exports = require("./implementation/index.js").default' | npx esbuild --bundle --format=esm --define:GLMJS_COMMIT="'$(git rev-parse --short HEAD)'" --outfile=dist/modern-glm-js.mjs`
+      },
+      engines: {
+        node: ">=20.6.0"
+      }
+    };
   }
 });
 
@@ -1028,6 +1195,7 @@ var init_implementation = __esm({
     init_quat();
     init_functions();
     init_common();
+    init_package();
     mat3Factory = function(arg) {
       if (arg instanceof mat3 && !(this instanceof mat3)) {
         return arg;
@@ -1055,11 +1223,11 @@ var init_implementation = __esm({
     vec2Factory.prototype = vec2.prototype;
     vec3Factory = function(...args) {
       if (this instanceof vec3Factory) {
-        return new vec3(...args);
+        return new vec32(...args);
       }
-      return new vec3(...args);
+      return new vec32(...args);
     };
-    vec3Factory.prototype = vec3.prototype;
+    vec3Factory.prototype = vec32.prototype;
     vec4Factory = function(...args) {
       if (this instanceof vec4Factory) {
         return new vec4(...args);
@@ -1068,6 +1236,9 @@ var init_implementation = __esm({
     };
     vec4Factory.prototype = vec4.prototype;
     glm = {
+      get version() {
+        return `${package_default.version}-${false ? "(develop)" : "eeda8f6"}`;
+      },
       vec2: vec2Factory,
       vec3: vec3Factory,
       vec4: vec4Factory,
@@ -1078,12 +1249,33 @@ var init_implementation = __esm({
       epsilon: () => 1e-6,
       radians,
       degrees,
+      min,
+      max,
+      abs,
+      fract,
+      all,
+      sign,
+      frexp,
+      rotation,
       inverse,
       transpose,
       lookAt,
       perspective,
       ortho,
       slerp,
+      pi,
+      half_pi,
+      quarter_pi,
+      one_over_pi,
+      two_over_pi,
+      root_pi,
+      two_over_root_pi,
+      root_two,
+      one_over_root_two,
+      root_three,
+      e,
+      ln_ten,
+      ln_two,
       ...functions_exports
     };
     implementation_default = glm;
