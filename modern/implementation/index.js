@@ -5,6 +5,8 @@ import { quat, angleAxis, slerp } from './quat.js';
 import * as functions from './functions.js';
 import { radians, degrees, min, max, abs, fract, all, sign, frexp, rotation, pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi, root_two, one_over_root_two, root_three, e, ln_ten, ln_two } from './common.js';
 
+import pkg from '../package.json' with { type: 'json' };
+
 // Factory function for mat3
 const mat3Factory = function(arg) {
     if (arg instanceof mat3 && !(this instanceof mat3)) {
@@ -53,8 +55,8 @@ const vec4Factory = function(...args) {
 };
 vec4Factory.prototype = vec4.prototype;
 
-
 const glm = {
+    get version() { return `${pkg.version}-${typeof GLMJS_COMMIT === 'undefined' ? '(develop)' : GLMJS_COMMIT }`},
     vec2: vec2Factory,
     vec3: vec3Factory,
     vec4: vec4Factory,
@@ -95,5 +97,4 @@ const glm = {
     ...functions
 };
 
-glm.version = 'develop';
 export default glm;
