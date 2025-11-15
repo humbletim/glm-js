@@ -95,4 +95,5 @@ const glm = {
     ...functions
 };
 
+glm.version = 'develop';
 export default glm;
