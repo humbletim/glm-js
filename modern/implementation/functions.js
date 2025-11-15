@@ -291,20 +291,26 @@ function axis(q) {
     return new vec3(q.elements[0] * tmp2, q.elements[1] * tmp2, q.elements[2] * tmp2);
 }
 
-function roll(q) {
-    return Math.atan2(2 * (q.elements[0] * q.elements[1] + q.elements[3] * q.elements[2]), q.elements[3] * q.elements[3] + q.elements[0] * q.elements[0] - q.elements[1] * q.elements[1] - q.elements[2] * q.elements[2]);
-}
-
-function pitch(q) {
-    return Math.atan2(2 * (q.elements[1] * q.elements[2] + q.elements[3] * q.elements[0]), q.elements[3] * q.elements[3] - q.elements[0] * q.elements[0] - q.elements[1] * q.elements[1] + q.elements[2] * q.elements[2]);
-}
-
-function yaw(q) {
-    return Math.asin(Math.max(-1, Math.min(1, -2 * (q.elements[0] * q.elements[2] - q.elements[3] * q.elements[1]))));
-}
-
 function eulerAngles(q) {
-    return new vec3(pitch(q), yaw(q), roll(q));
+    const m = toMat4(q);
+    const te = m.elements;
+    const m11 = te[0], m12 = te[4], m13 = te[8];
+    const m21 = te[1], m22 = te[5], m23 = te[9];
+    const m31 = te[2], m32 = te[6], m33 = te[10];
+
+    const angles = new vec3();
+
+    angles.y = Math.asin(Math.max(-1, Math.min(1, m13)));
+
+    if (Math.abs(m13) < 0.99999) {
+        angles.x = Math.atan2(-m23, m33);
+        angles.z = Math.atan2(-m12, m11);
+    } else {
+        angles.x = Math.atan2(m32, m22);
+        angles.z = 0;
+    }
+
+    return angles;
 }
 
-export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, roll, pitch, yaw, eulerAngles };
+export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles };
