@@ -5,7 +5,7 @@ import { quat } from './quat.js';
  * @returns {Number|vec2|vec3|vec4} The angle in radians.
  */
 export function radians(degrees) {
-    if (degrees === null || (typeof degrees !== 'number' && !degrees.elements)) { return undefined; }
+    if (degrees === null || (typeof degrees !== 'number' && !degrees?.elements)) { return undefined; }
     if (typeof degrees === 'number') {
         return degrees * Math.PI / 180;
     }
@@ -23,7 +23,7 @@ export function radians(degrees) {
  * @returns {Number|vec2|vec3|vec4} The angle in degrees.
  */
 export function degrees(radians) {
-    if (radians === null || (typeof radians !== 'number' && !radians.elements)) { return undefined; }
+    if (radians === null || (typeof radians !== 'number' && !radians?.elements)) { return undefined; }
     if (typeof radians === 'number') {
         return radians * 180 / Math.PI;
     }
