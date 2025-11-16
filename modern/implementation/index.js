@@ -1,14 +1,15 @@
 // modern/implementation/index.js
 import { vec2, vec3, vec4 } from './vec.js';
-import { mat3, mat4, inverse as matInverse, transpose, lookAt, perspective, ortho } from './mat.js';
+import { mat3, mat4, inverse as matInverse, transpose, lookAt, perspective, ortho, determinant, matrixCompMult, outerProduct } from './mat.js';
 import { quat, angleAxis, slerp, inverse as quatInverse } from './quat.js';
 import { to_string } from './format.js';
-import * as functions from './functions.js';
+import { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles, faceforward, reflect, refract } from './functions.js';
 import {
     radians, degrees, min, max, abs, fract, all, sign, frexp, rotation,
     pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi,
     root_two, one_over_root_two, root_three, e, ln_ten, ln_two,
-    sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh
+    sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh,
+    pow, exp, log, exp2, log2, sqrt, inversesqrt
 } from './common.js';
 
 import pkg from '../package.json' with { type: 'json' };
@@ -110,7 +111,35 @@ const glm = {
     ln_ten,
     ln_two,
     to_string,
-    ...functions,
+    dot,
+    cross,
+    normalize,
+    translate,
+    rotate,
+    scale,
+    length,
+    length2,
+    distance,
+    mix,
+    clamp,
+    toMat4,
+    add,
+    sub,
+    mul,
+    div,
+    unProject,
+    project,
+    diagonal3x3,
+    diagonal4x4,
+    angle,
+    axis,
+    eulerAngles,
+    faceforward,
+    reflect,
+    refract,
+    determinant,
+    matrixCompMult,
+    outerProduct,
     sin,
     cos,
     tan,
@@ -123,6 +152,14 @@ const glm = {
     asinh,
     acosh,
     atanh,
+    pow,
+    exp,
+    log,
+    exp2,
+    log2,
+    sqrt,
+    inversesqrt,
 };
 
 export default glm;
+export { vec2, vec3, vec4, mat3, mat4 };

@@ -251,6 +251,55 @@ export function inverse(m) {
     return m.inverse();
 }
 
+export function determinant(m) {
+    return m.determinant();
+}
+
+export function matrixCompMult(x, y) {
+    const out = new x.constructor();
+    for (let i = 0; i < x.elements.length; i++) {
+        out.elements[i] = x.elements[i] * y.elements[i];
+    }
+    return out;
+}
+
+export function outerProduct(c, r) {
+    if (c.elements.length === 3 && r.elements.length === 3) {
+        const out = new mat3();
+        out.elements[0] = c.elements[0] * r.elements[0];
+        out.elements[1] = c.elements[1] * r.elements[0];
+        out.elements[2] = c.elements[2] * r.elements[0];
+        out.elements[3] = c.elements[0] * r.elements[1];
+        out.elements[4] = c.elements[1] * r.elements[1];
+        out.elements[5] = c.elements[2] * r.elements[1];
+        out.elements[6] = c.elements[0] * r.elements[2];
+        out.elements[7] = c.elements[1] * r.elements[2];
+        out.elements[8] = c.elements[2] * r.elements[2];
+        return out;
+    } else if (c.elements.length === 4 && r.elements.length === 4) {
+        const out = new mat4();
+        out.elements[0] = c.elements[0] * r.elements[0];
+        out.elements[1] = c.elements[1] * r.elements[0];
+        out.elements[2] = c.elements[2] * r.elements[0];
+        out.elements[3] = c.elements[3] * r.elements[0];
+        out.elements[4] = c.elements[0] * r.elements[1];
+        out.elements[5] = c.elements[1] * r.elements[1];
+        out.elements[6] = c.elements[2] * r.elements[1];
+        out.elements[7] = c.elements[3] * r.elements[1];
+        out.elements[8] = c.elements[0] * r.elements[2];
+        out.elements[9] = c.elements[1] * r.elements[2];
+        out.elements[10] = c.elements[2] * r.elements[2];
+        out.elements[11] = c.elements[3] * r.elements[2];
+        out.elements[12] = c.elements[0] * r.elements[3];
+        out.elements[13] = c.elements[1] * r.elements[3];
+        out.elements[14] = c.elements[2] * r.elements[3];
+        out.elements[15] = c.elements[3] * r.elements[3];
+        return out;
+    }
+
+    throw new Error('outerProduct only supports vec3 and vec4');
+}
+
 export function lookAt(eye, center, up) {
     const f = normalize(center.sub(eye));
     const s = normalize(cross(up, f));

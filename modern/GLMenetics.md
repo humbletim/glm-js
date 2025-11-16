@@ -46,17 +46,29 @@ The following table provides a comprehensive breakdown of each API feature. The 
 | `min` | Component-wise minimum. | Implemented. | `glm::min` | `✅ Fully Implemented` |
 | `mix` | Linear interpolation. | Implemented, but buggy for scalar/vector mixes. | `glm::mix` | `⚠️ Partially Implemented` |
 | `sign` | Extracts the sign of a value. | Implemented. | `glm::sign` | `✅ Fully Implemented` |
-| `sqrt` | Square root. | Not implemented. | `glm::sqrt` | `❌ Missing` |
+| `sqrt` | Square root. | Implemented. | `glm::sqrt` | `✅ Fully Implemented` |
 | **Exponential Functions** | | | | |
+| `pow` | Power of a number. | Implemented. | `glm::pow` | `✅ Fully Implemented` |
+| `exp` | Natural exponentiation. | Implemented. | `glm::exp` | `✅ Fully Implemented` |
+| `log` | Natural logarithm. | Implemented. | `glm::log` | `✅ Fully Implemented` |
+| `exp2` | Base 2 exponentiation. | Implemented. | `glm::exp2` | `✅ Fully Implemented` |
+| `log2` | Base 2 logarithm. | Implemented. | `glm::log2` | `✅ Fully Implemented` |
+| `inversesqrt` | Inverse square root. | Implemented. | `glm::inversesqrt` | `✅ Fully Implemented` |
 | **Geometric Functions** | | | | |
 | `cross` | Cross product of two vectors. | Implemented. | `glm::cross` | `✅ Fully Implemented` |
 | `distance` | Distance between two vectors. | Implemented. | `glm::distance` | `✅ Fully Implemented` |
 | `dot` | Dot product of two vectors. | Implemented. | `glm::dot` | `✅ Fully Implemented` |
+| `faceforward` | Faceforward vector. | Implemented. | `glm::faceforward` | `✅ Fully Implemented` |
 | `length` | Length of a vector. | Implemented. | `glm::length` | `✅ Fully Implemented` |
-| `length2` | Squared length of a vector. | Implemented. | `glm::length2` | `❌ Missing` |
+| `length2` | Squared length of a vector. | Implemented. | `glm::length2` | `✅ Fully Implemented` |
 | `normalize` | Normalizes a vector. | Implemented. | `glm::normalize` | `✅ Fully Implemented` |
+| `reflect` | Reflect vector. | Implemented. | `glm::reflect` | `✅ Fully Implemented` |
+| `refract` | Refract vector. | Implemented. | `glm::refract` | `✅ Fully Implemented` |
 | **Matrix Functions** | | | | |
+| `determinant` | Determinant of a matrix. | Implemented. | `glm::determinant` | `✅ Fully Implemented` |
 | `inverse` | Calculates the inverse of a matrix. | Implemented. | `glm::inverse` | `✅ Fully Implemented` |
+| `matrixCompMult` | Component-wise matrix multiplication. | Implemented. | `glm::matrixCompMult` | `✅ Fully Implemented` |
+| `outerProduct` | Outer product of two vectors. | Implemented. | `glm::outerProduct` | `✅ Fully Implemented` |
 | `transpose` | Transposes a matrix. | Implemented. | `glm::transpose` | `✅ Fully Implemented` |
 | **Quaternion Functions** | | | | |
 | `angle` | Angle of a quaternion. | Implemented. | `glm::angle` | `✅ Fully Implemented` |

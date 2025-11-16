@@ -10,13 +10,43 @@ const GLMBaseMixin = (superclass) => class extends superclass {
         return new this.constructor(this);
     }
 
+    equals(other) {
+        if (this.elements.length !== other.elements.length) {
+            return false;
+        }
+
+        for (let i = 0; i < this.elements.length; i++) {
+            if (this.elements[i] !== other.elements[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    epsilonEqual(other, epsilon = 1e-6) {
+        if (this.elements.length !== other.elements.length) {
+            return false;
+        }
+
+        for (let i = 0; i < this.elements.length; i++) {
+            if (Math.abs(this.elements[i] - other.elements[i]) > epsilon) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     // --- Operator Aliases ---
     '+'(other) { return this.add(other); }
     '-'(other) { return this.sub(other); }
     '*'(other) { return this.mul(other); }
     '/'(other) { return this.div(other); }
-    '=='(other) { return this.equal(other); }
+    '=='(other) { return this.equals(other); }
     '~='(other) { return this.epsilonEqual(other); }
+    eql(other) { return this.equals(other); }
+    eql_epsilon(other, epsilon) { return this.epsilonEqual(other, epsilon); }
 
     ['='](other) {
         this.elements.set(other.elements);
