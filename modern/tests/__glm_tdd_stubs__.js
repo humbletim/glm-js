@@ -89,7 +89,7 @@ glm.bvec2 = glm.uvec2 = glm.ivec2 = glm.vec2;
 glm.bvec3 = glm.uvec3 = glm.ivec3 = glm.vec3;
 glm.bvec4 = glm.uvec4 = glm.ivec4 = glm.vec4;
 
-glm.version = '-1.TODO.0';
+// glm.version = '-1.TODO.0';
 glm.vendor = {
   vendor_version: '-1.TODO.0'
 };
