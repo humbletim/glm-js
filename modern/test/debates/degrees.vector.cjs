@@ -1,5 +1,5 @@
 
-const Dusk = require('../../../build/glm-three.min.js');
+const Dusk = require('../../../build/glm-js.js');
 const Day = require('../../dist/modern-glm-js.cjs');
 const Dawn = require('../../implementation/index.js').default;
 
@@ -16,19 +16,19 @@ const v_day = new Day.vec3(Math.PI, 0, Math.PI / 2);
 const v_dawn = new Dawn.vec3(Math.PI, 0, Math.PI / 2);
 
 try {
-    console.log('Dusk says:', Dusk.degrees(v_dusk).toString());
+    console.log('Dusk says:', Dusk.degrees(v_dusk).array);
 } catch (e) {
     console.log('Dusk throws:', e.message);
 }
 
 try {
-    console.log('Day says:', Day.degrees(v_day).toString());
+    console.log('Day says:', Day.degrees(v_day).array);
 } catch (e) {
     console.log('Day throws:', e.message);
 }
 
 try {
-    console.log('Dawn says:', Dawn.degrees(v_dawn).toString());
+    console.log('Dawn says:', Dawn.degrees(v_dawn).array);
 } catch (e) {
     console.log('Dawn throws:', e.message);
 }
