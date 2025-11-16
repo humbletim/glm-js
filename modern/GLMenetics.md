@@ -53,10 +53,10 @@ The following table provides a comprehensive breakdown of each API feature. The 
 | `euler` | Extracts Euler angles from a quaternion. | Not implemented. | `glm::euler` | `❌ Missing` |
 | `eulerAngles` | Extracts Euler angles from a quaternion. | Returns negative values, unlike Dusk. | `glm::eulerAngles` | `➡️ Diverged` |
 | `inverse` | Calculates the inverse of a quaternion. | Implemented. `[0,0,0,1]` for zero-length, unlike Dusk. | `glm::inverse` | `➡️ Diverged` |
-| `pitch` | Pitch of a quaternion. | Implemented. | `glm::pitch` | `✅ Fully Implemented` |
-| `roll` | Roll of a quaternion. | Implemented. | `glm::roll` | `✅ Fully Implemented` |
+| `pitch` | Pitch of a quaternion. | Not Implemented. | `glm::pitch` | `❌ Missing` |
+| `roll` | Roll of a quaternion. | Not Implemented. | `glm::roll` | `❌ Missing` |
 | `slerp` | Spherical linear interpolation. | Minor floating point differences from Dusk. | `glm::slerp` | `⚠️ Partially Implemented` |
-| `yaw` | Yaw of a quaternion. | Implemented. | `glm::yaw` | `✅ Fully Implemented` |
+| `yaw` | Yaw of a quaternion. | Not Implemented. | `glm::yaw` | `❌ Missing` |
 | **Transformation Functions** | | | | |
 | `lookAt` | Creates a view matrix. | Implemented, but produces an incorrect matrix. | `glm::lookAt` | `⚠️ Partially Implemented` |
 | `ortho` | Creates an orthographic projection matrix. | Implemented, but produces an incorrect matrix. | `glm::ortho` | `⚠️ Partially Implemented` |
@@ -81,9 +81,10 @@ The following table provides a comprehensive breakdown of each API feature. The 
 | `make_quat`, `make_mat3`, `make_mat4` | Buffer creation functions. | Not implemented in modern API. | N/A | `➡️ Diverged` |
 | `copy` | Copies an object. | Replaced by `.clone()` method. | N/A | `➡️ Diverged` |
 | `sub_eq`, `add_eq`, `div_eq`, `mul_eq` | In-place operators. | Replaced by standard operators. | N/A | `➡️ Diverged` |
-| `toMat4` | Converts a quaternion to a 4x4 matrix. | Not implemented. | `glm::toMat4` | `❌ Missing` |
+| `toMat4` | Converts a quaternion to a 4x4 matrix. | Implemented. | `glm::toMat4` | `✅ Fully Implemented` |
 | `using_namespace` | Injects glm into global scope. | Not applicable to ES modules. | N/A | `🚫 Deprecated` |
 | `vendor` | Returns underlying vendor library. | No longer applicable. | N/A | `🚫 Deprecated` |
 | `string` | Alias for `to_string`. | Not implemented. | N/A | `❌ Missing` |
+| `to_string` | Converts a glm object to a string. | Not implemented. | `glm::to_string` | `❌ Missing` |
 | `number`, `boolean` | Type casting. | Use standard JS type casting. | N/A | `🚫 Deprecated` |
 | `eql_epsilon`, `eql` | Equality checks. | Use standard operators and `epsilonEqual`. | N/A | `🚫 Deprecated` |
