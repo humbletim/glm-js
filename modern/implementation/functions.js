@@ -308,4 +308,24 @@ function eulerAngles(q) {
     return angles;
 }
 
-export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles };
+function faceforward(N, I, Nref) {
+    const dotNI = dot(Nref, I);
+    return new N.constructor(dotNI < 0 ? N : N['*'](-1));
+}
+
+function reflect(I, N) {
+    return I['-'](N['*'](2 * dot(N, I)));
+}
+
+function refract(I, N, eta) {
+    const dotNI = dot(N, I);
+    const k = 1.0 - eta * eta * (1.0 - dotNI * dotNI);
+
+    if (k < 0.0) {
+        return new I.constructor();
+    }
+
+    return I['*'](eta)['-'](N['*'](eta * dotNI + Math.sqrt(k)));
+}
+
+export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles, faceforward, reflect, refract };

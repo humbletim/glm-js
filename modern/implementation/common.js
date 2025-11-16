@@ -173,3 +173,11 @@ export const tanh = (angle) => Math.tanh(angle);
 export const asinh = (x) => Math.asinh(x);
 export const acosh = (x) => Math.acosh(x);
 export const atanh = (x) => Math.atanh(x);
+
+export const pow = (base, exp) => Math.pow(base, exp);
+export const exp = (x) => Math.exp(x);
+export const log = (x) => Math.log(x);
+export const exp2 = (x) => Math.pow(2, x);
+export const log2 = (x) => Math.log2(x);
+export const sqrt = (x) => Math.sqrt(x);
+export const inversesqrt = (x) => 1 / Math.sqrt(x);
