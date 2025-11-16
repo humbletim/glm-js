@@ -65,6 +65,6 @@ The following legacy tests are too tightly coupled with the old implementation a
 The following are known dissonances between the legacy (`Dusk`), modern CJS (`Day`), and modern ESM (`Dawn`) implementations.
 
 *   **`eulerAngles`:** `Dusk` returns positive values, while `Day` and `Dawn` return negative values for the same quaternion. This is likely due to a difference in the underlying mathematical implementation of the `eulerAngles` function.
-*   **`quat` constructor:** The `Dusk` constructor appears to be `(x, y, z, w)`, while `Day` and `Dawn` are `(w, x, y, z)`. This is a significant difference that needs to be accounted for when porting code from the legacy to the modern implementation.
+*   **`quat` constructor:** All three implementations (`Dusk`, `Day`, and `Dawn`) correctly use the `(w, x, y, z)` constructor signature, with an internal memory layout of `[x, y, z, w]`. The previous documentation stating otherwise was incorrect.
 *   **`quat.inverse` (zero-length):** `Dusk` returns `[-0, -0, -0, 0]`, while `Day` and `Dawn` return `[0, 0, 0, 1]` (the identity quaternion). The modern implementation's behavior is generally considered more desirable, as it avoids division by zero and returns a sensible default.
 *   **`quat.slerp` (zero-length and close quaternions):** There are minor floating point differences between the `Dusk` and `Day`/`Dawn` implementations. These are likely due to differences in the underlying mathematical implementations and are not considered to be a major issue.
