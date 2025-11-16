@@ -21,3 +21,28 @@ export function toCppStringQuat(quat) {
     const elements = Array.from(quat.elements).map(format).join(', ');
     return `${className}(${elements})`;
 }
+
+export function to_string(v) {
+    if (v === null || v === undefined) {
+        return "null";
+    }
+    if (typeof v._type !== 'undefined') {
+        switch (v._type) {
+            case 'vec':
+                return toCppStringVec(v);
+            case 'mat':
+                return toCppStringMat(v);
+            case 'quat':
+                return toCppStringQuat(v);
+            default:
+                throw new Error(`Unknown GLM type: ${v._type}`);
+        }
+    }
+    if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') {
+        return v.toString();
+    }
+    if (Array.isArray(v)) {
+        return `[${v.map(to_string).join(', ')}]`;
+    }
+    return v.toString();
+}

@@ -2,6 +2,7 @@
 import { vec2, vec3, vec4 } from './vec.js';
 import { mat3, mat4, inverse as matInverse, transpose, lookAt, perspective, ortho } from './mat.js';
 import { quat, angleAxis, slerp, inverse as quatInverse } from './quat.js';
+import { to_string } from './format.js';
 import * as functions from './functions.js';
 import { radians, degrees, min, max, abs, fract, all, sign, frexp, rotation, pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi, root_two, one_over_root_two, root_three, e, ln_ten, ln_two } from './common.js';
 
@@ -103,6 +104,7 @@ const glm = {
     e,
     ln_ten,
     ln_two,
+    to_string,
     ...functions
 };
 

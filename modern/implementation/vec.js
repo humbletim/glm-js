@@ -5,6 +5,7 @@ import { GLMBaseMixin } from './base.js';
 class vec2 extends GLMBaseMixin(class {}) {
     constructor(x, y) {
         super();
+        this._type = 'vec';
         Object.defineProperty(this, 'elements', { value: new Float32Array(2)});
 
         if (x instanceof vec2 || x instanceof vec3 || x instanceof vec4) {
@@ -76,6 +77,7 @@ class vec2 extends GLMBaseMixin(class {}) {
 class vec3 extends GLMBaseMixin(class {}) {
     constructor(x, y, z) {
         super();
+        this._type = 'vec';
         Object.defineProperty(this, 'elements', { value: new Float32Array(3)});
 
         if (x instanceof vec3 || x instanceof vec4) {
@@ -162,6 +164,7 @@ class vec3 extends GLMBaseMixin(class {}) {
 class vec4 extends GLMBaseMixin(class {}) {
     constructor(x, y, z, w) {
         super();
+        this._type = 'vec';
         Object.defineProperty(this, 'elements', { value: new Float32Array(4)});
 
         if (x instanceof vec4) {
