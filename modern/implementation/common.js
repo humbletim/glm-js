@@ -2,20 +2,37 @@ import { quat } from './quat.js';
 /**
  * Converts degrees to radians.
  * @param {Number} degrees The angle in degrees.
- * @returns {Number} The angle in radians.
+ * @returns {Number|vec2|vec3|vec4} The angle in radians.
  */
 export function radians(degrees) {
-  // TODO support glm.vec3 input etc.
-  return degrees * Math.PI / 180;
+    if (degrees === null || (typeof degrees !== 'number' && !degrees.elements)) { return undefined; }
+    if (typeof degrees === 'number') {
+        return degrees * Math.PI / 180;
+    }
+
+    const out = new degrees.constructor();
+    for (let i = 0; i < degrees.elements.length; i++) {
+        out.elements[i] = degrees.elements[i] * Math.PI / 180;
+    }
+    return out;
 }
 
 /**
  * Converts radians to degrees.
- * @param {Number} radians The angle in radians.
- * @returns {Number} The angle in degrees.
+ * @param {Number|vec2|vec3|vec4} radians The angle in radians.
+ * @returns {Number|vec2|vec3|vec4} The angle in degrees.
  */
 export function degrees(radians) {
-  return radians * 180 / Math.PI;
+    if (radians === null || (typeof radians !== 'number' && !radians.elements)) { return undefined; }
+    if (typeof radians === 'number') {
+        return radians * 180 / Math.PI;
+    }
+
+    const out = new radians.constructor();
+    for (let i = 0; i < radians.elements.length; i++) {
+        out.elements[i] = radians.elements[i] * 180 / Math.PI;
+    }
+    return out;
 }
 
 export const pi = Math.PI;
