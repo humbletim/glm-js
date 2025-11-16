@@ -11,6 +11,7 @@ This directory contains a complete, ground-up rewrite of the `glm-js` library us
     -   `index.js`: The main entry point that aggregates and exports the `glm` object.
 -   **`tests/`**: Contains a generalized test suite that can be run against any `glm-js` implementation.
 -   **`TODO.md`**: A list of potential future enhancements, such as build tooling and linters.
+-   **`GLMenetics.md`**: A detailed manifest of the library's API, its alignment with GLM C++/GLSL, and the current modernization status. This is the best place to start for a deep understanding of the library.
 
 ## Running the Tests
 
