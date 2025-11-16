@@ -1,4 +1,4 @@
-const Dusk = require('../../../build/glm-three.min.js');
+const Dusk = require('../../../build/glm-js.js');
 const Day = require('../../dist/modern-glm-js.cjs');
 const Dawn = require('../../implementation/index.js').default;
 
@@ -13,7 +13,7 @@ const q_dawn = new Dawn.quat(w, x, y, z);
 
 try {
     const result = Dusk.inverse(q_dusk);
-    console.log('Dusk says (array):', `[${result.x}, ${result.y}, ${result.z}, ${result.w}]`);
+    console.log('Dusk says (array):', result.array);
 } catch (e) {
     console.log('Dusk throws:', e.message);
 }
@@ -40,7 +40,7 @@ const q_dawn_zero = new Dawn.quat(0, 0, 0, 0);
 console.log('\\n--- Edge Case: Zero-length quaternion ---');
 try {
     const result = Dusk.inverse(q_dusk_zero);
-    console.log('Dusk says (array):', `[${result.x}, ${result.y}, ${result.z}, ${result.w}]`);
+    console.log('Dusk says (array):', result.array);
 } catch (e) {
     console.log('Dusk throws:', e.message);
 }

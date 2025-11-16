@@ -1,4 +1,4 @@
-const Dusk = require('../../../build/glm-three.min.js');
+const Dusk = require('../../../build/glm-js.js');
 const Day = require('../../dist/modern-glm-js.cjs');
 const Dawn = require('../../implementation/index.js').default;
 
@@ -22,7 +22,7 @@ const t = 0.5;
 
 try {
     const result = Dusk.slerp(q1_dusk, q2_dusk, t);
-    console.log('Dusk says (array):', `[${result.x}, ${result.y}, ${result.z}, ${result.w}]`);
+    console.log('Dusk says (array):', result.array);
 } catch (e) {
     console.log('Dusk throws:', e.message);
 }

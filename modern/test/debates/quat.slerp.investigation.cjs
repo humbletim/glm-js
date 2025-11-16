@@ -1,4 +1,4 @@
-const Dusk = require('../../../build/glm-three.min.js');
+const Dusk = require('../../../build/glm-js.js');
 const Day = require('../../dist/modern-glm-js.cjs');
 const Dawn = require('../../implementation/index.js').default;
 
@@ -18,7 +18,7 @@ const t = 0.5;
 console.log('\\n--- Case 1: Zero-length quaternion ---');
 try {
     const result = Dusk.slerp(q1_dusk_zero, q2_dusk_identity, t);
-    console.log('Dusk says (array):', `[${result.x}, ${result.y}, ${result.z}, ${result.w}]`);
+    console.log('Dusk says (array):', result.array);
 } catch (e) {
     console.log('Dusk throws:', e.message);
 }
@@ -50,7 +50,7 @@ const q2_dawn_close = new Dawn.quat(0.999999, 0.000001, 0, 0);
 console.log('\\n--- Case 2: Quaternions are very close ---');
 try {
     const result = Dusk.slerp(q1_dusk_close, q2_dusk_close, t);
-    console.log('Dusk says (array):', `[${result.x}, ${result.y}, ${result.z}, ${result.w}]`);
+    console.log('Dusk says (array):', result.array);
 } catch (e) {
     console.log('Dusk throws:', e.message);
 }
