@@ -2,6 +2,10 @@
 import { toCppStringVec, toCppStringMat, toCppStringQuat } from './format.js';
 
 const GLMBaseMixin = (superclass) => class extends superclass {
+    get array() {
+        return Array.from(this.elements);
+    }
+
     clone() {
         return new this.constructor(this);
     }

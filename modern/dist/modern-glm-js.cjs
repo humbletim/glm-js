@@ -100,6 +100,9 @@ var init_base = __esm({
   "implementation/base.js"() {
     init_format();
     GLMBaseMixin = (superclass) => class extends superclass {
+      get array() {
+        return Array.from(this.elements);
+      }
       clone() {
         return new this.constructor(this);
       }
@@ -538,13 +541,9 @@ function distance(a, b) {
   return length(diff);
 }
 function mix(a, b, t) {
-  if (typeof a === "number") {
-    return a * (1 - t) + b * t;
-  }
   const out = new a.constructor();
   for (let i = 0; i < a.elements.length; i++) {
-    const tVal = typeof t === "number" ? t : t.elements[i];
-    out.elements[i] = a.elements[i] * (1 - tVal) + b.elements[i] * tVal;
+    out.elements[i] = a.elements[i] * (1 - t) + b.elements[i] * t;
   }
   return out;
 }
@@ -971,28 +970,42 @@ function angleAxis(angle2, axis2) {
   out.elements[3] = Math.cos(halfAngle);
   return out;
 }
+function inverse2(q) {
+  const out = new quat();
+  const x = q.elements[0], y = q.elements[1], z = q.elements[2], w = q.elements[3];
+  let dot2 = x * x + y * y + z * z + w * w;
+  if (dot2 === 0) {
+    return new quat();
+  }
+  dot2 = 1 / dot2;
+  out.elements[0] = -x * dot2;
+  out.elements[1] = -y * dot2;
+  out.elements[2] = -z * dot2;
+  out.elements[3] = w * dot2;
+  return out;
+}
 function slerp(q1, q2, t) {
   const out = new quat();
   let cosTheta = dot(q1, q2);
-  if (Math.abs(cosTheta) >= 1) {
-    out.elements.set(q1.elements);
-    return out;
-  }
   if (cosTheta < 0) {
     q2 = new quat(-q2.elements[3], -q2.elements[0], -q2.elements[1], -q2.elements[2]);
     cosTheta = -cosTheta;
   }
-  const halfTheta = Math.acos(cosTheta);
-  const sinHalfTheta = Math.sqrt(1 - cosTheta * cosTheta);
-  if (Math.abs(sinHalfTheta) < 1e-3) {
-    out.elements[0] = q1.elements[0] * 0.5 + q2.elements[0] * 0.5;
-    out.elements[1] = q1.elements[1] * 0.5 + q2.elements[1] * 0.5;
-    out.elements[2] = q1.elements[2] * 0.5 + q2.elements[2] * 0.5;
-    out.elements[3] = q1.elements[3] * 0.5 + q2.elements[3] * 0.5;
+  if (cosTheta > 0.9995) {
+    out.elements[0] = (1 - t) * q1.elements[0] + t * q2.elements[0];
+    out.elements[1] = (1 - t) * q1.elements[1] + t * q2.elements[1];
+    out.elements[2] = (1 - t) * q1.elements[2] + t * q2.elements[2];
+    out.elements[3] = (1 - t) * q1.elements[3] + t * q2.elements[3];
+    return normalize(out);
+  }
+  const theta = Math.acos(cosTheta);
+  const sinTheta = Math.sin(theta);
+  if (sinTheta === 0) {
+    out.elements.set(q1.elements);
     return out;
   }
-  const ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
-  const ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+  const ratioA = Math.sin((1 - t) * theta) / sinTheta;
+  const ratioB = Math.sin(t * theta) / sinTheta;
   out.elements[0] = q1.elements[0] * ratioA + q2.elements[0] * ratioB;
   out.elements[1] = q1.elements[1] * ratioA + q2.elements[1] * ratioB;
   out.elements[2] = q1.elements[2] * ratioA + q2.elements[2] * ratioB;
@@ -1036,10 +1049,30 @@ var init_quat = __esm({
 
 // implementation/common.js
 function radians(degrees2) {
-  return degrees2 * Math.PI / 180;
+  if (degrees2 === null || typeof degrees2 !== "number" && !degrees2.elements) {
+    return void 0;
+  }
+  if (typeof degrees2 === "number") {
+    return degrees2 * Math.PI / 180;
+  }
+  const out = new degrees2.constructor();
+  for (let i = 0; i < degrees2.elements.length; i++) {
+    out.elements[i] = degrees2.elements[i] * Math.PI / 180;
+  }
+  return out;
 }
 function degrees(radians2) {
-  return radians2 * 180 / Math.PI;
+  if (radians2 === null || typeof radians2 !== "number" && !radians2.elements) {
+    return void 0;
+  }
+  if (typeof radians2 === "number") {
+    return radians2 * 180 / Math.PI;
+  }
+  const out = new radians2.constructor();
+  for (let i = 0; i < radians2.elements.length; i++) {
+    out.elements[i] = radians2.elements[i] * 180 / Math.PI;
+  }
+  return out;
 }
 function min(a, b) {
   if (typeof a === "number" && typeof b === "number") {
@@ -1184,6 +1217,14 @@ var implementation_exports = {};
 __export(implementation_exports, {
   default: () => implementation_default
 });
+function inverse3(m) {
+  if (m instanceof mat3 || m instanceof mat4) {
+    return inverse(m);
+  } else if (m instanceof quat) {
+    return inverse2(m);
+  }
+  throw new Error("inverse() not implemented for this type");
+}
 var mat3Factory, mat4Factory, quatFactory, vec2Factory, vec3Factory, vec4Factory, glm, implementation_default;
 var init_implementation = __esm({
   "implementation/index.js"() {
@@ -1234,7 +1275,7 @@ var init_implementation = __esm({
     vec4Factory.prototype = vec4.prototype;
     glm = {
       get version() {
-        return `${package_default.version}-${false ? "(develop)" : "eeda8f6"}`;
+        return `${package_default.version}-${false ? "(develop)" : "5eee03c"}`;
       },
       vec2: vec2Factory,
       vec3: vec3Factory,
@@ -1254,7 +1295,7 @@ var init_implementation = __esm({
       sign,
       frexp,
       rotation,
-      inverse,
+      inverse: inverse3,
       transpose,
       lookAt,
       perspective,
