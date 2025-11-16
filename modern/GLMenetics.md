@@ -23,6 +23,18 @@ The following table provides a comprehensive breakdown of each API feature. The 
 | **Angle and Trigonometry** | | | | |
 | `degrees` | Converts radians to degrees. | Implemented. | `glm::degrees` | `✅ Fully Implemented` |
 | `radians` | Converts degrees to radians. | Implemented. | `glm::radians` | `✅ Fully Implemented` |
+| `sin` | Sine of an angle. | Implemented. | `glm::sin` | `✅ Fully Implemented` |
+| `cos` | Cosine of an angle. | Implemented. | `glm::cos` | `✅ Fully Implemented` |
+| `tan` | Tangent of an angle. | Implemented. | `glm::tan` | `✅ Fully Implemented` |
+| `asin` | Arc sine. | Implemented. | `glm::asin` | `✅ Fully Implemented` |
+| `acos` | Arc cosine. | Implemented. | `glm::acos` | `✅ Fully Implemented` |
+| `atan` | Arc tangent. | Implemented. | `glm::atan` | `✅ Fully Implemented` |
+| `sinh` | Hyperbolic sine. | Implemented. | `glm::sinh` | `✅ Fully Implemented` |
+| `cosh` | Hyperbolic cosine. | Implemented. | `glm::cosh` | `✅ Fully Implemented` |
+| `tanh` | Hyperbolic tangent. | Implemented. | `glm::tanh` | `✅ Fully Implemented` |
+| `asinh` | Inverse hyperbolic sine. | Implemented. | `glm::asinh` | `✅ Fully Implemented` |
+| `acosh` | Inverse hyperbolic cosine. | Implemented. | `glm::acosh` | `✅ Fully Implemented` |
+| `atanh` | Inverse hyperbolic tangent. | Implemented. | `glm::atanh` | `✅ Fully Implemented` |
 | **Common Functions** | | | | |
 | `abs` | Component-wise absolute value. | Implemented. | `glm::abs` | `✅ Fully Implemented` |
 | `all` | Checks if all components are true. | Implemented. | `glm::all` | `✅ Fully Implemented` |

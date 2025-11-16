@@ -160,3 +160,16 @@ export function rotation(angle, axis) {
     out.elements[3] = c;
     return out;
 }
+
+export const sin = (angle) => Math.sin(angle);
+export const cos = (angle) => Math.cos(angle);
+export const tan = (angle) => Math.tan(angle);
+export const asin = (x) => Math.asin(x);
+export const acos = (x) => Math.acos(x);
+export const atan = (y, x) => (x !== undefined ? Math.atan(y, x) : Math.atan(y));
+export const sinh = (angle) => Math.sinh(angle);
+export const cosh = (angle) => Math.cosh(angle);
+export const tanh = (angle) => Math.tanh(angle);
+export const asinh = (x) => Math.asinh(x);
+export const acosh = (x) => Math.acosh(x);
+export const atanh = (x) => Math.atanh(x);
