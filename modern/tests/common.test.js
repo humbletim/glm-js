@@ -1,7 +1,5 @@
-
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import glm from '../implementation/index.js';
 
 test('glm.to_string', (t) => {
     assert.strictEqual(glm.to_string(1), '1', 'to_string(number)');

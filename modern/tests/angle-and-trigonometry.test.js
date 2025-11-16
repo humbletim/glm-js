@@ -1,7 +1,6 @@
 // modern/tests/trigonometric.test.js
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import glm from '../implementation/index.js';
 
 describe('Trigonometric Functions', () => {
     it('should calculate sin', () => {
