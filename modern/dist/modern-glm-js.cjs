@@ -1049,7 +1049,7 @@ var init_quat = __esm({
 
 // implementation/common.js
 function radians(degrees2) {
-  if (degrees2 === null || typeof degrees2 !== "number" && !degrees2.elements) {
+  if (degrees2 === null || typeof degrees2 !== "number" && !degrees2?.elements) {
     return void 0;
   }
   if (typeof degrees2 === "number") {
@@ -1062,7 +1062,7 @@ function radians(degrees2) {
   return out;
 }
 function degrees(radians2) {
-  if (radians2 === null || typeof radians2 !== "number" && !radians2.elements) {
+  if (radians2 === null || typeof radians2 !== "number" && !radians2?.elements) {
     return void 0;
   }
   if (typeof radians2 === "number") {
@@ -1275,7 +1275,7 @@ var init_implementation = __esm({
     vec4Factory.prototype = vec4.prototype;
     glm = {
       get version() {
-        return `${package_default.version}-${false ? "(develop)" : "f618512"}`;
+        return `${package_default.version}-${false ? "(develop)" : "1defe8c"}`;
       },
       vec2: vec2Factory,
       vec3: vec3Factory,
