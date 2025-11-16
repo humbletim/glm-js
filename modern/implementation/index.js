@@ -1,7 +1,7 @@
 // modern/implementation/index.js
 import { vec2, vec3, vec4 } from './vec.js';
-import { mat3, mat4, inverse, transpose, lookAt, perspective, ortho } from './mat.js';
-import { quat, angleAxis, slerp } from './quat.js';
+import { mat3, mat4, inverse as matInverse, transpose, lookAt, perspective, ortho } from './mat.js';
+import { quat, angleAxis, slerp, inverse as quatInverse } from './quat.js';
 import * as functions from './functions.js';
 import { radians, degrees, min, max, abs, fract, all, sign, frexp, rotation, pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi, root_two, one_over_root_two, root_three, e, ln_ten, ln_two } from './common.js';
 
@@ -30,6 +30,15 @@ const quatFactory = function(w, x, y, z) {
     return new quat(w, x, y, z);
 };
 quatFactory.prototype = quat.prototype;
+
+function inverse(m) {
+    if (m instanceof mat3 || m instanceof mat4) {
+        return matInverse(m);
+    } else if (m instanceof quat) {
+        return quatInverse(m);
+    }
+    throw new Error('inverse() not implemented for this type');
+}
 
 const vec2Factory = function(...args) {
     if (this instanceof vec2Factory) {
