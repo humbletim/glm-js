@@ -986,7 +986,7 @@ function inverse2(q) {
 }
 function slerp(q1, q2, t) {
   const out = new quat();
-  let cosTheta = dot(q1, q2);
+  let cosTheta = q1.elements[0] * q2.elements[0] + q1.elements[1] * q2.elements[1] + q1.elements[2] * q2.elements[2] + q1.elements[3] * q2.elements[3];
   if (cosTheta < 0) {
     q2 = new quat(-q2.elements[3], -q2.elements[0], -q2.elements[1], -q2.elements[2]);
     cosTheta = -cosTheta;
@@ -1275,7 +1275,7 @@ var init_implementation = __esm({
     vec4Factory.prototype = vec4.prototype;
     glm = {
       get version() {
-        return `${package_default.version}-${false ? "(develop)" : "5eee03c"}`;
+        return `${package_default.version}-${false ? "(develop)" : "f618512"}`;
       },
       vec2: vec2Factory,
       vec3: vec3Factory,

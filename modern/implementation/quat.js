@@ -70,7 +70,7 @@ export { quat, angleAxis };
 
 export function slerp(q1, q2, t) {
     const out = new quat();
-    let cosTheta = dot(q1, q2);
+    let cosTheta = q1.elements[0] * q2.elements[0] + q1.elements[1] * q2.elements[1] + q1.elements[2] * q2.elements[2] + q1.elements[3] * q2.elements[3];
 
     if (cosTheta < 0.0) {
         q2 = new quat(-q2.elements[3], -q2.elements[0], -q2.elements[1], -q2.elements[2]);
