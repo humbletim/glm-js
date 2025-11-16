@@ -68,3 +68,16 @@ The following are known dissonances between the legacy (`Dusk`), modern CJS (`Da
 *   **`quat` constructor:** All three implementations (`Dusk`, `Day`, and `Dawn`) correctly use the `(w, x, y, z)` constructor signature, with an internal memory layout of `[x, y, z, w]`. The previous documentation stating otherwise was incorrect.
 *   **`quat.inverse` (zero-length):** `Dusk` returns `[-0, -0, -0, 0]`, while `Day` and `Dawn` return `[0, 0, 0, 1]` (the identity quaternion). The modern implementation's behavior is generally considered more desirable, as it avoids division by zero and returns a sensible default.
 *   **`quat.slerp` (zero-length and close quaternions):** There are minor floating point differences between the `Dusk` and `Day`/`Dawn` implementations. These are likely due to differences in the underlying mathematical implementations and are not considered to be a major issue.
+
+## Agent Ideas
+
+This section is for brainstorming and capturing new ideas for future agent-led development sprints.
+
+### Visualization Debates
+
+The following are ideas for future visual "tri-debate" scripts, similar to the ray-tracer debate. These can be used to visually verify the correctness of the modern implementation and identify any remaining dissonances.
+
+*   **Mandelbrot Set Explorer:** A classic fractal that can be generated using complex number arithmetic. This would be a good test of the vector and matrix operations in `glm-js`.
+*   **Simple Particle System:** A system of particles that are affected by gravity and other forces. This would be a good test of the physics-related functions in `glm-js`, such as `dot`, `cross`, and `normalize`.
+*   **Procedural Terrain Generator:** A script that generates a 3D terrain using noise functions. This would be a good test of the `noise` functions in `glm-js`, as well as the vector and matrix operations.
+*   **OBJ Model Viewer:** A simple viewer for `.obj` files. This would be a good test of the transformation functions in `glm-js`, such as `translate`, `rotate`, and `scale`.
