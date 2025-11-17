@@ -54,6 +54,29 @@ The following table provides a comprehensive breakdown of each API feature. The 
 | `exp2` | Base 2 exponentiation. | Implemented. | `glm::exp2` | `✅ Fully Implemented` |
 | `log2` | Base 2 logarithm. | Implemented. | `glm::log2` | `✅ Fully Implemented` |
 | `inversesqrt` | Inverse square root. | Implemented. | `glm::inversesqrt` | `✅ Fully Implemented` |
+| **Floating-Point Pack and Unpack** | | | | |
+| `packDouble2x32` | Packs a `uvec2` into a `double`. | Implemented. | `glm::packDouble2x32` | `✅ Fully Implemented` |
+| `unpackDouble2x32` | Unpacks a `double` into a `uvec2`. | Implemented. | `glm::unpackDouble2x32` | `✅ Fully Implemented` |
+| `packHalf2x16` | Packs a `vec2` into a 16-bit float. | Implemented. | `glm::packHalf2x16` | `✅ Fully Implemented` |
+| `unpackHalf2x16` | Unpacks a 16-bit float into a `vec2`. | Implemented. | `glm::unpackHalf2x16` | `✅ Fully Implemented` |
+| `packSnorm2x16` | Packs a normalized `vec2` into a 16-bit signed integer. | Implemented. | `glm::packSnorm2x16` | `✅ Fully Implemented` |
+| `unpackSnorm2x16` | Unpacks a 16-bit signed integer into a normalized `vec2`. | Implemented. | `glm::unpackSnorm2x16` | `✅ Fully Implemented` |
+| `packSnorm4x8` | Packs a normalized `vec4` into a 32-bit signed integer. | Implemented. | `glm::packSnorm4x8` | `✅ Fully Implemented` |
+| `unpackSnorm4x8` | Unpacks a 32-bit signed integer into a normalized `vec4`. | Implemented. | `glm::unpackSnorm4x8` | `✅ Fully Implemented` |
+| `packUnorm2x16` | Packs a normalized `vec2` into a 16-bit unsigned integer. | Implemented. | `glm::packUnorm2x16` | `✅ Fully Implemented` |
+| `unpackUnorm2x16` | Unpacks a 16-bit unsigned integer into a normalized `vec2`. | Implemented. | `glm::unpackUnorm2x16` | `✅ Fully Implemented` |
+| `packUnorm4x8` | Packs a normalized `vec4` into a 32-bit unsigned integer. | Implemented. | `glm::packUnorm4x8` | `✅ Fully Implemented` |
+| `unpackUnorm4x8` | Unpacks a 32-bit unsigned integer into a normalized `vec4`. | Implemented. | `glm::unpackUnorm4x8` | `✅ Fully Implemented` |
+| **Vector Relational Functions** | | | | |
+| `any` | Checks if any component is true. | Implemented. | `glm::any` | `✅ Fully Implemented` |
+| `all` | Checks if all components are true. | Implemented. | `glm::all` | `✅ Fully Implemented` |
+| `equal` | Component-wise equality. | Implemented. | `glm::equal` | `✅ Fully Implemented` |
+| `notEqual` | Component-wise inequality. | Implemented. | `glm::notEqual` | `✅ Fully Implemented` |
+| `lessThan` | Component-wise less than. | Implemented. | `glm::lessThan` | `✅ Fully Implemented` |
+| `lessThanEqual` | Component-wise less than or equal. | Implemented. | `glm::lessThanEqual` | `✅ Fully Implemented` |
+| `greaterThan` | Component-wise greater than. | Implemented. | `glm::greaterThan` | `✅ Fully Implemented` |
+| `greaterThanEqual` | Component-wise greater than or equal. | Implemented. | `glm::greaterThanEqual` | `✅ Fully Implemented` |
+| `not_` | Component-wise logical complement. | Implemented. | `glm::not_` | `✅ Fully Implemented` |
 | **Geometric Functions** | | | | |
 | `cross` | Cross product of two vectors. | Implemented. | `glm::cross` | `✅ Fully Implemented` |
 | `distance` | Distance between two vectors. | Implemented. | `glm::distance` | `✅ Fully Implemented` |

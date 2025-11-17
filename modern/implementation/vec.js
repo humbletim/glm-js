@@ -269,5 +269,28 @@ applySwizzling(vec2, vec2, vec3, vec4);
 applySwizzling(vec3, vec2, vec3, vec4);
 applySwizzling(vec4, vec2, vec3, vec4);
 
+class uvec2 extends GLMBaseMixin(class {}) {
+    constructor(x, y) {
+        super();
+        this._type = 'vec';
+        Object.defineProperty(this, 'elements', { value: new Uint32Array(2) });
 
-export { vec2, vec3, vec4 };
+        if (x instanceof uvec2) {
+            this.elements[0] = x.elements[0];
+            this.elements[1] = x.elements[1];
+        } else if (typeof x === 'number' && y === undefined) {
+            this.elements[0] = x;
+            this.elements[1] = x;
+        } else {
+            this.elements[0] = x || 0;
+            this.elements[1] = y || 0;
+        }
+    }
+
+    get array() {
+        return Array.from(this.elements);
+    }
+}
+
+
+export { vec2, vec3, vec4, uvec2 };

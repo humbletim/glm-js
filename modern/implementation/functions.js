@@ -1,6 +1,9 @@
 // modern/implementation/functions.js
 import { mat3, mat4, inverse } from './mat.js';
-import { vec3, vec4 } from './vec.js';
+import { vec2, vec3, vec4, uvec2 } from './vec.js';
+const bvec2 = vec2;
+const bvec3 = vec3;
+const bvec4 = vec4;
 
 function dot(a, b) {
     let out = 0;
@@ -328,4 +331,198 @@ function refract(I, N, eta) {
     return I['*'](eta)['-'](N['*'](eta * dotNI + Math.sqrt(k)));
 }
 
-export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles, faceforward, reflect, refract };
+function any(a) {
+    for (let i = 0; i < a.elements.length; i++) {
+        if (a.elements[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const createVectorRelationalOperator = (op) => {
+    return (x, y) => {
+        let out;
+        switch (x.elements.length) {
+            case 2: out = new bvec2(); break;
+            case 3: out = new bvec3(); break;
+            case 4: out = new bvec4(); break;
+            default: throw new Error(`Unsupported vector length: ${x.elements.length}`);
+        }
+        for (let i = 0; i < x.elements.length; i++) {
+            out.elements[i] = op(x.elements[i], y.elements[i]);
+        }
+        return out;
+    };
+};
+
+const equal = createVectorRelationalOperator((a, b) => a === b);
+const notEqual = createVectorRelationalOperator((a, b) => a !== b);
+const lessThan = createVectorRelationalOperator((a, b) => a < b);
+const lessThanEqual = createVectorRelationalOperator((a, b) => a <= b);
+const greaterThan = createVectorRelationalOperator((a, b) => a > b);
+const greaterThanEqual = createVectorRelationalOperator((a, b) => a >= b);
+
+function not_(v) {
+    let out;
+    switch (v.elements.length) {
+        case 2: out = new bvec2(); break;
+        case 3: out = new bvec3(); break;
+        case 4: out = new bvec4(); break;
+        default: throw new Error(`Unsupported vector length: ${v.elements.length}`);
+    }
+    for (let i = 0; i < v.elements.length; i++) {
+        out.elements[i] = !v.elements[i];
+    }
+    return out;
+}
+
+function packDouble2x32(v) {
+    const buffer = new ArrayBuffer(8);
+    const dataView = new DataView(buffer);
+    dataView.setUint32(0, v.elements[0], true);
+    dataView.setUint32(4, v.elements[1], true);
+    return dataView.getFloat64(0, true);
+}
+
+function unpackDouble2x32(v) {
+    const buffer = new ArrayBuffer(8);
+    const dataView = new DataView(buffer);
+    dataView.setFloat64(0, v, true);
+    return new uvec2(dataView.getUint32(0, true), dataView.getUint32(4, true));
+}
+
+function packHalf2x16(v) {
+    const p = new Uint16Array(2);
+    p[0] = float32ToFloat16(v.elements[0]);
+    p[1] = float32ToFloat16(v.elements[1]);
+    const u = new Uint32Array(1);
+    u[0] = (p[1] << 16) | p[0];
+    return u[0];
+}
+
+function unpackHalf2x16(v) {
+    const p = new Uint16Array(2);
+    p[0] = v & 0xFFFF;
+    p[1] = v >> 16;
+    return new vec2(float16ToFloat32(p[0]), float16ToFloat32(p[1]));
+}
+
+function packSnorm2x16(v) {
+    const x = Math.round(Math.max(-1, Math.min(1, v.elements[0])) * 32767);
+    const y = Math.round(Math.max(-1, Math.min(1, v.elements[1])) * 32767);
+    return (y << 16) | (x & 0xFFFF);
+}
+
+function unpackSnorm2x16(p) {
+    const x = (p & 0xFFFF) << 16 >> 16;
+    const y = p >> 16;
+    return new vec2(Math.max(-1, x / 32767), Math.max(-1, y / 32767));
+}
+
+function packSnorm4x8(v) {
+    const x = Math.round(Math.max(-1, Math.min(1, v.elements[0])) * 127);
+    const y = Math.round(Math.max(-1, Math.min(1, v.elements[1])) * 127);
+    const z = Math.round(Math.max(-1, Math.min(1, v.elements[2])) * 127);
+    const w = Math.round(Math.max(-1, Math.min(1, v.elements[3])) * 127);
+    return (w << 24) | ((z & 0xFF) << 16) | ((y & 0xFF) << 8) | (x & 0xFF);
+}
+
+function unpackSnorm4x8(p) {
+    const x = (p & 0xFF) << 24 >> 24;
+    const y = ((p >> 8) & 0xFF) << 24 >> 24;
+    const z = ((p >> 16) & 0xFF) << 24 >> 24;
+    const w = p >> 24;
+    return new vec4(x / 127, y / 127, z / 127, w / 127);
+}
+
+function packUnorm2x16(v) {
+    const x = Math.round(Math.max(0, Math.min(1, v.elements[0])) * 65535);
+    const y = Math.round(Math.max(0, Math.min(1, v.elements[1])) * 65535);
+    return (y << 16) | (x & 0xFFFF);
+}
+
+function unpackUnorm2x16(p) {
+    const x = p & 0xFFFF;
+    const y = p >>> 16;
+    return new vec2(x / 65535, y / 65535);
+}
+
+function packUnorm4x8(v) {
+    const x = Math.round(Math.max(0, Math.min(1, v.elements[0])) * 255);
+    const y = Math.round(Math.max(0, Math.min(1, v.elements[1])) * 255);
+    const z = Math.round(Math.max(0, Math.min(1, v.elements[2])) * 255);
+    const w = Math.round(Math.max(0, Math.min(1, v.elements[3])) * 255);
+    return (w << 24) | (z << 16) | (y << 8) | (x & 0xFF);
+}
+
+function unpackUnorm4x8(p) {
+    const x = p & 0xFF;
+    const y = (p >>> 8) & 0xFF;
+    const z = (p >>> 16) & 0xFF;
+    const w = p >>> 24;
+    return new vec4(x / 255, y / 255, z / 255, w / 255);
+}
+
+function float32ToFloat16(val) {
+    const floatView = new DataView(new ArrayBuffer(4));
+    floatView.setFloat32(0, val);
+    const f32 = floatView.getUint32(0);
+    const sign = (f32 >> 31) & 0x1;
+    let exp = (f32 >> 23) & 0xff;
+    const frac = f32 & 0x7fffff;
+
+    let newExp;
+    if (exp === 0) {
+        newExp = 0;
+    } else if (exp === 255) {
+        newExp = 31;
+    } else {
+        exp = exp - 127 + 15;
+        if (exp >= 31) {
+            newExp = 31;
+        } else if (exp <= 0) {
+            newExp = 0;
+        } else {
+            newExp = exp;
+        }
+    }
+
+    return (sign << 15) | (newExp << 10) | (frac >> 13);
+}
+
+function float16ToFloat32(val) {
+    const floatView = new DataView(new ArrayBuffer(4));
+    const sign = (val >> 15) & 0x1;
+    let exp = (val >> 10) & 0x1f;
+    const frac = val & 0x3ff;
+
+    let newExp;
+    let newFrac;
+    if (exp === 0) {
+        if (frac === 0) {
+            newExp = 0;
+            newFrac = 0;
+        } else {
+            // subnormal
+            newExp = 1 - 15 + 127;
+            newFrac = frac;
+            while ((newFrac & 0x400) === 0) {
+                newFrac <<= 1;
+                newExp--;
+            }
+            newFrac &= 0x3ff;
+        }
+    } else if (exp === 31) {
+        newExp = 255;
+        newFrac = frac !== 0 ? 0x7fffff : 0;
+    } else {
+        newExp = exp - 15 + 127;
+        newFrac = frac;
+    }
+
+    floatView.setUint32(0, (sign << 31) | (newExp << 23) | (newFrac << 13));
+    return floatView.getFloat32(0);
+}
+
+export { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles, faceforward, reflect, refract, any, equal, notEqual, lessThan, lessThanEqual, greaterThan, greaterThanEqual, not_, packDouble2x32, unpackDouble2x32, packHalf2x16, unpackHalf2x16, packSnorm2x16, unpackSnorm2x16, packSnorm4x8, unpackSnorm4x8, packUnorm2x16, unpackUnorm2x16, packUnorm4x8, unpackUnorm4x8 };

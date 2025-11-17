@@ -85,7 +85,10 @@ glm.root_two = Math.sqrt(2);
 glm.make_vec4 = 'TODO';
 
 // Ugh...
-glm.bvec2 = glm.uvec2 = glm.ivec2 = glm.vec2;
+glm.bvec2 = glm.ivec2 = glm.vec2;
+// The uvec2 from modern/implementation/vec.js is imported and attached to the global glm object
+// by the test runner, so we can just reference it here.
+glm.uvec2 = glm.uvec2;
 glm.bvec3 = glm.uvec3 = glm.ivec3 = glm.vec3;
 glm.bvec4 = glm.uvec4 = glm.ivec4 = glm.vec4;
 
