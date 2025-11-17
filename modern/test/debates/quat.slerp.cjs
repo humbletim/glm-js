@@ -9,12 +9,12 @@ const cos_PI_4 = Math.cos(PI_4);
 const sin_PI_4 = Math.sin(PI_4);
 
 // Identity quaternion
-const q1_dusk = new Dusk.quat(0, 0, 0, 1);
+const q1_dusk = new Dusk.quat(1, 0, 0, 0);
 const q1_day = new Day.quat(1, 0, 0, 0);
 const q1_dawn = new Dawn.quat(1, 0, 0, 0);
 
 // 90 degree rotation around Y axis
-const q2_dusk = new Dusk.quat(0, sin_PI_4, 0, cos_PI_4);
+const q2_dusk = new Dusk.quat(cos_PI_4, 0, sin_PI_4, 0);
 const q2_day = new Day.quat(cos_PI_4, 0, sin_PI_4, 0);
 const q2_dawn = new Dawn.quat(cos_PI_4, 0, sin_PI_4, 0);
 

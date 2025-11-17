@@ -46,3 +46,20 @@ test('quat core operations', () => {
     assert.ok(diff < tolerance, `Value at index ${i} is out of tolerance. Actual: ${q_mul.elements[i]}, Expected: ${expected_elements[i]}`);
   }
 });
+
+test('quat to_string serialization', () => {
+  // Test with a known quaternion
+  const q = glm.quat(0.92388, 0, 0.38268, 0); // Represents a 45-degree rotation around Y
+  const expectedString = 'quat(0.923880, {0.000000, 0.382680, 0.000000})';
+
+  // Use glm.to_string from the main index
+  const actualString = glm.to_string(q);
+
+  assert.strictEqual(actualString, expectedString, 'glm.to_string(quat) should match the GLM C++ format "quat(w, {x, y, z})"');
+
+  // Test with identity
+  const q_identity = glm.quat();
+  const expectedIdentityString = 'quat(1.000000, {0.000000, 0.000000, 0.000000})';
+  const actualIdentityString = glm.to_string(q_identity);
+  assert.strictEqual(actualIdentityString, expectedIdentityString, 'to_string for identity quaternion should be formatted correctly');
+});
