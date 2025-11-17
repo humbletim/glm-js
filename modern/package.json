@@ -1,6 +1,6 @@
 {
   "name": "glm-js-modern",
-  "version": "0.0.7",
+  "version": "0.0.7a",
   "description": "Modern implementation of glm-js",
   "type": "module",
   "main": "implementation/index.js",
@@ -8,7 +8,7 @@
     "test": "node --test --import ./tests/__init__.js",
     "test:legacy": "node tests/__run-legacy-tests.js",
     "legacy:passfailcounts": "(node tests/__run-legacy-tests.js 2>&1 || true) | grep -E '^[[:space:]]+[0-9]+ (passing|failing)'",
-    "cjs": "echo 'module.exports = require(\"./implementation/index.js\").default' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT=\"'$(git rev-parse --short HEAD)'\" --outfile=dist/modern-glm-js.cjs",
+    "cjs": "echo '(function(exports) { if (/object/.test(typeof module)) module.exports = exports; else if (/object/.test(typeof window)) window.glm = exports; else globalThis.glm = exports; return exports; })(require(\"./implementation/index.js\").default)' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT=\"'$(git rev-parse --short HEAD)'\" --outfile=dist/modern-glm-js.cjs",
     "esm": "echo 'module.exports = require(\"./implementation/index.js\").default' | npx esbuild --bundle --format=esm --define:GLMJS_COMMIT=\"'$(git rev-parse --short HEAD)'\" --outfile=dist/modern-glm-js.mjs"
   },
   "engines": {
