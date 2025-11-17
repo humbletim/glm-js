@@ -89,6 +89,30 @@ function toCppStringQuat(quat2) {
   const elements = Array.from(quat2.elements).map(format).join(", ");
   return `${className}(${elements})`;
 }
+function to_string(v) {
+  if (v === null || v === void 0) {
+    return "null";
+  }
+  if (typeof v._type !== "undefined") {
+    switch (v._type) {
+      case "vec":
+        return toCppStringVec(v);
+      case "mat":
+        return toCppStringMat(v);
+      case "quat":
+        return toCppStringQuat(v);
+      default:
+        throw new Error(`Unknown GLM type: ${v._type}`);
+    }
+  }
+  if (typeof v === "number" || typeof v === "string" || typeof v === "boolean") {
+    return v.toString();
+  }
+  if (Array.isArray(v)) {
+    return `[${v.map(to_string).join(", ")}]`;
+  }
+  return v.toString();
+}
 var init_format = __esm({
   "implementation/format.js"() {
   }
@@ -106,6 +130,28 @@ var init_base = __esm({
       clone() {
         return new this.constructor(this);
       }
+      equals(other) {
+        if (this.elements.length !== other.elements.length) {
+          return false;
+        }
+        for (let i = 0; i < this.elements.length; i++) {
+          if (this.elements[i] !== other.elements[i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+      epsilonEqual(other, epsilon = 1e-6) {
+        if (this.elements.length !== other.elements.length) {
+          return false;
+        }
+        for (let i = 0; i < this.elements.length; i++) {
+          if (Math.abs(this.elements[i] - other.elements[i]) > epsilon) {
+            return false;
+          }
+        }
+        return true;
+      }
       // --- Operator Aliases ---
       "+"(other) {
         return this.add(other);
@@ -120,10 +166,16 @@ var init_base = __esm({
         return this.div(other);
       }
       "=="(other) {
-        return this.equal(other);
+        return this.equals(other);
       }
       "~="(other) {
         return this.epsilonEqual(other);
+      }
+      eql(other) {
+        return this.equals(other);
+      }
+      eql_epsilon(other, epsilon) {
+        return this.epsilonEqual(other, epsilon);
       }
       ["="](other) {
         this.elements.set(other.elements);
@@ -158,7 +210,7 @@ var init_base = __esm({
 });
 
 // implementation/vec.js
-var vec2, vec32, vec4;
+var vec2, vec32, vec4, uvec2;
 var init_vec = __esm({
   "implementation/vec.js"() {
     init_swizzle();
@@ -167,6 +219,7 @@ var init_vec = __esm({
     }) {
       constructor(x, y) {
         super();
+        this._type = "vec";
         Object.defineProperty(this, "elements", { value: new Float32Array(2) });
         if (x instanceof _vec2 || x instanceof vec32 || x instanceof vec4) {
           this.elements[0] = x.elements[0];
@@ -232,6 +285,7 @@ var init_vec = __esm({
     }) {
       constructor(x, y, z) {
         super();
+        this._type = "vec";
         Object.defineProperty(this, "elements", { value: new Float32Array(3) });
         if (x instanceof _vec3 || x instanceof vec4) {
           this.elements[0] = x.elements[0];
@@ -310,6 +364,7 @@ var init_vec = __esm({
     }) {
       constructor(x, y, z, w) {
         super();
+        this._type = "vec";
         Object.defineProperty(this, "elements", { value: new Float32Array(4) });
         if (x instanceof _vec4) {
           this.elements[0] = x.elements[0];
@@ -402,36 +457,31 @@ var init_vec = __esm({
     applySwizzling(vec2, vec2, vec32, vec4);
     applySwizzling(vec32, vec2, vec32, vec4);
     applySwizzling(vec4, vec2, vec32, vec4);
+    uvec2 = class _uvec2 extends GLMBaseMixin(class {
+    }) {
+      constructor(x, y) {
+        super();
+        this._type = "vec";
+        Object.defineProperty(this, "elements", { value: new Uint32Array(2) });
+        if (x instanceof _uvec2) {
+          this.elements[0] = x.elements[0];
+          this.elements[1] = x.elements[1];
+        } else if (typeof x === "number" && y === void 0) {
+          this.elements[0] = x;
+          this.elements[1] = x;
+        } else {
+          this.elements[0] = x || 0;
+          this.elements[1] = y || 0;
+        }
+      }
+      get array() {
+        return Array.from(this.elements);
+      }
+    };
   }
 });
 
 // implementation/functions.js
-var functions_exports = {};
-__export(functions_exports, {
-  add: () => add,
-  angle: () => angle,
-  axis: () => axis,
-  clamp: () => clamp,
-  cross: () => cross,
-  diagonal3x3: () => diagonal3x3,
-  diagonal4x4: () => diagonal4x4,
-  distance: () => distance,
-  div: () => div,
-  dot: () => dot,
-  eulerAngles: () => eulerAngles,
-  length: () => length,
-  length2: () => length2,
-  mix: () => mix,
-  mul: () => mul,
-  normalize: () => normalize,
-  project: () => project,
-  rotate: () => rotate,
-  scale: () => scale,
-  sub: () => sub,
-  toMat4: () => toMat4,
-  translate: () => translate,
-  unProject: () => unProject
-});
 function dot(a, b) {
   let out = 0;
   for (let i = 0; i < a.elements.length; i++) {
@@ -675,10 +725,214 @@ function eulerAngles(q) {
   }
   return angles;
 }
+function faceforward(N, I, Nref) {
+  const dotNI = dot(Nref, I);
+  return new N.constructor(dotNI < 0 ? N : N["*"](-1));
+}
+function reflect(I, N) {
+  return I["-"](N["*"](2 * dot(N, I)));
+}
+function refract(I, N, eta) {
+  const dotNI = dot(N, I);
+  const k = 1 - eta * eta * (1 - dotNI * dotNI);
+  if (k < 0) {
+    return new I.constructor();
+  }
+  return I["*"](eta)["-"](N["*"](eta * dotNI + Math.sqrt(k)));
+}
+function any(a) {
+  for (let i = 0; i < a.elements.length; i++) {
+    if (a.elements[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+function not_(v) {
+  let out;
+  switch (v.elements.length) {
+    case 2:
+      out = new bvec2();
+      break;
+    case 3:
+      out = new bvec3();
+      break;
+    case 4:
+      out = new bvec4();
+      break;
+    default:
+      throw new Error(`Unsupported vector length: ${v.elements.length}`);
+  }
+  for (let i = 0; i < v.elements.length; i++) {
+    out.elements[i] = !v.elements[i];
+  }
+  return out;
+}
+function packDouble2x32(v) {
+  const buffer = new ArrayBuffer(8);
+  const dataView = new DataView(buffer);
+  dataView.setUint32(0, v.elements[0], true);
+  dataView.setUint32(4, v.elements[1], true);
+  return dataView.getFloat64(0, true);
+}
+function unpackDouble2x32(v) {
+  const buffer = new ArrayBuffer(8);
+  const dataView = new DataView(buffer);
+  dataView.setFloat64(0, v, true);
+  return new uvec2(dataView.getUint32(0, true), dataView.getUint32(4, true));
+}
+function packHalf2x16(v) {
+  const p = new Uint16Array(2);
+  p[0] = float32ToFloat16(v.elements[0]);
+  p[1] = float32ToFloat16(v.elements[1]);
+  const u = new Uint32Array(1);
+  u[0] = p[1] << 16 | p[0];
+  return u[0];
+}
+function unpackHalf2x16(v) {
+  const p = new Uint16Array(2);
+  p[0] = v & 65535;
+  p[1] = v >> 16;
+  return new vec2(float16ToFloat32(p[0]), float16ToFloat32(p[1]));
+}
+function packSnorm2x16(v) {
+  const x = Math.round(Math.max(-1, Math.min(1, v.elements[0])) * 32767);
+  const y = Math.round(Math.max(-1, Math.min(1, v.elements[1])) * 32767);
+  return y << 16 | x & 65535;
+}
+function unpackSnorm2x16(p) {
+  const x = (p & 65535) << 16 >> 16;
+  const y = p >> 16;
+  return new vec2(Math.max(-1, x / 32767), Math.max(-1, y / 32767));
+}
+function packSnorm4x8(v) {
+  const x = Math.round(Math.max(-1, Math.min(1, v.elements[0])) * 127);
+  const y = Math.round(Math.max(-1, Math.min(1, v.elements[1])) * 127);
+  const z = Math.round(Math.max(-1, Math.min(1, v.elements[2])) * 127);
+  const w = Math.round(Math.max(-1, Math.min(1, v.elements[3])) * 127);
+  return w << 24 | (z & 255) << 16 | (y & 255) << 8 | x & 255;
+}
+function unpackSnorm4x8(p) {
+  const x = (p & 255) << 24 >> 24;
+  const y = (p >> 8 & 255) << 24 >> 24;
+  const z = (p >> 16 & 255) << 24 >> 24;
+  const w = p >> 24;
+  return new vec4(x / 127, y / 127, z / 127, w / 127);
+}
+function packUnorm2x16(v) {
+  const x = Math.round(Math.max(0, Math.min(1, v.elements[0])) * 65535);
+  const y = Math.round(Math.max(0, Math.min(1, v.elements[1])) * 65535);
+  return y << 16 | x & 65535;
+}
+function unpackUnorm2x16(p) {
+  const x = p & 65535;
+  const y = p >>> 16;
+  return new vec2(x / 65535, y / 65535);
+}
+function packUnorm4x8(v) {
+  const x = Math.round(Math.max(0, Math.min(1, v.elements[0])) * 255);
+  const y = Math.round(Math.max(0, Math.min(1, v.elements[1])) * 255);
+  const z = Math.round(Math.max(0, Math.min(1, v.elements[2])) * 255);
+  const w = Math.round(Math.max(0, Math.min(1, v.elements[3])) * 255);
+  return w << 24 | z << 16 | y << 8 | x & 255;
+}
+function unpackUnorm4x8(p) {
+  const x = p & 255;
+  const y = p >>> 8 & 255;
+  const z = p >>> 16 & 255;
+  const w = p >>> 24;
+  return new vec4(x / 255, y / 255, z / 255, w / 255);
+}
+function float32ToFloat16(val) {
+  const floatView = new DataView(new ArrayBuffer(4));
+  floatView.setFloat32(0, val);
+  const f32 = floatView.getUint32(0);
+  const sign2 = f32 >> 31 & 1;
+  let exp3 = f32 >> 23 & 255;
+  const frac = f32 & 8388607;
+  let newExp;
+  if (exp3 === 0) {
+    newExp = 0;
+  } else if (exp3 === 255) {
+    newExp = 31;
+  } else {
+    exp3 = exp3 - 127 + 15;
+    if (exp3 >= 31) {
+      newExp = 31;
+    } else if (exp3 <= 0) {
+      newExp = 0;
+    } else {
+      newExp = exp3;
+    }
+  }
+  return sign2 << 15 | newExp << 10 | frac >> 13;
+}
+function float16ToFloat32(val) {
+  const floatView = new DataView(new ArrayBuffer(4));
+  const sign2 = val >> 15 & 1;
+  let exp3 = val >> 10 & 31;
+  const frac = val & 1023;
+  let newExp;
+  let newFrac;
+  if (exp3 === 0) {
+    if (frac === 0) {
+      newExp = 0;
+      newFrac = 0;
+    } else {
+      newExp = 1 - 15 + 127;
+      newFrac = frac;
+      while ((newFrac & 1024) === 0) {
+        newFrac <<= 1;
+        newExp--;
+      }
+      newFrac &= 1023;
+    }
+  } else if (exp3 === 31) {
+    newExp = 255;
+    newFrac = frac !== 0 ? 8388607 : 0;
+  } else {
+    newExp = exp3 - 15 + 127;
+    newFrac = frac;
+  }
+  floatView.setUint32(0, sign2 << 31 | newExp << 23 | newFrac << 13);
+  return floatView.getFloat32(0);
+}
+var bvec2, bvec3, bvec4, createVectorRelationalOperator, equal, notEqual, lessThan, lessThanEqual, greaterThan, greaterThanEqual;
 var init_functions = __esm({
   "implementation/functions.js"() {
     init_mat();
     init_vec();
+    bvec2 = vec2;
+    bvec3 = vec32;
+    bvec4 = vec4;
+    createVectorRelationalOperator = (op) => {
+      return (x, y) => {
+        let out;
+        switch (x.elements.length) {
+          case 2:
+            out = new bvec2();
+            break;
+          case 3:
+            out = new bvec3();
+            break;
+          case 4:
+            out = new bvec4();
+            break;
+          default:
+            throw new Error(`Unsupported vector length: ${x.elements.length}`);
+        }
+        for (let i = 0; i < x.elements.length; i++) {
+          out.elements[i] = op(x.elements[i], y.elements[i]);
+        }
+        return out;
+      };
+    };
+    equal = createVectorRelationalOperator((a, b) => a === b);
+    notEqual = createVectorRelationalOperator((a, b) => a !== b);
+    lessThan = createVectorRelationalOperator((a, b) => a < b);
+    lessThanEqual = createVectorRelationalOperator((a, b) => a <= b);
+    greaterThan = createVectorRelationalOperator((a, b) => a > b);
+    greaterThanEqual = createVectorRelationalOperator((a, b) => a >= b);
   }
 });
 
@@ -688,6 +942,51 @@ function transpose(m) {
 }
 function inverse(m) {
   return m.inverse();
+}
+function determinant(m) {
+  return m.determinant();
+}
+function matrixCompMult(x, y) {
+  const out = new x.constructor();
+  for (let i = 0; i < x.elements.length; i++) {
+    out.elements[i] = x.elements[i] * y.elements[i];
+  }
+  return out;
+}
+function outerProduct(c, r) {
+  if (c.elements.length === 3 && r.elements.length === 3) {
+    const out = new mat3();
+    out.elements[0] = c.elements[0] * r.elements[0];
+    out.elements[1] = c.elements[1] * r.elements[0];
+    out.elements[2] = c.elements[2] * r.elements[0];
+    out.elements[3] = c.elements[0] * r.elements[1];
+    out.elements[4] = c.elements[1] * r.elements[1];
+    out.elements[5] = c.elements[2] * r.elements[1];
+    out.elements[6] = c.elements[0] * r.elements[2];
+    out.elements[7] = c.elements[1] * r.elements[2];
+    out.elements[8] = c.elements[2] * r.elements[2];
+    return out;
+  } else if (c.elements.length === 4 && r.elements.length === 4) {
+    const out = new mat4();
+    out.elements[0] = c.elements[0] * r.elements[0];
+    out.elements[1] = c.elements[1] * r.elements[0];
+    out.elements[2] = c.elements[2] * r.elements[0];
+    out.elements[3] = c.elements[3] * r.elements[0];
+    out.elements[4] = c.elements[0] * r.elements[1];
+    out.elements[5] = c.elements[1] * r.elements[1];
+    out.elements[6] = c.elements[2] * r.elements[1];
+    out.elements[7] = c.elements[3] * r.elements[1];
+    out.elements[8] = c.elements[0] * r.elements[2];
+    out.elements[9] = c.elements[1] * r.elements[2];
+    out.elements[10] = c.elements[2] * r.elements[2];
+    out.elements[11] = c.elements[3] * r.elements[2];
+    out.elements[12] = c.elements[0] * r.elements[3];
+    out.elements[13] = c.elements[1] * r.elements[3];
+    out.elements[14] = c.elements[2] * r.elements[3];
+    out.elements[15] = c.elements[3] * r.elements[3];
+    return out;
+  }
+  throw new Error("outerProduct only supports vec3 and vec4");
 }
 function lookAt(eye, center, up) {
   const f = normalize(center.sub(eye));
@@ -1168,7 +1467,7 @@ function rotation(angle2, axis2) {
   out.elements[3] = c;
   return out;
 }
-var pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi, root_two, one_over_root_two, root_three, e, ln_ten, ln_two;
+var pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi, root_two, one_over_root_two, root_three, e, ln_ten, ln_two, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, pow, exp, log, exp2, log2, sqrt, inversesqrt;
 var init_common = __esm({
   "implementation/common.js"() {
     init_quat();
@@ -1185,6 +1484,25 @@ var init_common = __esm({
     e = Math.E;
     ln_ten = Math.LN10;
     ln_two = Math.LN2;
+    sin = (angle2) => Math.sin(angle2);
+    cos = (angle2) => Math.cos(angle2);
+    tan = (angle2) => Math.tan(angle2);
+    asin = (x) => Math.asin(x);
+    acos = (x) => Math.acos(x);
+    atan = (y, x) => x !== void 0 ? Math.atan(y, x) : Math.atan(y);
+    sinh = (angle2) => Math.sinh(angle2);
+    cosh = (angle2) => Math.cosh(angle2);
+    tanh = (angle2) => Math.tanh(angle2);
+    asinh = (x) => Math.asinh(x);
+    acosh = (x) => Math.acosh(x);
+    atanh = (x) => Math.atanh(x);
+    pow = (base, exp3) => Math.pow(base, exp3);
+    exp = (x) => Math.exp(x);
+    log = (x) => Math.log(x);
+    exp2 = (x) => Math.pow(2, x);
+    log2 = (x) => Math.log2(x);
+    sqrt = (x) => Math.sqrt(x);
+    inversesqrt = (x) => 1 / Math.sqrt(x);
   }
 });
 
@@ -1194,7 +1512,7 @@ var init_package = __esm({
   "package.json"() {
     package_default = {
       name: "glm-js-modern",
-      version: "0.0.7",
+      version: "0.0.7a",
       description: "Modern implementation of glm-js",
       type: "module",
       main: "implementation/index.js",
@@ -1202,7 +1520,7 @@ var init_package = __esm({
         test: "node --test --import ./tests/__init__.js",
         "test:legacy": "node tests/__run-legacy-tests.js",
         "legacy:passfailcounts": "(node tests/__run-legacy-tests.js 2>&1 || true) | grep -E '^[[:space:]]+[0-9]+ (passing|failing)'",
-        cjs: `echo 'module.exports = require("./implementation/index.js").default' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT="'$(git rev-parse --short HEAD)'" --outfile=dist/modern-glm-js.cjs`,
+        cjs: `echo '(function(exports) { if (/object/.test(typeof module)) module.exports = exports; else if (/object/.test(typeof window)) window.glm = exports; else globalThis.glm = exports; return exports; })(require("./implementation/index.js").default)' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT="'$(git rev-parse --short HEAD)'" --outfile=dist/modern-glm-js.cjs`,
         esm: `echo 'module.exports = require("./implementation/index.js").default' | npx esbuild --bundle --format=esm --define:GLMJS_COMMIT="'$(git rev-parse --short HEAD)'" --outfile=dist/modern-glm-js.mjs`
       },
       engines: {
@@ -1215,7 +1533,12 @@ var init_package = __esm({
 // implementation/index.js
 var implementation_exports = {};
 __export(implementation_exports, {
-  default: () => implementation_default
+  default: () => implementation_default,
+  mat3: () => mat3,
+  mat4: () => mat4,
+  vec2: () => vec2,
+  vec3: () => vec32,
+  vec4: () => vec4
 });
 function inverse3(m) {
   if (m instanceof mat3 || m instanceof mat4) {
@@ -1225,12 +1548,13 @@ function inverse3(m) {
   }
   throw new Error("inverse() not implemented for this type");
 }
-var mat3Factory, mat4Factory, quatFactory, vec2Factory, vec3Factory, vec4Factory, glm, implementation_default;
+var mat3Factory, mat4Factory, quatFactory, vec2Factory, vec3Factory, vec4Factory, uvec2Factory, glm, implementation_default;
 var init_implementation = __esm({
   "implementation/index.js"() {
     init_vec();
     init_mat();
     init_quat();
+    init_format();
     init_functions();
     init_common();
     init_package();
@@ -1273,13 +1597,21 @@ var init_implementation = __esm({
       return new vec4(...args);
     };
     vec4Factory.prototype = vec4.prototype;
+    uvec2Factory = function(...args) {
+      if (this instanceof uvec2Factory) {
+        return new uvec2(...args);
+      }
+      return new uvec2(...args);
+    };
+    uvec2Factory.prototype = uvec2.prototype;
     glm = {
       get version() {
-        return `${package_default.version}-${false ? "(develop)" : "1defe8c"}`;
+        return `${package_default.version}-${false ? "(develop)" : "8f607e5"}`;
       },
       vec2: vec2Factory,
       vec3: vec3Factory,
       vec4: vec4Factory,
+      uvec2: uvec2Factory,
       mat3: mat3Factory,
       mat4: mat4Factory,
       quat: quatFactory,
@@ -1314,11 +1646,84 @@ var init_implementation = __esm({
       e,
       ln_ten,
       ln_two,
-      ...functions_exports
+      to_string,
+      dot,
+      cross,
+      normalize,
+      translate,
+      rotate,
+      scale,
+      length,
+      length2,
+      distance,
+      mix,
+      clamp,
+      toMat4,
+      add,
+      sub,
+      mul,
+      div,
+      unProject,
+      project,
+      diagonal3x3,
+      diagonal4x4,
+      angle,
+      axis,
+      eulerAngles,
+      faceforward,
+      reflect,
+      refract,
+      determinant,
+      matrixCompMult,
+      outerProduct,
+      sin,
+      cos,
+      tan,
+      asin,
+      acos,
+      atan,
+      sinh,
+      cosh,
+      tanh,
+      asinh,
+      acosh,
+      atanh,
+      pow,
+      exp,
+      log,
+      exp2,
+      log2,
+      sqrt,
+      inversesqrt,
+      any,
+      equal,
+      notEqual,
+      lessThan,
+      lessThanEqual,
+      greaterThan,
+      greaterThanEqual,
+      not_,
+      packDouble2x32,
+      unpackDouble2x32,
+      packHalf2x16,
+      unpackHalf2x16,
+      packSnorm2x16,
+      unpackSnorm2x16,
+      packSnorm4x8,
+      unpackSnorm4x8,
+      packUnorm2x16,
+      unpackUnorm2x16,
+      packUnorm4x8,
+      unpackUnorm4x8
     };
     implementation_default = glm;
   }
 });
 
 // <stdin>
-module.exports = (init_implementation(), __toCommonJS(implementation_exports)).default;
+(function(exports2) {
+  if (/object/.test(typeof module)) module.exports = exports2;
+  else if (/object/.test(typeof window)) window.glm = exports2;
+  else globalThis.glm = exports2;
+  return exports2;
+})((init_implementation(), __toCommonJS(implementation_exports)).default);
