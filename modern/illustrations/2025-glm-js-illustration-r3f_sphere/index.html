@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>glm-js r3f Illustration (Live Editor)</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #1a1a1a; color: #fff; display: flex; flex-direction: column; height: 100vh; }
+        #app-container { display: flex; flex: 1; min-height: 0; }
+        #r3f-canvas-container { flex: 1; min-width: 0; position: relative; }
+        #editor-panel { flex: 1; display: flex; flex-direction: column; padding: 1rem; background-color: #2a2a2a; overflow-y: auto; }
+        #error-overlay { position: absolute; bottom: 0; left: 0; right: 0; background-color: rgba(255, 0, 0, 0.7); color: white; padding: 1rem; border-radius: 5px; font-family: monospace; white-space: pre-wrap; z-index: 1000; margin: 10px; }
+        .cm-editor { flex-grow: 1; border-radius: 5px; }
+        #examples { margin-bottom: 1rem; }
+        button { background-color: #444; color: white; border: 1px solid #666; padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; margin-right: 0.5rem; }
+        button:hover { background-color: #555; }
+        h2 { margin-top: 0; }
+
+        @media (max-width: 768px) {
+            #app-container { flex-direction: column; }
+            #editor-panel { flex: 0 0 50vh; }
+        }
+    </style>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "three": "https://esm.sh/three@0.159.0",
+        "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.16?deps=react@18.2.0,three@0.159.0",
+        "@react-three/drei": "https://esm.sh/@react-three/drei@9.99.4?deps=react@18.2.0,three@0.159.0,@react-three/fiber@8.15.16",
+
+        "codemirror": "https://esm.sh/codemirror@6.0.1",
+        "@codemirror/lang-javascript": "https://esm.sh/@codemirror/lang-javascript@6.2.2",
+        "@codemirror/autocomplete": "https://esm.sh/@codemirror/autocomplete@6.15.0",
+        "@codemirror/theme-one-dark": "https://esm.sh/@codemirror/theme-one-dark@6.1.2",
+
+        "glm-js": "https://cdn.jsdelivr.net/gh/humbletim/glm-js@feat-add-r3f-illustration/modern/dist/modern-glm-js.mjs"
+      }
+    }
+    </script>
+  
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+</head>
+<body>
+    <div id="app-container">
+        <div id="r3f-canvas-container"></div>
+        <div id="editor-panel">
+            <h2>Live GLM Editor</h2>
+            <div id="examples">
+                <button id="ex-position">Position</button><button id="ex-scale">Scale</button><button id="ex-color">Color</button>
+            </div>
+            <div id="editor-container" style="flex: 1; min-height: 0; border: 1px solid #555; border-radius: 5px;"></div>
+        </div>
+    </div>
+
+    <script type="text/babel" data-type="module">
+        // glm
+        import glm from 'glm-js';
+
+        // react
+        import React, { useRef, useState, useEffect, useMemo } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { Canvas, useFrame } from '@react-three/fiber';
+        import { OrbitControls } from '@react-three/drei';
+        import * as THREE from 'three';
+
+        // codemirror
+        import { EditorView , basicSetup } from 'codemirror';
+        import { javascript } from "@codemirror/lang-javascript";
+        import { oneDark }  from "@codemirror/theme-one-dark";
+        import { autocompletion } from "@codemirror/autocomplete";
+
+        const defaultSphereProps = {
+            position: new THREE.Vector3(0, 0, 0),
+            scale: new THREE.Vector3(1, 1, 1),
+            color: new THREE.Color('orange'),
+        };
+
+        const exampleSnippets = {
+            position: `// The function runs every frame.
+// Return an object with props to apply to the sphere.
+// Available args: time, delta, glm
+const y = glm.sin(time * 2.0);
+const position = glm.vec3(0, y, 0);
+
+return { position };`,
+            scale: `const scaleFactor = glm.sin(time * 3.0) * 0.5 + 1.5;
+const scale = glm.vec3(scaleFactor);
+
+return { scale };`,
+            color: `const r = glm.sin(time * 1.0) * 0.5 + 0.5;
+const g = glm.cos(time * 1.5) * 0.5 + 0.5;
+const b = 0.8;
+const color = glm.vec3(r, g, b);
+
+return { color };`
+        };
+
+        function SphereScene({ userFunction, setExecutionError }) {
+            const meshRef = useRef();
+
+            useFrame(({ clock }) => {
+                if (!meshRef.current) return;
+
+                try {
+                    const time = clock.getElapsedTime();
+                    const delta = clock.getDelta();
+
+                    const result = userFunction(time, delta, glm, THREE);
+
+                    // Reset to defaults before applying user props
+                    meshRef.current.position.copy(defaultSphereProps.position);
+                    meshRef.current.scale.copy(defaultSphereProps.scale);
+                    meshRef.current.material.color.copy(defaultSphereProps.color);
+
+                    if (result?.position instanceof glm.vec3) meshRef.current.position.set(...result.position.array);
+                    if (result?.scale instanceof glm.vec3) meshRef.current.scale.set(...result.scale.array);
+                    if (result?.color instanceof glm.vec3) meshRef.current.material.color.set(new THREE.Color(...result.color.array));
+
+                    setExecutionError(null); // Clear error on success
+                } catch (error) {
+                    setExecutionError(error.toString());
+                }
+            });
+
+            return (
+                <>
+                    <ambientLight intensity={0.5} />
+                    <pointLight position={[10, 10, 10]} />
+                    <mesh ref={meshRef}>
+                        <sphereGeometry args={[1, 32, 32]} />
+                        <meshStandardMaterial color={defaultSphereProps.color} />
+                    </mesh>
+                    <OrbitControls />
+                </>
+            );
+        }
+
+        function App() {
+            const [userCode, setUserCode] = useState(exampleSnippets.position);
+            const [executionError, setExecutionError] = useState(null);
+
+            const userFunction = useMemo(() => {
+                try {
+                    // eslint-disable-next-line no-new-func
+                    return new Function('time', 'delta', 'glm', 'THREE', userCode);
+                } catch (e) {
+                    // This catches syntax errors during compilation
+                    setExecutionError(e.toString());
+                    return () => ({}); // Return a no-op function on error
+                }
+            }, [userCode]);
+
+
+            useEffect(() => {
+                // console.log({ javascript, oneDark, autocompletion, basicSetup, EditorView })
+                const glmProperties = Object.keys(glm).filter(key => typeof glm[key] === 'function');
+                const glmCompletions = glmProperties.map(prop => ({
+                    label: prop,
+                    type: "function",
+                    info: `glm-js API function: ${prop}`
+                }));
+
+                function glmAutocomplete(context) {
+                    let before = context.matchBefore(/glm\.\w*/)
+                    if (!before || before.from == before.to && !context.explicit) return null;
+                    return { from: before.from + 4, options: glmCompletions, validFor: /^\w*$/ };
+                }
+
+                const editor = new EditorView({
+                    doc: userCode,
+                    extensions: [
+                        basicSetup,
+                        javascript(),
+                        oneDark,
+                        autocompletion({ override: [glmAutocomplete] }),
+                        EditorView.updateListener.of(update => {
+                            if (update.docChanged) {
+                                setUserCode(update.state.doc.toString());
+                            }
+                        })
+                    ],
+                    parent: document.getElementById('editor-container')
+                });
+
+                const setEditorContent = (content) => editor.dispatch({
+                    changes: { from: 0, to: editor.state.doc.length, insert: content }
+                });
+
+                document.getElementById('ex-position').onclick = () => setEditorContent(exampleSnippets.position);
+                document.getElementById('ex-scale').onclick = () => setEditorContent(exampleSnippets.scale);
+                document.getElementById('ex-color').onclick = () => setEditorContent(exampleSnippets.color);
+
+            }, []); // Empty dependency array, runs once on mount
+
+            return (
+                <>
+                    <Canvas camera={{ position: [0, 0, 5] }}>
+                        <SphereScene userFunction={userFunction} setExecutionError={setExecutionError} />
+                    </Canvas>
+                    {executionError && <div id="error-overlay">{executionError}</div>}
+                </>
+            )
+        }
+
+        const root = createRoot(document.getElementById('r3f-canvas-container'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
