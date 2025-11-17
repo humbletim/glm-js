@@ -40,6 +40,12 @@
       }
     }
     </script>
+    <script type="module">
+        import glm from 'glm-js'
+        document.title = document.title.replace('glm-js', 'glm-js '+glm.version);
+        window.glm = glm; // expose for quick DevTools console access / experimentation
+    </script>
+
   
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
