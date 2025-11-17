@@ -12,7 +12,7 @@ const q_dusk = new Dusk.quat(w, x, y, z);
 console.log('\\n--- DUSK ---');
 console.log('Signature: (w, x, y, z)');
 console.log('.toString():      ', q_dusk.toString());
-// Note: Legacy to_string methods might not exist or be reliable
+console.log('Dusk.to_string():  ', Dusk.to_string ? Dusk.to_string(q_dusk) : 'N/A');
 console.log('.array getter:    ', q_dusk.array);
 console.log('JSON.stringify:   ', JSON.stringify(q_dusk));
 
