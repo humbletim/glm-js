@@ -3,7 +3,7 @@ import { vec2, vec3, vec4 } from './vec.js';
 import { mat3, mat4, inverse as matInverse, transpose, lookAt, perspective, ortho, determinant, matrixCompMult, outerProduct } from './mat.js';
 import { quat, angleAxis, slerp, inverse as quatInverse } from './quat.js';
 import { to_string } from './format.js';
-import { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles, faceforward, reflect, refract } from './functions.js';
+import { dot, cross, normalize, translate, rotate, scale, length, length2, distance, mix, clamp, toMat4, add, sub, mul, div, unProject, project, diagonal3x3, diagonal4x4, angle, axis, eulerAngles, faceforward, reflect, refract, any, equal, notEqual, lessThan, lessThanEqual, greaterThan, greaterThanEqual, not_, packDouble2x32, unpackDouble2x32, packHalf2x16, unpackHalf2x16, packSnorm2x16, unpackSnorm2x16, packSnorm4x8, unpackSnorm4x8, packUnorm2x16, unpackUnorm2x16, packUnorm4x8, unpackUnorm4x8 } from './functions.js';
 import {
     radians, degrees, min, max, abs, fract, all, sign, frexp, rotation,
     pi, half_pi, quarter_pi, one_over_pi, two_over_pi, root_pi, two_over_root_pi,
@@ -159,6 +159,26 @@ const glm = {
     log2,
     sqrt,
     inversesqrt,
+    any,
+    equal,
+    notEqual,
+    lessThan,
+    lessThanEqual,
+    greaterThan,
+    greaterThanEqual,
+    not_,
+    packDouble2x32,
+    unpackDouble2x32,
+    packHalf2x16,
+    unpackHalf2x16,
+    packSnorm2x16,
+    unpackSnorm2x16,
+    packSnorm4x8,
+    unpackSnorm4x8,
+    packUnorm2x16,
+    unpackUnorm2x16,
+    packUnorm4x8,
+    unpackUnorm4x8,
 };
 
 export default glm;
