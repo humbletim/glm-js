@@ -1515,7 +1515,7 @@ var init_package = __esm({
   "package.json"() {
     package_default = {
       name: "glm-js-modern",
-      version: "0.0.7a",
+      version: "0.0.7b",
       description: "Modern implementation of glm-js",
       type: "module",
       main: "implementation/index.js",
@@ -1609,7 +1609,7 @@ var init_implementation = __esm({
     uvec2Factory.prototype = uvec2.prototype;
     glm = {
       get version() {
-        return `${package_default.version}-${false ? "(develop)" : "8f607e5"}`;
+        return `${package_default.version}-${false ? "(develop)" : "28f44b3"}`;
       },
       vec2: vec2Factory,
       vec3: vec3Factory,
