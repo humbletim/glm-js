@@ -86,8 +86,11 @@ function toCppStringMat(mat) {
 }
 function toCppStringQuat(quat2) {
   const className = quat2.constructor.name.toLowerCase();
-  const elements = Array.from(quat2.elements).map(format).join(", ");
-  return `${className}(${elements})`;
+  const w = format(quat2.elements[3]);
+  const x = format(quat2.elements[0]);
+  const y = format(quat2.elements[1]);
+  const z = format(quat2.elements[2]);
+  return `${className}(${w}, {${x}, ${y}, ${z}})`;
 }
 function to_string(v) {
   if (v === null || v === void 0) {
@@ -1512,7 +1515,7 @@ var init_package = __esm({
   "package.json"() {
     package_default = {
       name: "glm-js-modern",
-      version: "0.0.7b",
+      version: "0.0.7c",
       description: "Modern implementation of glm-js",
       type: "module",
       main: "implementation/index.js",
@@ -1606,7 +1609,7 @@ var init_implementation = __esm({
     uvec2Factory.prototype = uvec2.prototype;
     glm = {
       get version() {
-        return `${package_default.version}-${false ? "(develop)" : "28f44b3"}`;
+        return `${package_default.version}-${false ? "(develop)" : "a3093cd"}`;
       },
       vec2: vec2Factory,
       vec3: vec3Factory,
