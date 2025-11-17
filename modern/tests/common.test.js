@@ -11,5 +11,5 @@ test('glm.to_string', (t) => {
     assert.strictEqual(glm.to_string(glm.vec3(1, 2, 3)), 'fvec3(1.000000, 2.000000, 3.000000)', 'to_string(vec3)');
     assert.strictEqual(glm.to_string(glm.vec4(1, 2, 3, 4)), 'fvec4(1.000000, 2.000000, 3.000000, 4.000000)', 'to_string(vec4)');
     assert.strictEqual(glm.to_string(glm.mat3()), 'mat3(1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000)', 'to_string(mat3)');
-    assert.strictEqual(glm.to_string(glm.quat(1,2,3,4)), 'quat(2.000000, 3.000000, 4.000000, 1.000000)', 'to_string(quat)');
+    assert.strictEqual(glm.to_string(glm.quat(1,2,3,4)), 'quat(1.000000, {2.000000, 3.000000, 4.000000})', 'to_string(quat)');
 });

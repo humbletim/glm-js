@@ -18,8 +18,11 @@ export function toCppStringMat(mat) {
 
 export function toCppStringQuat(quat) {
     const className = quat.constructor.name.toLowerCase();
-    const elements = Array.from(quat.elements).map(format).join(', ');
-    return `${className}(${elements})`;
+    const w = format(quat.elements[3]);
+    const x = format(quat.elements[0]);
+    const y = format(quat.elements[1]);
+    const z = format(quat.elements[2]);
+    return `${className}(${w}, {${x}, ${y}, ${z}})`;
 }
 
 export function to_string(v) {
