@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>glm-js r3f Illustration</title>
+    <title>glm-js r3f Illustration (Live Editor)</title>
     <style>
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #1a1a1a; color: #fff; display: flex; flex-direction: column; height: 100vh; }
         #app-container { display: flex; flex: 1; min-height: 0; }
@@ -21,11 +21,27 @@
             #editor-panel { flex: 0 0 50vh; }
         }
     </style>
-    <!-- CodeMirror dependencies -->
-    <script src="https://unpkg.com/codemirror@6.0.1/dist/index.min.js"></script>
-    <script src="https://unpkg.com/@codemirror/lang-javascript@6.2.2/dist/index.min.js"></script>
-    <script src="https://unpkg.com/@codemirror/autocomplete@6.15.0/dist/index.min.js"></script>
-    <script src="https://unpkg.com/@codemirror/theme-one-dark@6.1.2/dist/index.min.js"></script>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "three": "https://esm.sh/three@0.159.0",
+        "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.16?deps=react@18.2.0,three@0.159.0",
+        "@react-three/drei": "https://esm.sh/@react-three/drei@9.99.4?deps=react@18.2.0,three@0.159.0,@react-three/fiber@8.15.16",
+
+        "codemirror": "https://esm.sh/codemirror@6.0.1",
+        "@codemirror/lang-javascript": "https://esm.sh/@codemirror/lang-javascript@6.2.2",
+        "@codemirror/autocomplete": "https://esm.sh/@codemirror/autocomplete@6.15.0",
+        "@codemirror/theme-one-dark": "https://esm.sh/@codemirror/theme-one-dark@6.1.2",
+
+        "glm-js": "https://cdn.jsdelivr.net/gh/humbletim/glm-js@feat-add-r3f-illustration/modern/dist/modern-glm-js.mjs"
+      }
+    }
+    </script>
+  
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 </head>
 <body>
@@ -34,41 +50,28 @@
         <div id="editor-panel">
             <h2>Live GLM Editor</h2>
             <div id="examples">
-                <button id="ex-position">Position</button>
-                <button id="ex-scale">Scale</button>
-                <button id="ex-color">Color</button>
+                <button id="ex-position">Position</button><button id="ex-scale">Scale</button><button id="ex-color">Color</button>
             </div>
             <div id="editor-container" style="flex: 1; min-height: 0; border: 1px solid #555; border-radius: 5px;"></div>
         </div>
     </div>
 
-    <!-- GLM Library -->
-    <script src="../dist/modern-glm-js.cjs"></script>
-
-    <!-- ES Module Shims for CDN imports -->
-    <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
-
-    <!-- Babel Standalone for in-browser JSX transpilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <script type="importmap">
-    {
-        "imports": {
-            "react": "https://esm.sh/react@18.3.1",
-            "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-            "three": "https://esm.sh/three@0.164.1",
-            "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.16.6",
-            "@react-three/drei": "https://esm.sh/@react-three/drei@9.105.6"
-        }
-    }
-    </script>
-
     <script type="text/babel" data-type="module">
+        // glm
+        import glm from 'glm-js';
+
+        // react
         import React, { useRef, useState, useEffect, useMemo } from 'react';
         import { createRoot } from 'react-dom/client';
         import { Canvas, useFrame } from '@react-three/fiber';
         import { OrbitControls } from '@react-three/drei';
         import * as THREE from 'three';
+
+        // codemirror
+        import { EditorView , basicSetup } from 'codemirror';
+        import { javascript } from "@codemirror/lang-javascript";
+        import { oneDark }  from "@codemirror/theme-one-dark";
+        import { autocompletion } from "@codemirror/autocomplete";
 
         const defaultSphereProps = {
             position: new THREE.Vector3(0, 0, 0),
@@ -80,18 +83,18 @@
             position: `// The function runs every frame.
 // Return an object with props to apply to the sphere.
 // Available args: time, delta, glm
-const y = Math.sin(time * 2.0);
+const y = glm.sin(time * 2.0);
 const position = glm.vec3(0, y, 0);
 
 return { position };`,
-            scale: `const scaleFactor = Math.sin(time * 3.0) * 0.5 + 1.5;
+            scale: `const scaleFactor = glm.sin(time * 3.0) * 0.5 + 1.5;
 const scale = glm.vec3(scaleFactor);
 
 return { scale };`,
-            color: `const r = Math.sin(time * 1.0) * 0.5 + 0.5;
-const g = Math.cos(time * 1.5) * 0.5 + 0.5;
+            color: `const r = glm.sin(time * 1.0) * 0.5 + 0.5;
+const g = glm.cos(time * 1.5) * 0.5 + 0.5;
 const b = 0.8;
-const color = new THREE.Color(r, g, b);
+const color = glm.vec3(r, g, b);
 
 return { color };`
         };
@@ -106,24 +109,17 @@ return { color };`
                     const time = clock.getElapsedTime();
                     const delta = clock.getDelta();
 
-                    const result = userFunction(time, delta, window.glm, THREE);
+                    const result = userFunction(time, delta, glm, THREE);
 
                     // Reset to defaults before applying user props
                     meshRef.current.position.copy(defaultSphereProps.position);
                     meshRef.current.scale.copy(defaultSphereProps.scale);
                     meshRef.current.material.color.copy(defaultSphereProps.color);
 
-                    if (result) {
-                        if (result.position && result.position._type === 'vec') {
-                            meshRef.current.position.set(result.position.x, result.position.y, result.position.z);
-                        }
-                        if (result.scale && result.scale._type === 'vec') {
-                            meshRef.current.scale.set(result.scale.x, result.scale.y, result.scale.z);
-                        }
-                        if (result.color instanceof THREE.Color) {
-                            meshRef.current.material.color.set(result.color);
-                        }
-                    }
+                    if (result?.position instanceof glm.vec3) meshRef.current.position.set(...result.position.array);
+                    if (result?.scale instanceof glm.vec3) meshRef.current.scale.set(...result.scale.array);
+                    if (result?.color instanceof glm.vec3) meshRef.current.material.color.set(new THREE.Color(...result.color.array));
+
                     setExecutionError(null); // Clear error on success
                 } catch (error) {
                     setExecutionError(error.toString());
@@ -160,14 +156,10 @@ return { color };`
 
 
             useEffect(() => {
-                const { EditorView, basicSetup } = CM;
-                const { javascript } = CM_LANG_JS;
-                const { oneDark } = CM_THEME_ONE_DARK;
-                const { autocompletion } = CM_AUTOCOMPLETE;
-
-                const glmProperties = Object.keys(window.glm).filter(key => typeof window.glm[key] === 'function');
+                // console.log({ javascript, oneDark, autocompletion, basicSetup, EditorView })
+                const glmProperties = Object.keys(glm).filter(key => typeof glm[key] === 'function');
                 const glmCompletions = glmProperties.map(prop => ({
-                    label: `glm.${prop}`,
+                    label: prop,
                     type: "function",
                     info: `glm-js API function: ${prop}`
                 }));
@@ -202,7 +194,7 @@ return { color };`
                 document.getElementById('ex-scale').onclick = () => setEditorContent(exampleSnippets.scale);
                 document.getElementById('ex-color').onclick = () => setEditorContent(exampleSnippets.color);
 
-            }, []);
+            }, []); // Empty dependency array, runs once on mount
 
             return (
                 <>
@@ -215,12 +207,6 @@ return { color };`
         }
 
         const root = createRoot(document.getElementById('r3f-canvas-container'));
-
-        window.CM = window.codemirror;
-        window.CM_LANG_JS = window.langJavascript;
-        window.CM_AUTOCOMPLETE = window.autocomplete;
-        window.CM_THEME_ONE_DARK = window.themeOneDark;
-
         root.render(<App />);
 
     </script>
