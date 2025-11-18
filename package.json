@@ -1,37 +1,17 @@
 {
-  "name": "glm-js",
-  "version": "0.0.6c",
-  "description": "experimental JavaScript implementation of the OpenGL Mathematics (GLM) C++ Library",
-  "main": "build/glm-js.min.js",
-  "files": [
-    "LICENSE",
-    "README.md",
-    "build/glm-js.min.js"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/humbletim/glm-js.git"
+  "name": "glm-js-modern",
+  "version": "0.0.7c",
+  "description": "Modern implementation of glm-js",
+  "type": "module",
+  "main": "implementation/index.js",
+  "scripts": {
+    "test": "node --test --import ./tests/__init__.js tests/*.test.js",
+    "test:legacy": "node tests/__run-legacy-tests.js",
+    "legacy:passfailcounts": "(node tests/__run-legacy-tests.js 2>&1 || true) | grep -E '^[[:space:]]+[0-9]+ (passing|failing)'",
+    "cjs": "echo '(function(exports) { if (/object/.test(typeof module)) module.exports = exports; else if (/object/.test(typeof window)) window.glm = exports; else globalThis.glm = exports; return exports; })(require(\"./implementation/index.js\").default)' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT=\"'$(git rev-parse --short HEAD)'\" --outfile=dist/modern-glm-js.cjs",
+    "esm": "echo 'module.exports = require(\"./implementation/index.js\").default' | npx esbuild --bundle --format=esm --define:GLMJS_COMMIT=\"'$(git rev-parse --short HEAD)'\" --outfile=dist/modern-glm-js.mjs"
   },
-  "keywords": [
-    "OpenGL",
-    "Mathematics",
-    "GLM",
-    "Vector",
-    "Matrix",
-    "vec3",
-    "mat4"
-  ],
-  "author": {
-    "name": "Tim Dedischew",
-    "email": "humbletim@gmail.com"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/humbletim/glm-js/issues"
-  },
-  "homepage": "https://humbletim.github.io/glm-js",
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "mocha": "^2.4.5"
+  "engines": {
+    "node": ">=20.6.0"
   }
 }
