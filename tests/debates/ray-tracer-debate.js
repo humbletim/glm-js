@@ -5,7 +5,7 @@ import path from 'path';
 import { test } from 'node:test';
 
 // Dusk: Legacy CJS, direct require from the built file
-import Dusk from '../../../build/glm-js.js';
+import Dusk from '../../../legacy/build/glm-js.js';
 
 // Day: Modern CJS, requires building first
 const dayPath = path.resolve(process.cwd(), './dist/modern-glm-js.cjs');
@@ -13,11 +13,11 @@ if (!fs.existsSync(dayPath)) {
     console.log('Modern CJS build not found. Building...');
     execSync('npm run cjs');
 }
-import Day from '../../dist/modern-glm-js.cjs';
+import Day from '../../../dist/modern-glm-js.cjs';
 
 
 // Dawn: Modern ESM, direct import from source
-import Dawn from '../../../modern/implementation/index.js';
+import Dawn from '../../../implementation/index.js';
 
 test('Ray Tracer Tri-Debate', { skip: !process.env.RUN_DEBATE }, (t) => {
     console.log('Running debate script...');

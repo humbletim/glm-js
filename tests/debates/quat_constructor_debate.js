@@ -1,7 +1,7 @@
 // modern/test/debates/quat_constructor_debate.js
-import Dusk from '../../../build/glm-js.js';
-import Day from '../../dist/modern-glm-js.cjs';
-import Dawn from '../../implementation/index.js';
+import Dusk from '../../../legacy/build/glm-js.js';
+import Day from '../../../dist/modern-glm-js.cjs';
+import Dawn from '../../../implementation/index.js';
 
 const w = 1, x = 2, y = 3, z = 4;
 

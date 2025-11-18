@@ -1,8 +1,8 @@
 // --- modern/test/debates/2025.11.14.eulerAngles.cjs ---
 // (We may need to patch this if 'Day' tries to find a 'glm' global)
-const Dusk = require('../../../build/glm-js.js');
-const Day = require('../../dist/modern-glm-js.cjs');
-const Dawn = require('../../implementation/index.js').default;
+const Dusk = require('../../../legacy/build/glm-js.js');
+const Day = require('../../../dist/modern-glm-js.cjs');
+const Dawn = require('../../../implementation/index.js').default;
 
 console.log('--- The Debaters ---');
 console.log({

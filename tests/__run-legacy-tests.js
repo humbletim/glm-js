@@ -1,11 +1,14 @@
+// TODO: This script is not working after the repository restructure.
+// The relative paths to mocha and chai are not resolving correctly.
+// This needs to be fixed to re-enable the legacy test suite.
 import glm from '../implementation/index.js'
-import Mocha from 'mocha';
+import Mocha from '../legacy/node_modules/mocha/index.js';
 import { readFileSync, writeFileSync, unlinkSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import denylist from './legacy-test-denylist.js';
-import chai from 'chai'
-import self from '../../test/browser/cane.js'
+import chai from '../legacy/node_modules/chai/index.js'
+import self from '../legacy/test/browser/cane.js'
 import { toCppStringMat, toCppStringVec, toCppStringQuat } from "../implementation/format.js";
 
 const mocha = new Mocha;
@@ -33,7 +36,7 @@ Object.assign(globalThis, {
 
 eval(readFileSync('./tests/__glm_tdd_stubs__.js', 'utf-8'))
 
-const legacyTestPath = '../test/legacy-tests.cjs';
+const legacyTestPath = 'legacy/test/legacy-tests.cjs';
 mocha.addFile(legacyTestPath);
 
 const runner = mocha.run((failures) => {

@@ -1,5 +1,5 @@
-const Dusk = require('../../../build/glm-js.js');
-const Dawn = require('../../implementation/index.js').default;
+const Dusk = require('../../../legacy/build/glm-js.js');
+const Dawn = require('../../../implementation/index.js').default;
 
 console.log('--- The Debaters: API Surface Area ---');
 
