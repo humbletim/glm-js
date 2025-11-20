@@ -139,9 +139,14 @@ function distance(a, b) {
 
 
 function mix(a, b, t) {
+    if (typeof a === 'number') {
+        return a * (1 - t) + b * t;
+    }
+
     const out = new (a.constructor)();
     for (let i = 0; i < a.elements.length; i++) {
-        out.elements[i] = a.elements[i] * (1 - t) + b.elements[i] * t;
+        const tVal = (typeof t === 'number') ? t : t.elements[i];
+        out.elements[i] = a.elements[i] * (1 - tVal) + b.elements[i] * tVal;
     }
     return out;
 }

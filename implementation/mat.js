@@ -301,29 +301,29 @@ export function outerProduct(c, r) {
 }
 
 export function lookAt(eye, center, up) {
-    const f = normalize(center.sub(eye));
+    const f = normalize(eye.sub(center));
     const s = normalize(cross(up, f));
     const u = cross(f, s);
 
     const out = new mat4();
-    out.elements[0] = s.elements[0];
-    out.elements[1] = s.elements[1];
-    out.elements[2] = s.elements[2];
+    out.elements[0] = s.x;
+    out.elements[1] = u.x;
+    out.elements[2] = f.x;
     out.elements[3] = 0;
-    out.elements[4] = u.elements[0];
-    out.elements[5] = u.elements[1];
-    out.elements[6] = u.elements[2];
+    out.elements[4] = s.y;
+    out.elements[5] = u.y;
+    out.elements[6] = f.y;
     out.elements[7] = 0;
-    out.elements[8] = f.elements[0];
-    out.elements[9] = f.elements[1];
-    out.elements[10] = f.elements[2];
+    out.elements[8] = s.z;
+    out.elements[9] = u.z;
+    out.elements[10] = f.z;
     out.elements[11] = 0;
     out.elements[12] = -dot(s, eye);
     out.elements[13] = -dot(u, eye);
     out.elements[14] = -dot(f, eye);
     out.elements[15] = 1;
 
-    return out.transpose();
+    return out;
 }
 
 export function perspective(fovy, aspect, near, far) {
