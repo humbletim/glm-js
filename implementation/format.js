@@ -5,19 +5,19 @@ export function format(number) {
 }
 
 export function toCppStringVec(vec) {
-    const className = 'f' + vec.constructor.name.toLowerCase();
+    const className = vec._type + vec.elements.length;
     const elements = Array.from(vec.elements).map(format).join(', ');
     return `${className}(${elements})`;
 }
 
 export function toCppStringMat(mat) {
-    const className = mat.constructor.name.toLowerCase();
+    const className = mat._type + Math.sqrt(mat.elements.length);
     const elements = Array.from(mat.elements).map(format).join(', ');
     return `${className}(${elements})`;
 }
 
 export function toCppStringQuat(quat) {
-    const className = quat.constructor.name.toLowerCase();
+    const className = quat._type;
     const w = format(quat.elements[3]);
     const x = format(quat.elements[0]);
     const y = format(quat.elements[1]);

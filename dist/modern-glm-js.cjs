@@ -992,27 +992,27 @@ function outerProduct(c, r) {
   throw new Error("outerProduct only supports vec3 and vec4");
 }
 function lookAt(eye, center, up) {
-  const f = normalize(center.sub(eye));
+  const f = normalize(eye.sub(center));
   const s = normalize(cross(up, f));
   const u = cross(f, s);
   const out = new mat4();
-  out.elements[0] = s.elements[0];
-  out.elements[1] = s.elements[1];
-  out.elements[2] = s.elements[2];
+  out.elements[0] = s.x;
+  out.elements[1] = u.x;
+  out.elements[2] = f.x;
   out.elements[3] = 0;
-  out.elements[4] = u.elements[0];
-  out.elements[5] = u.elements[1];
-  out.elements[6] = u.elements[2];
+  out.elements[4] = s.y;
+  out.elements[5] = u.y;
+  out.elements[6] = f.y;
   out.elements[7] = 0;
-  out.elements[8] = f.elements[0];
-  out.elements[9] = f.elements[1];
-  out.elements[10] = f.elements[2];
+  out.elements[8] = s.z;
+  out.elements[9] = u.z;
+  out.elements[10] = f.z;
   out.elements[11] = 0;
   out.elements[12] = -dot(s, eye);
   out.elements[13] = -dot(u, eye);
   out.elements[14] = -dot(f, eye);
   out.elements[15] = 1;
-  return out.transpose();
+  return out;
 }
 function perspective(fovy, aspect, near, far) {
   const out = new mat4(0);
@@ -1520,7 +1520,7 @@ var init_package = __esm({
       type: "module",
       main: "implementation/index.js",
       scripts: {
-        test: "node --test --import ./tests/__init__.js",
+        test: "node --test --import ./tests/__init__.js 'tests/**/*.test.js'",
         "test:legacy": "node tests/__run-legacy-tests.js",
         "legacy:passfailcounts": "(node tests/__run-legacy-tests.js 2>&1 || true) | grep -E '^[[:space:]]+[0-9]+ (passing|failing)'",
         cjs: `echo '(function(exports) { if (/object/.test(typeof module)) module.exports = exports; else if (/object/.test(typeof window)) window.glm = exports; else globalThis.glm = exports; return exports; })(require("./implementation/index.js").default)' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT="'$(git rev-parse --short HEAD)'" --outfile=dist/modern-glm-js.cjs`,
@@ -1609,7 +1609,7 @@ var init_implementation = __esm({
     uvec2Factory.prototype = uvec2.prototype;
     glm = {
       get version() {
-        return `${package_default.version}-${false ? "(develop)" : "a3093cd"}`;
+        return `${package_default.version}-${false ? "(develop)" : "d0e4143"}`;
       },
       vec2: vec2Factory,
       vec3: vec3Factory,

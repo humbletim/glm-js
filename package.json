@@ -5,7 +5,7 @@
   "type": "module",
   "main": "implementation/index.js",
   "scripts": {
-    "test": "node --test --import ./tests/__init__.js tests/*.test.js",
+    "test": "node --test --import ./tests/__init__.js 'tests/**/*.test.js'",
     "test:legacy": "node tests/__run-legacy-tests.js",
     "legacy:passfailcounts": "(node tests/__run-legacy-tests.js 2>&1 || true) | grep -E '^[[:space:]]+[0-9]+ (passing|failing)'",
     "cjs": "echo '(function(exports) { if (/object/.test(typeof module)) module.exports = exports; else if (/object/.test(typeof window)) window.glm = exports; else globalThis.glm = exports; return exports; })(require(\"./implementation/index.js\").default)' | npx esbuild --bundle --format=cjs --define:GLMJS_COMMIT=\"'$(git rev-parse --short HEAD)'\" --outfile=dist/modern-glm-js.cjs",
